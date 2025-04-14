@@ -1,0 +1,29 @@
+services:
+  # Servicio para el Backend (FastAPI)
+  backend:
+    build: ./backend 
+    ports:
+      - "8000:8000" 
+    volumes:
+      - ./backend/app:/app/app
+    env_file:
+      - ./backend/backend.env
+    depends_on:
+      - db # Asegura que el servicio 'db' inicie antes que el 'backend'
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload 
+
+  # Servicio para la Base de Datos (MariaDB)
+  db:
+    image: mariadb:10.6 # Usa una imagen oficial de MariaDB (ajusta versión si es necesario)
+    env_file:
+      - ./backend/backend.env # Carga las variables de entorno desde el archivo .env
+    volumes:
+      # Volumen nombrado para persistir los datos de la BD
+      - mariadb_data:/var/lib/mysql
+    ports:
+      # Opcional: Mapea el puerto si necesitas acceso directo desde tu máquina
+      - "3307:3306" # Mapea 3306 del contenedor al 3307 del host (para evitar conflictos si tienes otra db en 3306)
+
+# Define el volumen nombrado para persistencia de datos
+volumes:
+  mariadb_data:
