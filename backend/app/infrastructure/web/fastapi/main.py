@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from app.core.config import settings
+from app.infrastructure.persistance.config import settings
+from app.infrastructure.web.fastapi.routes import usuario
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -17,6 +18,8 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+app.include_router(usuario.router)
 
 # Include this for debugging when running directly
 if __name__ == "__main__":
