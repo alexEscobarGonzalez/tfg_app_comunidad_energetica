@@ -1,46 +1,62 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.domain.entities.usuario import UsuarioEntity
-from app.infrastructure.persistance.models.user import Usuario
+from app.infrastructure.persistance.models.usuario_tabla import Usuario as UsuarioModel
 from app.domain.repositories.usuario_repository import UsuarioRepository
 
 class SqlAlchemyUsuarioRepository(UsuarioRepository):
-    def get_by_id(self, db: Session, user_id: int) -> Optional[UsuarioEntity]:
-        user = db.query(Usuario).filter(Usuario.idUsuario == user_id).first()
-        if user:
-            return UsuarioEntity(idUsuario=user.idUsuario, nombre=user.nombre, correo=user.correo, hashContrasena=user.hashContrasena)
+    def __init__(self, db: Session):
+        self.db = db
+        
+    def _map_to_entity(self, model: UsuarioModel) -> UsuarioEntity:
+        """Convierte un modelo de tabla a una entidad de dominio"""
+        return UsuarioEntity(
+            idUsuario=model.idUsuario, 
+            nombre=model.nombre, 
+            correo=model.correo, 
+            hashContrasena=model.hashContrasena
+        )
+
+    def get_by_id(self, user_id: int) -> Optional[UsuarioEntity]:
+        model = self.db.query(UsuarioModel).filter(UsuarioModel.idUsuario == user_id).first()
+        if model:
+            return self._map_to_entity(model)
         return None
 
-    def get_by_email(self, db: Session, email: str) -> Optional[UsuarioEntity]:
-        user = db.query(Usuario).filter(Usuario.correo == email).first()
-        if user:
-            return UsuarioEntity(idUsuario=user.idUsuario, nombre=user.nombre, correo=user.correo, hashContrasena=user.hashContrasena)
+    def get_by_email(self, email: str) -> Optional[UsuarioEntity]:
+        model = self.db.query(UsuarioModel).filter(UsuarioModel.correo == email).first()
+        if model:
+            return self._map_to_entity(model)
         return None
 
-    def list(self, db: Session, skip: int = 0, limit: int = 100) -> List[UsuarioEntity]:
-        users = db.query(Usuario).offset(skip).limit(limit).all()
-        return [UsuarioEntity(idUsuario=u.idUsuario, nombre=u.nombre, correo=u.correo, hashContrasena=u.hashContrasena) for u in users]
+    def list(self, skip: int = 0, limit: int = 100) -> List[UsuarioEntity]:
+        models = self.db.query(UsuarioModel).offset(skip).limit(limit).all()
+        return [self._map_to_entity(model) for model in models]
 
-    def create(self, db: Session, user: UsuarioEntity) -> UsuarioEntity:
-        db_user = Usuario(nombre=user.nombre, correo=user.correo, hashContrasena=user.hashContrasena)
-        db.add(db_user)
-        db.commit()
-        db.refresh(db_user)
-        return UsuarioEntity(idUsuario=db_user.idUsuario, nombre=db_user.nombre, correo=db_user.correo, hashContrasena=db_user.hashContrasena)
+    def create(self, user: UsuarioEntity) -> UsuarioEntity:
+        model = UsuarioModel(
+            nombre=user.nombre, 
+            correo=user.correo, 
+            hashContrasena=user.hashContrasena
+        )
+        self.db.add(model)
+        self.db.commit()
+        self.db.refresh(model)
+        return self._map_to_entity(model)
 
-    def update(self, db: Session, user_id: int, user: UsuarioEntity) -> UsuarioEntity:
-        db_user = db.query(Usuario).filter(Usuario.idUsuario == user_id).first()
-        if not db_user:
+    def update(self, user_id: int, user: UsuarioEntity) -> UsuarioEntity:
+        model = self.db.query(UsuarioModel).filter(UsuarioModel.idUsuario == user_id).first()
+        if not model:
             return None
-        db_user.nombre = user.nombre
-        db_user.correo = user.correo
-        db_user.hashContrasena = user.hashContrasena
-        db.commit()
-        db.refresh(db_user)
-        return UsuarioEntity(idUsuario=db_user.idUsuario, nombre=db_user.nombre, correo=db_user.correo, hashContrasena=db_user.hashContrasena)
+        model.nombre = user.nombre
+        model.correo = user.correo
+        model.hashContrasena = user.hashContrasena
+        self.db.commit()
+        self.db.refresh(model)
+        return self._map_to_entity(model)
 
-    def delete(self, db: Session, user_id: int) -> None:
-        db_user = db.query(Usuario).filter(Usuario.idUsuario == user_id).first()
-        if db_user:
-            db.delete(db_user)
-            db.commit()
+    def delete(self, user_id: int) -> None:
+        model = self.db.query(UsuarioModel).filter(UsuarioModel.idUsuario == user_id).first()
+        if model:
+            self.db.delete(model)
+            self.db.commit()

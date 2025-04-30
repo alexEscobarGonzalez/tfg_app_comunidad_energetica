@@ -5,3 +5,6 @@ pydantic-settings
 sqlalchemy
 pymysql
 python-dotenv
+bcrypt
+pytest
+requests

@@ -1,0 +1,22 @@
+from sqlalchemy import Column, Integer, String, Date, ForeignKey
+from sqlalchemy.orm import relationship
+from app.infrastructure.persistance.database import Base
+
+class Simulacion(Base):
+    __tablename__ = "SIMULACION"
+    
+    idSimulacion = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    nombreSimulacion = Column(String(255))
+    fechaInicio = Column(Date, nullable=False)
+    fechaFin = Column(Date, nullable=False)
+    tiempo_medicion = Column(Integer)  # En minutos
+    estado = Column(String(50))  # ENUM: PENDIENTE, EJECUTANDO, COMPLETADA, FALLIDA
+    tipoEstrategiaExcedentes = Column(String(100))  # ENUM: Venta, Compensacion, Almacenamiento, Individual sin excedentes
+    idUsuario_creador = Column(Integer, ForeignKey("USUARIO.idUsuario", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
+    idComunidadEnergetica = Column(Integer, ForeignKey("COMUNIDAD_ENERGETICA.idComunidadEnergetica", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
+    
+    # Relaciones
+    usuario = relationship("Usuario")
+    comunidad = relationship("ComunidadEnergetica")
+    resultado = relationship("ResultadoSimulacion", back_populates="simulacion", uselist=False, cascade="all, delete-orphan")
+    datos_ambientales = relationship("DatosAmbientales", back_populates="simulacion", cascade="all, delete-orphan")

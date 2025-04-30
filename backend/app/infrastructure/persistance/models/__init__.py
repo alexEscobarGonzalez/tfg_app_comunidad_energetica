@@ -1,0 +1,18 @@
+# tfg_app_comunidad_energetica/backend/app/infrastructure/persistance/models/__init__.py
+
+# Import all model classes to ensure they are registered with Base.metadata
+from .usuario_tabla import Usuario
+from .comunidad_energetica_tabla import ComunidadEnergetica
+from .participante_tabla import Participante
+from .registro_consumo_tabla import RegistroConsumo
+from .contrato_autoconsumo_tabla import ContratoAutoconsumo
+from .coeficiente_reparto_tabla import CoeficienteReparto
+from .activo_generacion_tabla import ActivoGeneracion
+from .activo_almacenamiento_tabla import ActivoAlmacenamiento
+from .simulacion_tabla import Simulacion
+from .datos_ambientales_tabla import DatosAmbientales
+from .resultado_simulacion_tabla import ResultadoSimulacion
+from .resultado_simulacion_participante_tabla import ResultadoSimulacionParticipante
+from .resultado_simulacion_activo_almacenamiento_tabla import ResultadoSimulacionActivoAlmacenamiento
+from .resultado_simulacion_activo_generacion_tabla import ResultadoSimulacionActivoGeneracion
+# Add imports for any other model tables you might have

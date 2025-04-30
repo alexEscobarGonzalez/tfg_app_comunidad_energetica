@@ -12,11 +12,8 @@ DROP TABLE IF EXISTS `RESULTADO_SIMULACION_PARTICIPANTE`;
 DROP TABLE IF EXISTS `RESULTADO_SIMULACION`;
 DROP TABLE IF EXISTS `DATOS_AMBIENTALES`;
 DROP TABLE IF EXISTS `SIMULACION`;
-DROP TABLE IF EXISTS `AEROGENERADOR`;
-DROP TABLE IF EXISTS `INSTALACION_FOTOVOLTAICA`;
-DROP TABLE IF EXISTS `ACTIVO_GENERACION`;
+DROP TABLE IF EXISTS `ACTIVO_GENERACION_UNICA`;
 DROP TABLE IF EXISTS `ACTIVO_ALMACENAMIENTO`;
-DROP TABLE IF EXISTS `PARAMETRO_COEFICIENTE_PROGRAMADO`;
 DROP TABLE IF EXISTS `REGISTRO_CONSUMO`;
 DROP TABLE IF EXISTS `COEFICIENTE_REPARTO`;
 DROP TABLE IF EXISTS `CONTRATO_AUTOCONSUMO`;
@@ -69,24 +66,13 @@ CREATE TABLE `CONTRATO_AUTOCONSUMO` (
     FOREIGN KEY (`idParticipante`) REFERENCES `PARTICIPANTE`(`idParticipante`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Tabla COEFICIENTE_REPARTO
 CREATE TABLE `COEFICIENTE_REPARTO` (
     `idCoeficienteReparto` INT NOT NULL AUTO_INCREMENT,
     `tipoReparto` VARCHAR(100), -- Podría ser ENUM('Fijo', 'Variable', 'Programado', ...)
-    `parametrosCoeficientesFijo` FLOAT NULL, -- Asumiendo que es el valor fijo si aplica
+    `parametros` JSON, -- Campo JSON para almacenar todos los parámetros de forma flexible
     `idParticipante` INT NOT NULL,
     PRIMARY KEY (`idCoeficienteReparto`),
     FOREIGN KEY (`idParticipante`) REFERENCES `PARTICIPANTE`(`idParticipante`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Tabla PARAMETRO_COEFICIENTE_PROGRAMADO
-CREATE TABLE `PARAMETRO_COEFICIENTE_PROGRAMADO` (
-    `idParamCoefProg` INT NOT NULL AUTO_INCREMENT,
-    `idCoeficienteReparto` INT NOT NULL,
-    `fecha` DATE NOT NULL, -- O DATETIME si necesita hora
-    `valor` FLOAT NOT NULL,
-    PRIMARY KEY (`idParamCoefProg`),
-    FOREIGN KEY (`idCoeficienteReparto`) REFERENCES `COEFICIENTE_REPARTO`(`idCoeficienteReparto`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla REGISTRO_CONSUMO
@@ -100,8 +86,8 @@ CREATE TABLE `REGISTRO_CONSUMO` (
     INDEX `idx_registro_consumo_participante_ts` (`idParticipante`, `timestamp`) -- Índice útil para búsquedas por participante y fecha
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Tabla ACTIVO_GENERACION (Tabla base para tipos específicos)
-CREATE TABLE `ACTIVO_GENERACION` (
+-- Tabla ACTIVO_GENERACION_UNICA (Combinación de las tablas anteriores)
+CREATE TABLE `ACTIVO_GENERACION_UNICA` (
     `idActivoGeneracion` INT NOT NULL AUTO_INCREMENT,
     `nombreDescriptivo` VARCHAR(255),
     `fechaInstalacion` DATE,
@@ -110,30 +96,21 @@ CREATE TABLE `ACTIVO_GENERACION` (
     `latitud` FLOAT,
     `longitud` FLOAT,
     `potenciaNominal_kWp` FLOAT,
-    `tipoTecnologia` VARCHAR(100) NOT NULL, -- Discriminador: 'Fotovoltaica', 'Aerogenerador', ...
     `idComunidadEnergetica` INT NOT NULL,
+    `tipo_activo` VARCHAR(100) NOT NULL, -- 'Fotovoltaica', 'Aerogenerador', etc.
+    
+    -- Atributos de INSTALACION_FOTOVOLTAICA (ahora NULLABLE)
+    `inclinacionGrados` FLOAT NULL,
+    `azimutGrados` FLOAT NULL,
+    `tecnologiaPanel` VARCHAR(100) NULL,
+    `perdidaSistema` FLOAT NULL,
+    `posicionMontaje` VARCHAR(100) NULL,
+    
+    -- Atributos de AEROGENERADOR (ahora NULLABLE)
+    `curvaPotencia` TEXT NULL,
+    
     PRIMARY KEY (`idActivoGeneracion`),
     FOREIGN KEY (`idComunidadEnergetica`) REFERENCES `COMUNIDAD_ENERGETICA`(`idComunidadEnergetica`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Tabla INSTALACION_FOTOVOLTAICA (Hereda de ACTIVO_GENERACION)
-CREATE TABLE `INSTALACION_FOTOVOLTAICA` (
-    `idActivoGeneracion` INT NOT NULL, -- PK y FK
-    `inclinacionGrados` FLOAT,
-    `azimutGrados` FLOAT,
-    `tecnologiaPanel` VARCHAR(100), -- 'Monocristalino', 'Policristalino', ...
-    `perdidaSistema` FLOAT, -- Podría ser %
-    `posicionMontaje` VARCHAR(100), -- 'Tejado', 'Suelo', ...
-    PRIMARY KEY (`idActivoGeneracion`),
-    FOREIGN KEY (`idActivoGeneracion`) REFERENCES `ACTIVO_GENERACION`(`idActivoGeneracion`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Tabla AEROGENERADOR (Hereda de ACTIVO_GENERACION)
-CREATE TABLE `AEROGENERADOR` (
-    `idActivoGeneracion` INT NOT NULL, -- PK y FK
-    `curvaPotencia` TEXT, -- Podría ser JSON o un formato específico
-    PRIMARY KEY (`idActivoGeneracion`),
-    FOREIGN KEY (`idActivoGeneracion`) REFERENCES `ACTIVO_GENERACION`(`idActivoGeneracion`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla ACTIVO_ALMACENAMIENTO
@@ -231,8 +208,8 @@ CREATE TABLE `RESULTADO_SIMULACION_ACTIVO_GENERACION` (
     `idActivoGeneracion` INT NOT NULL,
     PRIMARY KEY (`idResultadoActivoGen`),
     FOREIGN KEY (`idResultadoSimulacion`) REFERENCES `RESULTADO_SIMULACION`(`idResultado`) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (`idActivoGeneracion`) REFERENCES `ACTIVO_GENERACION`(`idActivoGeneracion`) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE KEY `uq_resultado_sim_activo_gen` (`idResultadoSimulacion`, `idActivoGeneracion`) -- Un resultado por activo gen por simulación
+    FOREIGN KEY (`idActivoGeneracion`) REFERENCES `ACTIVO_GENERACION_UNICA`(`idActivoGeneracion`) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE KEY `uq_resultado_sim_activo_gen` (`idResultadoSimulacion`, `idActivoGeneracion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla RESULTADO_SIMULACION_ACTIVO_ALMACENAMIENTO
