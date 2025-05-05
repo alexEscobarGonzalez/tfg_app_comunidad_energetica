@@ -13,7 +13,6 @@ class DatosIntervaloParticipanteEntity:
     energiaHaciaAlmacenamientoInd_kWh: Optional[float] = None
     energiaDesdeRed_kWh: Optional[float] = None
     excedenteVertidoCompensado_kWh: Optional[float] = None
-    excedenteVertidoVendido_kWh: Optional[float] = None
     estadoAlmacenamientoInd_kWh: Optional[float] = None
     precioImportacionIntervalo: Optional[float] = None
     precioExportacionIntervalo: Optional[float] = None

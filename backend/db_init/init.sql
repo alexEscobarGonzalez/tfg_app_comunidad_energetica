@@ -243,7 +243,6 @@ CREATE TABLE `DATOS_INTERVALO_PARTICIPANTE` (
     `energiaHaciaAlmacenamientoInd_kWh` FLOAT,
     `energiaDesdeRed_kWh` FLOAT,
     `excedenteVertidoCompensado_kWh` FLOAT,
-    `excedenteVertidoNoCompensado_kWh` FLOAT,
     `estadoAlmacenamientoInd_kWh` FLOAT, -- ¿Nivel de carga?
     `precioImportacionIntervalo` FLOAT,
     `precioExportacionIntervalo` FLOAT,

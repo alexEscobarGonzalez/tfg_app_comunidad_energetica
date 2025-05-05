@@ -81,7 +81,7 @@ class SqlAlchemyDatosIntervaloActivoRepository(DatosIntervaloActivoRepository):
         
         return self._to_entity(db_datos)
     
-    def create_many(self, datos_intervalos: List[DatosIntervaloActivoEntity]) -> List[DatosIntervaloActivoEntity]:
+    def create_bulk(self, datos_intervalos: List[DatosIntervaloActivoEntity]) -> List[DatosIntervaloActivoEntity]:
         db_datos_list = [self._to_model(datos) for datos in datos_intervalos]
         for db_datos in db_datos_list:
             db_datos.idDatosIntervaloActivo = None  # Asegurar que se autoincrementa

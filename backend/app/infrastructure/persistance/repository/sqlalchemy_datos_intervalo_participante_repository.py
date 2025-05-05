@@ -20,7 +20,6 @@ class SqlAlchemyDatosIntervaloParticipanteRepository(DatosIntervaloParticipanteR
             energiaHaciaAlmacenamientoInd_kWh=model.energiaHaciaAlmacenamientoInd_kWh,
             energiaDesdeRed_kWh=model.energiaDesdeRed_kWh,
             excedenteVertidoCompensado_kWh=model.excedenteVertidoCompensado_kWh,
-            excedenteVertidoVendido_kWh=model.excedenteVertidoVendido_kWh,
             estadoAlmacenamientoInd_kWh=model.estadoAlmacenamientoInd_kWh,
             precioImportacionIntervalo=model.precioImportacionIntervalo,
             precioExportacionIntervalo=model.precioExportacionIntervalo,
@@ -38,7 +37,6 @@ class SqlAlchemyDatosIntervaloParticipanteRepository(DatosIntervaloParticipanteR
             energiaHaciaAlmacenamientoInd_kWh=entity.energiaHaciaAlmacenamientoInd_kWh,
             energiaDesdeRed_kWh=entity.energiaDesdeRed_kWh,
             excedenteVertidoCompensado_kWh=entity.excedenteVertidoCompensado_kWh,
-            excedenteVertidoVendido_kWh=entity.excedenteVertidoVendido_kWh,
             estadoAlmacenamientoInd_kWh=entity.estadoAlmacenamientoInd_kWh,
             precioImportacionIntervalo=entity.precioImportacionIntervalo,
             precioExportacionIntervalo=entity.precioExportacionIntervalo,
@@ -82,7 +80,7 @@ class SqlAlchemyDatosIntervaloParticipanteRepository(DatosIntervaloParticipanteR
         
         return self._to_entity(db_datos)
     
-    def create_many(self, datos_intervalos: List[DatosIntervaloParticipanteEntity]) -> List[DatosIntervaloParticipanteEntity]:
+    def create_bulk(self, datos_intervalos: List[DatosIntervaloParticipanteEntity]) -> List[DatosIntervaloParticipanteEntity]:
         db_datos_list = [self._to_model(datos) for datos in datos_intervalos]
         for db_datos in db_datos_list:
             db_datos.idDatosIntervaloParticipante = None  # Asegurar que se autoincrementa
@@ -111,7 +109,6 @@ class SqlAlchemyDatosIntervaloParticipanteRepository(DatosIntervaloParticipanteR
         db_datos.energiaHaciaAlmacenamientoInd_kWh = datos_intervalo.energiaHaciaAlmacenamientoInd_kWh
         db_datos.energiaDesdeRed_kWh = datos_intervalo.energiaDesdeRed_kWh
         db_datos.excedenteVertidoCompensado_kWh = datos_intervalo.excedenteVertidoCompensado_kWh
-        db_datos.excedenteVertidoVendido_kWh = datos_intervalo.excedenteVertidoVendido_kWh
         db_datos.estadoAlmacenamientoInd_kWh = datos_intervalo.estadoAlmacenamientoInd_kWh
         db_datos.precioImportacionIntervalo = datos_intervalo.precioImportacionIntervalo
         db_datos.precioExportacionIntervalo = datos_intervalo.precioExportacionIntervalo

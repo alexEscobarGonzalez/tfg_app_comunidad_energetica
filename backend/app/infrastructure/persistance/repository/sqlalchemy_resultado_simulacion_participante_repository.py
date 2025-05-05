@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.domain.entities.resultado_simulacion_participante import ResultadoSimulacionParticipanteEntity
@@ -108,4 +108,47 @@ class SqlAlchemyResultadoSimulacionParticipanteRepository(ResultadoSimulacionPar
             self.db.commit()
         except SQLAlchemyError as e:
             self.db.rollback()
+            raise e
+
+    def create_bulk(self, resultados: List[Dict], resultado_global_id: int) -> List[ResultadoSimulacionParticipanteEntity]:
+        """
+        Crea múltiples registros de resultados de simulación de participantes a la vez.
+        
+        Args:
+            resultados: Lista de diccionarios con los resultados de participantes a guardar
+            
+        Returns:
+            Lista de entidades ResultadoSimulacionParticipanteEntity creadas
+        """
+        models = []
+        try:
+            for resultado in resultados:
+                # Crear modelo a partir del diccionario de datos
+                model = ResultadoSimulacionParticipante(
+                    costeNetoParticipante_eur=resultado.get('costeEnergeticoTotal_euros', 0),
+                    ahorroParticipante_eur=0,  # Se calculará más adelante si es necesario
+                    ahorroParticipante_pct=0,  # Se calculará más adelante si es necesario
+                    energiaAutoconsumidaDirecta_kWh=resultado.get('energiaAutoconsumidaTotal_kWh', 0),
+                    energiaRecibidaRepartoConsumida_kWh=0,  # No disponible en los datos básicos
+                    tasaAutoconsumoSCR_pct=0,  # Se calculará más adelante si es necesario
+                    tasaAutosuficienciaSSR_pct=resultado.get('porcentajeAutoconsumo', 0),
+                    idResultadoSimulacion=resultado_global_id,
+                    idParticipante=resultado.get('idParticipante')
+                )
+                self.db.add(model)
+                models.append(model)
+            
+            # Hacer commit de todos los cambios a la vez
+            self.db.commit()
+            
+            # Refrescar todos los modelos para obtener sus IDs generados
+            for model in models:
+                self.db.refresh(model)
+            
+            # Mapear modelos a entidades
+            return [self._map_to_entity(model) for model in models]
+        
+        except SQLAlchemyError as e:
+            self.db.rollback()
+            print(f"Error al crear resultados de participantes en bloque: {e}")
             raise e

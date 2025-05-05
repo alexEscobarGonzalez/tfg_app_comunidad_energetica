@@ -1,5 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from app.domain.entities.resultado_simulacion_activo_almacenamiento import ResultadoSimulacionActivoAlmacenamientoEntity
 from app.domain.repositories.resultado_simulacion_activo_almacenamiento_repository import ResultadoSimulacionActivoAlmacenamientoRepository
 from app.infrastructure.persistance.models.resultado_simulacion_activo_almacenamiento_tabla import ResultadoSimulacionActivoAlmacenamiento
@@ -135,3 +136,56 @@ class SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(ResultadoSimul
             idResultadoSimulacion=db_resultado.idResultadoSimulacion,
             idActivoAlmacenamiento=db_resultado.idActivoAlmacenamiento
         )
+    
+    def create_bulk(self, resultados: List[Dict]) -> List[ResultadoSimulacionActivoAlmacenamientoEntity]:
+        """
+        Crea múltiples registros de resultados de simulación de activos de almacenamiento a la vez.
+        
+        Args:
+            resultados: Lista de diccionarios con los resultados de activos a guardar
+            
+        Returns:
+            Lista de entidades ResultadoSimulacionActivoAlmacenamientoEntity creadas
+        """
+        if not resultados:
+            return []
+            
+        models = []
+        try:
+            for resultado in resultados:
+                # Filtrar solo los resultados que contengan tipo_activo='almacenamiento'
+                if resultado.get('tipo_activo', '') != 'almacenamiento':
+                    continue
+                
+                # Crear modelo a partir del diccionario de datos
+                model = ResultadoSimulacionActivoAlmacenamiento(
+                    energiaTotalCargada_kWh=resultado.get('energiaAlmacenadaTotal_kWh', 0),
+                    energiaTotalDescargada_kWh=resultado.get('energiaLiberadaTotal_kWh', 0),
+                    ciclosEquivalentes=max(resultado.get('ciclosCarga', 0), resultado.get('ciclosDescarga', 0)),
+                    perdidasEficiencia_kWh=0,  # Calculado posteriormente si es necesario
+                    socMedio_pct=0,  # Requiere datos de intervalo para calcular
+                    socMin_pct=0,  # Requiere datos de intervalo para calcular
+                    socMax_pct=0,  # Requiere datos de intervalo para calcular
+                    degradacionEstimada_pct=0,  # Se calculará más adelante si es necesario
+                    throughputTotal_kWh=resultado.get('energiaAlmacenadaTotal_kWh', 0) + resultado.get('energiaLiberadaTotal_kWh', 0),
+                    idResultadoSimulacion=resultado.get('idSimulacion'),
+                    idActivoAlmacenamiento=resultado.get('idActivoAlmacenamiento')
+                )
+                self.db.add(model)
+                models.append(model)
+            
+            # Hacer commit de todos los cambios a la vez
+            if models:
+                self.db.commit()
+                
+                # Refrescar todos los modelos para obtener sus IDs generados
+                for model in models:
+                    self.db.refresh(model)
+            
+            # Mapear modelos a entidades
+            return [self._map_to_entity(model) for model in models]
+        
+        except SQLAlchemyError as e:
+            self.db.rollback()
+            print(f"Error al crear resultados de activos de almacenamiento en bloque: {e}")
+            raise e

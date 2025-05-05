@@ -69,7 +69,6 @@ def create_datos_intervalo(
         energiaHaciaAlmacenamientoInd_kWh=datos.energiaHaciaAlmacenamientoInd_kWh,
         energiaDesdeRed_kWh=datos.energiaDesdeRed_kWh,
         excedenteVertidoCompensado_kWh=datos.excedenteVertidoCompensado_kWh,
-        excedenteVertidoVendido_kWh=datos.excedenteVertidoVendido_kWh,
         estadoAlmacenamientoInd_kWh=datos.estadoAlmacenamientoInd_kWh,
         precioImportacionIntervalo=datos.precioImportacionIntervalo,
         precioExportacionIntervalo=datos.precioExportacionIntervalo,
@@ -94,7 +93,6 @@ def create_many_datos_intervalo(
             energiaHaciaAlmacenamientoInd_kWh=datos.energiaHaciaAlmacenamientoInd_kWh,
             energiaDesdeRed_kWh=datos.energiaDesdeRed_kWh,
             excedenteVertidoCompensado_kWh=datos.excedenteVertidoCompensado_kWh,
-            excedenteVertidoVendido_kWh=datos.excedenteVertidoVendido_kWh,
             estadoAlmacenamientoInd_kWh=datos.estadoAlmacenamientoInd_kWh,
             precioImportacionIntervalo=datos.precioImportacionIntervalo,
             precioExportacionIntervalo=datos.precioExportacionIntervalo,
@@ -137,8 +135,6 @@ def update_datos_intervalo(
         update_data.energiaDesdeRed_kWh = datos_update.energiaDesdeRed_kWh
     if datos_update.excedenteVertidoCompensado_kWh is not None:
         update_data.excedenteVertidoCompensado_kWh = datos_update.excedenteVertidoCompensado_kWh
-    if datos_update.excedenteVertidoVendido_kWh is not None:
-        update_data.excedenteVertidoVendido_kWh = datos_update.excedenteVertidoVendido_kWh
     if datos_update.estadoAlmacenamientoInd_kWh is not None:
         update_data.estadoAlmacenamientoInd_kWh = datos_update.estadoAlmacenamientoInd_kWh
     if datos_update.precioImportacionIntervalo is not None:

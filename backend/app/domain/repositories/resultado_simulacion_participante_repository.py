@@ -28,3 +28,6 @@ class ResultadoSimulacionParticipanteRepository:
 
     def delete_by_resultado_simulacion(self, resultado_simulacion_id: int) -> None:
         raise NotImplementedError
+    
+    def create_bulk(self, resultados: List[ResultadoSimulacionParticipanteEntity], resultado_global_id: int) -> List[ResultadoSimulacionParticipanteEntity]:
+        raise NotImplementedError

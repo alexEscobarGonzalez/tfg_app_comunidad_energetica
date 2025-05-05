@@ -12,7 +12,6 @@ class DatosIntervaloParticipanteBase(BaseModel):
     energiaHaciaAlmacenamientoInd_kWh: Optional[float] = Field(None, description="Energía hacia almacenamiento individual en kWh")
     energiaDesdeRed_kWh: Optional[float] = Field(None, description="Energía importada desde la red en kWh")
     excedenteVertidoCompensado_kWh: Optional[float] = Field(None, description="Excedente vertido compensado en kWh")
-    excedenteVertidoVendido_kWh: Optional[float] = Field(None, description="Excedente vertido vendido en kWh")
     estadoAlmacenamientoInd_kWh: Optional[float] = Field(None, description="Estado del almacenamiento individual en kWh")
     precioImportacionIntervalo: Optional[float] = Field(None, description="Precio de importación en el intervalo")
     precioExportacionIntervalo: Optional[float] = Field(None, description="Precio de exportación en el intervalo")
@@ -35,7 +34,6 @@ class DatosIntervaloParticipanteUpdate(BaseModel):
     energiaHaciaAlmacenamientoInd_kWh: Optional[float] = None
     energiaDesdeRed_kWh: Optional[float] = None
     excedenteVertidoCompensado_kWh: Optional[float] = None
-    excedenteVertidoVendido_kWh: Optional[float] = None
     estadoAlmacenamientoInd_kWh: Optional[float] = None
     precioImportacionIntervalo: Optional[float] = None
     precioExportacionIntervalo: Optional[float] = None

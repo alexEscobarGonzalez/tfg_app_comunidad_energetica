@@ -1,5 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from app.domain.entities.resultado_simulacion_activo_generacion import ResultadoSimulacionActivoGeneracionEntity
 from app.domain.repositories.resultado_simulacion_activo_generacion_repository import ResultadoSimulacionActivoGeneracionRepository
 from app.infrastructure.persistance.models.resultado_simulacion_activo_generacion_tabla import ResultadoSimulacionActivoGeneracion
@@ -98,3 +99,43 @@ class SqlAlchemyResultadoSimulacionActivoGeneracionRepository(ResultadoSimulacio
         
         self.session.delete(db_resultado)
         self.session.commit()
+    
+    def create_bulk(self, resultados: List[Dict]) -> List[ResultadoSimulacionActivoGeneracionEntity]:
+        """
+        Crea múltiples registros de resultados de simulación de activos de generación a la vez.
+        
+        Args:
+            resultados: Lista de diccionarios con los resultados de activos a guardar
+            
+        Returns:
+            Lista de entidades ResultadoSimulacionActivoGeneracionEntity creadas
+        """
+        models = []
+        try:
+            for resultado in resultados:
+                # Crear modelo a partir del diccionario de datos
+                model = ResultadoSimulacionActivoGeneracion(
+                    energiaTotalGenerada_kWh=resultado.get('energiaGeneradaTotal_kWh', 0),
+                    factorCapacidad_pct=resultado.get('factorCapacidad', 0),
+                    performanceRatio_pct=resultado.get('eficienciaUtilizacion', 0),
+                    horasOperacionEquivalentes=resultado.get('horasProduccion', 0),
+                    idResultadoSimulacion=resultado.get('idSimulacion'),
+                    idActivoGeneracion=resultado.get('idActivoGeneracion')
+                )
+                self.session.add(model)
+                models.append(model)
+            
+            # Hacer commit de todos los cambios a la vez
+            self.session.commit()
+            
+            # Refrescar todos los modelos para obtener sus IDs generados
+            for model in models:
+                self.session.refresh(model)
+            
+            # Mapear modelos a entidades
+            return [self._to_entity(model) for model in models]
+        
+        except SQLAlchemyError as e:
+            self.session.rollback()
+            print(f"Error al crear resultados de activos de generación en bloque: {e}")
+            raise e

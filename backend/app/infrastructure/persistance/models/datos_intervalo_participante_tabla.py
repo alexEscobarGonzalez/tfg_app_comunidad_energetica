@@ -14,7 +14,6 @@ class DatosIntervaloParticipante(Base):
     energiaHaciaAlmacenamientoInd_kWh = Column(Float)
     energiaDesdeRed_kWh = Column(Float)
     excedenteVertidoCompensado_kWh = Column(Float)
-    excedenteVertidoVendido_kWh = Column(Float)
     estadoAlmacenamientoInd_kWh = Column(Float)
     precioImportacionIntervalo = Column(Float)
     precioExportacionIntervalo = Column(Float)

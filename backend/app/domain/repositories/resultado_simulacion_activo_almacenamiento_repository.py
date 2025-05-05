@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 from app.domain.entities.resultado_simulacion_activo_almacenamiento import ResultadoSimulacionActivoAlmacenamientoEntity
 
 class ResultadoSimulacionActivoAlmacenamientoRepository:
@@ -24,4 +24,7 @@ class ResultadoSimulacionActivoAlmacenamientoRepository:
         raise NotImplementedError
     
     def delete(self, resultado_activo_alm_id: int) -> None:
+        raise NotImplementedError
+    
+    def create_bulk(self, resultados: List[ResultadoSimulacionActivoAlmacenamientoEntity]) -> List[ResultadoSimulacionActivoAlmacenamientoEntity]:
         raise NotImplementedError
