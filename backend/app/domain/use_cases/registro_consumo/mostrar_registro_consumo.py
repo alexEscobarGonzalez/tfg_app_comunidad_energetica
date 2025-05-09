@@ -1,15 +1,14 @@
-from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.domain.entities.registro_consumo import RegistroConsumoEntity
-from app.infrastructure.persistance.repository.sqlalchemy_registro_consumo_repository import SqlAlchemyRegistroConsumoRepository
+from app.domain.repositories.registro_consumo_repository import RegistroConsumoRepository
 
-def mostrar_registro_consumo_use_case(id_registro: int, db: Session) -> RegistroConsumoEntity:
+def mostrar_registro_consumo_use_case(id_registro: int, repo: RegistroConsumoRepository) -> RegistroConsumoEntity:
     """
     Obtiene los detalles de un registro de consumo específico
     
     Args:
         id_registro: ID del registro de consumo a obtener
-        db: Sesión de base de datos
+        repo: Repositorio de registro de consumo
         
     Returns:
         RegistroConsumoEntity: La entidad del registro de consumo solicitada
@@ -18,8 +17,7 @@ def mostrar_registro_consumo_use_case(id_registro: int, db: Session) -> Registro
         HTTPException: Si el registro no existe
     """
     # Obtener el registro de consumo
-    registro_repo = SqlAlchemyRegistroConsumoRepository(db)
-    registro = registro_repo.get_by_id(id_registro)
+    registro = repo.get_by_id(id_registro)
     
     if not registro:
         raise HTTPException(status_code=404, detail="Registro de consumo no encontrado")

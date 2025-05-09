@@ -1,5 +1,5 @@
 from app.infrastructure.persistance.database import Base
-from sqlalchemy import Column, ForeignKey, Integer, String, Float, Date, Enum
+from sqlalchemy import Column, ForeignKey, Integer, String, Float, Date, Enum, JSON
 from sqlalchemy.orm import relationship
 from app.domain.entities.tipo_activo_generacion import TipoActivoGeneracion
 
@@ -24,9 +24,8 @@ class ActivoGeneracion(Base):
     tecnologiaPanel = Column(String(255), nullable=True)
     perdidaSistema = Column(Float, nullable=True)
     posicionMontaje = Column(String(255), nullable=True)
-    
-    # Campos específicos para AEROGENERADOR (pueden ser nulos)
-    curvaPotencia = Column(String(1000), nullable=True)  # JSON o texto que describe la curva de potencia
+      # Campos específicos para AEROGENERADOR (pueden ser nulos)
+    curvaPotencia = Column(JSON, nullable=True)  # Objeto JSON que describe la curva de potencia
     
     # Relaciones
     comunidad = relationship("ComunidadEnergetica", back_populates="activos_generacion")

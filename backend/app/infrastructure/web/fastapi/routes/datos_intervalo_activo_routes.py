@@ -4,14 +4,19 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from app.domain.entities.datos_intervalo_activo import DatosIntervaloActivoEntity
-from app.domain.use_cases.datos_intervalo_activo_use_cases import DatosIntervaloActivoUseCases
+from app.domain.use_cases.datos_intervalo_activo.get_datos_intervalo_activo_by_id import get_datos_intervalo_activo_by_id_use_case
+from app.domain.use_cases.datos_intervalo_activo.get_datos_intervalo_activo_by_resultado_ids import (
+    get_datos_intervalo_activo_by_resultado_activo_gen_id_use_case,
+    get_datos_intervalo_activo_by_resultado_activo_alm_id_use_case
+)
+from app.domain.use_cases.datos_intervalo_activo.get_datos_intervalo_activo_by_timestamp_range import get_datos_intervalo_activo_by_timestamp_range_use_case
+from app.domain.use_cases.datos_intervalo_activo.create_bulk_datos_intervalo_activo import create_bulk_datos_intervalo_activo_use_case
+from app.domain.repositories.datos_intervalo_activo_repository import DatosIntervaloActivoRepository
 from app.infrastructure.persistance.database import get_db
 from app.infrastructure.persistance.repository.sqlalchemy_datos_intervalo_activo_repository import SqlAlchemyDatosIntervaloActivoRepository
 from app.interfaces.schemas_datos_intervalo_activo import (
     DatosIntervaloActivoRead,
-    DatosIntervaloActivoCreate,
-    DatosIntervaloActivoBulkCreate,
-    DatosIntervaloActivoUpdate
+    DatosIntervaloActivoBulkCreate
 )
 
 router = APIRouter(
@@ -20,13 +25,11 @@ router = APIRouter(
     responses={404: {"description": "No encontrado"}},
 )
 
-def get_use_cases(db: Session = Depends(get_db)):
-    repository = SqlAlchemyDatosIntervaloActivoRepository(db)
-    return DatosIntervaloActivoUseCases(repository)
 
 @router.get("/{datos_intervalo_id}", response_model=DatosIntervaloActivoRead)
-def get_datos_intervalo(datos_intervalo_id: int, use_cases: DatosIntervaloActivoUseCases = Depends(get_use_cases)):
-    datos = use_cases.get_by_id(datos_intervalo_id)
+def get_datos_intervalo(datos_intervalo_id: int, db: Session = Depends(get_db)):
+    repo = SqlAlchemyDatosIntervaloActivoRepository(db)
+    datos = get_datos_intervalo_activo_by_id_use_case(datos_intervalo_id, repo)
     if datos is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -39,62 +42,41 @@ def get_datos_by_activo_generacion(
     resultado_activo_gen_id: int, 
     start_time: Optional[datetime] = None,
     end_time: Optional[datetime] = None,
-    use_cases: DatosIntervaloActivoUseCases = Depends(get_use_cases)
+    db: Session = Depends(get_db)
 ):
+    repo = SqlAlchemyDatosIntervaloActivoRepository(db)
     if start_time and end_time:
-        return use_cases.get_by_timestamp_range(resultado_activo_gen_id, True, start_time, end_time)
-    return use_cases.get_by_resultado_activo_gen_id(resultado_activo_gen_id)
+        return get_datos_intervalo_activo_by_timestamp_range_use_case(resultado_activo_gen_id, True, start_time, end_time, repo)
+    return get_datos_intervalo_activo_by_resultado_activo_gen_id_use_case(resultado_activo_gen_id, repo)
 
 @router.get("/activo-almacenamiento/{resultado_activo_alm_id}", response_model=List[DatosIntervaloActivoRead])
 def get_datos_by_activo_almacenamiento(
     resultado_activo_alm_id: int, 
     start_time: Optional[datetime] = None,
     end_time: Optional[datetime] = None,
-    use_cases: DatosIntervaloActivoUseCases = Depends(get_use_cases)
+    db: Session = Depends(get_db)
 ):
+    repo = SqlAlchemyDatosIntervaloActivoRepository(db)
     if start_time and end_time:
-        return use_cases.get_by_timestamp_range(resultado_activo_alm_id, False, start_time, end_time)
-    return use_cases.get_by_resultado_activo_alm_id(resultado_activo_alm_id)
+        return get_datos_intervalo_activo_by_timestamp_range_use_case(resultado_activo_alm_id, False, start_time, end_time, repo)
+    return get_datos_intervalo_activo_by_resultado_activo_alm_id_use_case(resultado_activo_alm_id, repo)
 
 @router.get("/", response_model=List[DatosIntervaloActivoRead])
 def list_datos_intervalo(
     skip: int = 0, 
     limit: int = 100, 
-    use_cases: DatosIntervaloActivoUseCases = Depends(get_use_cases)
+    db: Session = Depends(get_db)
 ):
-    datos = use_cases.list(skip=skip, limit=limit)
+    repo = SqlAlchemyDatosIntervaloActivoRepository(db)
+    datos = repo.list(skip=skip, limit=limit)
     return datos
-
-@router.post("/", response_model=DatosIntervaloActivoRead, status_code=status.HTTP_201_CREATED)
-def create_datos_intervalo(
-    datos: DatosIntervaloActivoCreate, 
-    use_cases: DatosIntervaloActivoUseCases = Depends(get_use_cases)
-):
-    # Verificar que al menos uno de los IDs de resultado activo está presente
-    if datos.idResultadoActivoGen is None and datos.idResultadoActivoAlm is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Al menos uno de idResultadoActivoGen o idResultadoActivoAlm debe estar presente"
-        )
-    
-    # Convertir de schema a entity
-    entity = DatosIntervaloActivoEntity(
-        timestamp=datos.timestamp,
-        energiaGenerada_kWh=datos.energiaGenerada_kWh,
-        energiaCargada_kWh=datos.energiaCargada_kWh,
-        energiaDescargada_kWh=datos.energiaDescargada_kWh,
-        SoC_kWh=datos.SoC_kWh,
-        idResultadoActivoGen=datos.idResultadoActivoGen,
-        idResultadoActivoAlm=datos.idResultadoActivoAlm
-    )
-    
-    return use_cases.create(entity)
 
 @router.post("/bulk", response_model=List[DatosIntervaloActivoRead], status_code=status.HTTP_201_CREATED)
 def create_many_datos_intervalo(
     bulk_datos: DatosIntervaloActivoBulkCreate,
-    use_cases: DatosIntervaloActivoUseCases = Depends(get_use_cases)
+    db: Session = Depends(get_db)
 ):
+    repo = SqlAlchemyDatosIntervaloActivoRepository(db)
     # Verificar que cada elemento tiene al menos uno de los IDs de resultado activo
     for i, datos in enumerate(bulk_datos.datos):
         if datos.idResultadoActivoGen is None and datos.idResultadoActivoAlm is None:
@@ -116,60 +98,4 @@ def create_many_datos_intervalo(
         ) for datos in bulk_datos.datos
     ]
     
-    return use_cases.create_many(entities)
-
-@router.put("/{datos_intervalo_id}", response_model=DatosIntervaloActivoRead)
-def update_datos_intervalo(
-    datos_intervalo_id: int,
-    datos_update: DatosIntervaloActivoUpdate,
-    use_cases: DatosIntervaloActivoUseCases = Depends(get_use_cases)
-):
-    # Primero verificamos que existe
-    datos_existente = use_cases.get_by_id(datos_intervalo_id)
-    if datos_existente is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Datos de intervalo con ID {datos_intervalo_id} no encontrados"
-        )
-    
-    # Actualizar solo los campos proporcionados
-    update_data = datos_existente
-    
-    if datos_update.timestamp is not None:
-        update_data.timestamp = datos_update.timestamp
-    if datos_update.energiaGenerada_kWh is not None:
-        update_data.energiaGenerada_kWh = datos_update.energiaGenerada_kWh
-    if datos_update.energiaCargada_kWh is not None:
-        update_data.energiaCargada_kWh = datos_update.energiaCargada_kWh
-    if datos_update.energiaDescargada_kWh is not None:
-        update_data.energiaDescargada_kWh = datos_update.energiaDescargada_kWh
-    if datos_update.SoC_kWh is not None:
-        update_data.SoC_kWh = datos_update.SoC_kWh
-    if datos_update.idResultadoActivoGen is not None:
-        update_data.idResultadoActivoGen = datos_update.idResultadoActivoGen
-    if datos_update.idResultadoActivoAlm is not None:
-        update_data.idResultadoActivoAlm = datos_update.idResultadoActivoAlm
-    
-    # Verificar que al menos uno de los IDs de resultado activo está presente
-    if update_data.idResultadoActivoGen is None and update_data.idResultadoActivoAlm is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Al menos uno de idResultadoActivoGen o idResultadoActivoAlm debe estar presente"
-        )
-    
-    return use_cases.update(datos_intervalo_id, update_data)
-
-@router.delete("/{datos_intervalo_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_datos_intervalo(
-    datos_intervalo_id: int,
-    use_cases: DatosIntervaloActivoUseCases = Depends(get_use_cases)
-):
-    datos_existente = use_cases.get_by_id(datos_intervalo_id)
-    if datos_existente is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Datos de intervalo con ID {datos_intervalo_id} no encontrados"
-        )
-    
-    use_cases.delete(datos_intervalo_id)
-    return None
+    return create_bulk_datos_intervalo_activo_use_case(entities, repo)

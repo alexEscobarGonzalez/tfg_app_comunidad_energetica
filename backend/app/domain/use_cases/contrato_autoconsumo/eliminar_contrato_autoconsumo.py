@@ -1,20 +1,17 @@
-from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from app.infrastructure.persistance.repository.sqlalchemy_contrato_autoconsumo_repository import SqlAlchemyContratoAutoconsumoRepository
+from app.domain.repositories.contrato_autoconsumo_repository import ContratoAutoconsumoRepository
 
-def eliminar_contrato_autoconsumo_use_case(id_contrato: int, db: Session) -> None:
+def eliminar_contrato_autoconsumo_use_case(id_contrato: int, repo: ContratoAutoconsumoRepository) -> None:
     """
     Elimina un contrato de autoconsumo existente
     
     Args:
         id_contrato: ID del contrato a eliminar
-        db: Sesión de base de datos
+        repo: Repositorio de contratos de autoconsumo
         
     Raises:
         HTTPException: Si el contrato no existe
     """
-    repo = SqlAlchemyContratoAutoconsumoRepository(db)
-    
     # Verificar que el contrato existe
     contrato = repo.get_by_id(id_contrato)
     if not contrato:

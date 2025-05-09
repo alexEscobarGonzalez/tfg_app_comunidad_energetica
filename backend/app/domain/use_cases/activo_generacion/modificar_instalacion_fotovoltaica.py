@@ -1,17 +1,20 @@
-from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.domain.entities.activo_generacion import ActivoGeneracionEntity
 from app.domain.entities.tipo_activo_generacion import TipoActivoGeneracion
-from app.infrastructure.persistance.repository.sqlalchemy_activo_generacion_repository import SqlAlchemyActivoGeneracionRepository
+from app.domain.repositories.activo_generacion_repository import ActivoGeneracionRepository
 
-def modificar_instalacion_fotovoltaica_use_case(id_activo: int, activo_datos: ActivoGeneracionEntity, db: Session) -> ActivoGeneracionEntity:
+def modificar_instalacion_fotovoltaica_use_case(
+    id_activo: int,
+    activo_datos: ActivoGeneracionEntity,
+    repo: ActivoGeneracionRepository
+) -> ActivoGeneracionEntity:
     """
     Modifica los datos de una instalación fotovoltaica existente
     
     Args:
         id_activo: ID de la instalación fotovoltaica a modificar
         activo_datos: Nuevos datos para la instalación fotovoltaica
-        db: Sesión de base de datos
+        repo: Repositorio de instalaciones fotovoltaicas
         
     Returns:
         ActivoGeneracionEntity: Datos actualizados de la instalación fotovoltaica
@@ -19,8 +22,6 @@ def modificar_instalacion_fotovoltaica_use_case(id_activo: int, activo_datos: Ac
     Raises:
         HTTPException: Si la instalación fotovoltaica no existe o si no es del tipo correcto
     """
-    repo = SqlAlchemyActivoGeneracionRepository(db)
-    
     # Verificar que el activo existe
     activo_existente = repo.get_by_id(id_activo)
     if not activo_existente:
@@ -60,7 +61,6 @@ def modificar_instalacion_fotovoltaica_use_case(id_activo: int, activo_datos: Ac
     
     # No copiar campos específicos de aerogeneradores
     activo_datos.curvaPotencia = None
-    
-    # Actualizar en la base de datos
+      # Actualizar en la base de datos
     activo_actualizado = repo.update(activo_datos)
     return activo_actualizado

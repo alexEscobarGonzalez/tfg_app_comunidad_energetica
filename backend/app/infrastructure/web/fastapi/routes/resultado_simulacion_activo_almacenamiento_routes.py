@@ -11,15 +11,14 @@ from app.interfaces.schemas_resultado_simulacion_activo_almacenamiento import (
 from app.domain.entities.resultado_simulacion_activo_almacenamiento import ResultadoSimulacionActivoAlmacenamientoEntity
 from app.infrastructure.persistance.repository.sqlalchemy_resultado_simulacion_activo_almacenamiento_repository import SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository
 from app.domain.use_cases.resultado_simulacion_activo_almacenamiento.get_resultado_activo_almacenamiento import (
-    GetResultadoActivoAlmacenamiento,
-    GetResultadosActivosAlmacenamientoByResultadoSimulacion,
-    GetResultadosActivoAlmacenamiento,
-    GetResultadoBySimulacionAndActivo
+    obtener_resultado_activo_almacenamiento_use_case,
+    obtener_resultados_por_simulacion_use_case, 
+    obtener_resultado_por_simulacion_y_activo_use_case
 )
-from app.domain.use_cases.resultado_simulacion_activo_almacenamiento.list_resultados_activo_almacenamiento import ListResultadosActivoAlmacenamiento
-from app.domain.use_cases.resultado_simulacion_activo_almacenamiento.create_resultado_activo_almacenamiento import CreateResultadoActivoAlmacenamiento
-from app.domain.use_cases.resultado_simulacion_activo_almacenamiento.update_resultado_activo_almacenamiento import UpdateResultadoActivoAlmacenamiento
-from app.domain.use_cases.resultado_simulacion_activo_almacenamiento.delete_resultado_activo_almacenamiento import DeleteResultadoActivoAlmacenamiento
+from app.domain.use_cases.resultado_simulacion_activo_almacenamiento.list_resultados_activo_almacenamiento import listar_resultados_activo_almacenamiento_use_case
+from app.domain.use_cases.resultado_simulacion_activo_almacenamiento.create_resultado_activo_almacenamiento import crear_resultado_activo_almacenamiento_use_case
+from app.domain.use_cases.resultado_simulacion_activo_almacenamiento.update_resultado_activo_almacenamiento import modificar_resultado_activo_almacenamiento_use_case
+from app.domain.use_cases.resultado_simulacion_activo_almacenamiento.delete_resultado_activo_almacenamiento import eliminar_resultado_activo_almacenamiento_use_case
 
 router = APIRouter(
     prefix="/resultados-activos-almacenamiento",
@@ -30,13 +29,15 @@ router = APIRouter(
 @router.post("", response_model=ResultadoSimulacionActivoAlmacenamientoRead, status_code=status.HTTP_201_CREATED)
 def crear_resultado_activo_almacenamiento(resultado: ResultadoSimulacionActivoAlmacenamientoCreate, db: Session = Depends(get_db)):
     """
-    Crea un nuevo resultado de simulación para un activo de almacenamiento específico
+    Crea un nuevo resultado para un activo de almacenamiento en una simulación
     """
-    # Primero verificamos si ya existe un resultado para esa combinación de resultado de simulación y activo de almacenamiento
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
-    existing = GetResultadoBySimulacionAndActivo(repo).execute(
+    
+    # Verificar si ya existe un resultado para esta combinación
+    existing = obtener_resultado_por_simulacion_y_activo_use_case(
         resultado.idResultadoSimulacion,
-        resultado.idActivoAlmacenamiento
+        resultado.idActivoAlmacenamiento,
+        repo
     )
     
     if existing:
@@ -59,59 +60,38 @@ def crear_resultado_activo_almacenamiento(resultado: ResultadoSimulacionActivoAl
         idActivoAlmacenamiento=resultado.idActivoAlmacenamiento
     )
     
-    use_case = CreateResultadoActivoAlmacenamiento(repo)
-    return use_case.execute(resultado_entity)
+    return crear_resultado_activo_almacenamiento_use_case(resultado_entity, repo)
 
 @router.get("/{id_resultado}", response_model=ResultadoSimulacionActivoAlmacenamientoRead)
 def obtener_resultado_activo_almacenamiento(id_resultado: int, db: Session = Depends(get_db)):
     """
-    Obtiene un resultado específico por su ID
+    Obtiene un resultado de activo de almacenamiento por su ID
     """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
-    use_case = GetResultadoActivoAlmacenamiento(repo)
-    resultado = use_case.execute(id_resultado)
-    
-    if not resultado:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Resultado de activo de almacenamiento con ID {id_resultado} no encontrado"
-        )
-        
-    return resultado
+    return obtener_resultado_activo_almacenamiento_use_case(id_resultado, repo)
 
 @router.get("/resultado-simulacion/{id_resultado_simulacion}", response_model=List[ResultadoSimulacionActivoAlmacenamientoRead])
 def obtener_resultados_por_simulacion(id_resultado_simulacion: int, db: Session = Depends(get_db)):
     """
-    Obtiene todos los resultados de activos de almacenamiento asociados a un resultado de simulación
+    Obtiene todos los resultados de activos de almacenamiento para una simulación específica
     """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
-    use_case = GetResultadosActivosAlmacenamientoByResultadoSimulacion(repo)
-    return use_case.execute(id_resultado_simulacion)
-
-@router.get("/activo-almacenamiento/{id_activo}", response_model=List[ResultadoSimulacionActivoAlmacenamientoRead])
-def obtener_resultados_por_activo(id_activo: int, db: Session = Depends(get_db)):
-    """
-    Obtiene todos los resultados de simulación para un activo de almacenamiento específico
-    """
-    repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
-    use_case = GetResultadosActivoAlmacenamiento(repo)
-    return use_case.execute(id_activo)
+    return obtener_resultados_por_simulacion_use_case(id_resultado_simulacion, repo)
 
 @router.get("/resultado-simulacion/{id_resultado_simulacion}/activo-almacenamiento/{id_activo}", response_model=ResultadoSimulacionActivoAlmacenamientoRead)
 def obtener_resultado_por_simulacion_y_activo(id_resultado_simulacion: int, id_activo: int, db: Session = Depends(get_db)):
     """
-    Obtiene el resultado específico para una combinación de resultado de simulación y activo de almacenamiento
+    Obtiene un resultado específico por su combinación de simulación y activo de almacenamiento
     """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
-    use_case = GetResultadoBySimulacionAndActivo(repo)
-    resultado = use_case.execute(id_resultado_simulacion, id_activo)
+    resultado = obtener_resultado_por_simulacion_y_activo_use_case(id_resultado_simulacion, id_activo, repo)
     
     if not resultado:
         raise HTTPException(
             status_code=404,
             detail=f"No se encontró resultado para la combinación de resultado de simulación ID {id_resultado_simulacion} y activo de almacenamiento ID {id_activo}"
         )
-        
+    
     return resultado
 
 @router.get("", response_model=List[ResultadoSimulacionActivoAlmacenamientoRead])
@@ -120,24 +100,17 @@ def listar_resultados(skip: int = 0, limit: int = 100, db: Session = Depends(get
     Lista todos los resultados de activos de almacenamiento
     """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
-    use_case = ListResultadosActivoAlmacenamiento(repo)
-    return use_case.execute(skip, limit)
+    return listar_resultados_activo_almacenamiento_use_case(repo, skip, limit)
 
 @router.put("/{id_resultado}", response_model=ResultadoSimulacionActivoAlmacenamientoRead)
 def actualizar_resultado(id_resultado: int, resultado: ResultadoSimulacionActivoAlmacenamientoUpdate, db: Session = Depends(get_db)):
     """
-    Actualiza un resultado existente
+    Actualiza un resultado de activo de almacenamiento existente
     """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
     
-    # Verificar si el resultado existe
-    get_use_case = GetResultadoActivoAlmacenamiento(repo)
-    resultado_existente = get_use_case.execute(id_resultado)
-    if not resultado_existente:
-        raise HTTPException(
-            status_code=404, 
-            detail=f"Resultado de activo de almacenamiento con ID {id_resultado} no encontrado"
-        )
+    # Verificar que el resultado existe
+    resultado_existente = obtener_resultado_activo_almacenamiento_use_case(id_resultado, repo)
     
     # Crear entidad con los campos actualizados
     resultado_entity = ResultadoSimulacionActivoAlmacenamientoEntity(
@@ -155,26 +128,18 @@ def actualizar_resultado(id_resultado: int, resultado: ResultadoSimulacionActivo
         idActivoAlmacenamiento=resultado_existente.idActivoAlmacenamiento
     )
     
-    update_use_case = UpdateResultadoActivoAlmacenamiento(repo)
-    return update_use_case.execute(id_resultado, resultado_entity)
+    return modificar_resultado_activo_almacenamiento_use_case(id_resultado, resultado_entity, repo)
 
 @router.delete("/{id_resultado}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar_resultado(id_resultado: int, db: Session = Depends(get_db)):
     """
-    Elimina un resultado existente
+    Elimina un resultado de activo de almacenamiento
     """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
     
-    # Verificar si el resultado existe
-    get_use_case = GetResultadoActivoAlmacenamiento(repo)
-    resultado_existente = get_use_case.execute(id_resultado)
-    if not resultado_existente:
-        raise HTTPException(
-            status_code=404, 
-            detail=f"Resultado de activo de almacenamiento con ID {id_resultado} no encontrado"
-        )
+    # Verificar que el resultado existe
+    obtener_resultado_activo_almacenamiento_use_case(id_resultado, repo)
     
-    delete_use_case = DeleteResultadoActivoAlmacenamiento(repo)
-    delete_use_case.execute(id_resultado)
+    eliminar_resultado_activo_almacenamiento_use_case(id_resultado, repo)
     
     return None

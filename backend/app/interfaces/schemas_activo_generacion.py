@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator, ConfigDict
-from typing import Optional
+from typing import Optional, Dict, Any
 from datetime import date
 from app.domain.entities.tipo_activo_generacion import TipoActivoGeneracion
 
@@ -31,12 +31,20 @@ class InstalacionFotovoltaicaCreate(ActivoGeneracionBase):
 
 # Esquema para aerogenerador
 class AerogeneradorCreate(ActivoGeneracionBase):
-    curvaPotencia: str
+    curvaPotencia: Dict[str, Any]
     
     @field_validator('tipo_activo')
     def validar_tipo_activo(cls, v):
         if v != TipoActivoGeneracion.AEROGENERADOR:
             raise ValueError('El tipo de activo debe ser Aerogenerador')
+        return v
+        
+    @field_validator('curvaPotencia')
+    def validar_curva_potencia(cls, v):
+        # Verificar que la curva de potencia tenga el formato correcto
+        # Por ejemplo, que tenga una estructura como {"velocidad_viento": [valores], "potencia_kw": [valores]}
+        if not isinstance(v, dict):
+            raise ValueError('La curva de potencia debe ser un objeto JSON')
         return v
 
 # Esquema genérico para leer cualquier tipo de activo
@@ -51,14 +59,13 @@ class ActivoGeneracionRead(BaseModel):
     potenciaNominal_kWp: float
     idComunidadEnergetica: int
     tipo_activo: TipoActivoGeneracion
-    
-    # Campos específicos opcionales
+      # Campos específicos opcionales
     inclinacionGrados: Optional[float] = None
     azimutGrados: Optional[float] = None
     tecnologiaPanel: Optional[str] = None
     perdidaSistema: Optional[float] = None
     posicionMontaje: Optional[str] = None
-    curvaPotencia: Optional[str] = None
+    curvaPotencia: Optional[Dict[str, Any]] = None
     
     model_config = ConfigDict(from_attributes=True)
 
@@ -80,4 +87,4 @@ class AerogeneradorUpdate(BaseModel):
     costeInstalacion_eur: Optional[float] = Field(None, gt=0)
     vidaUtil_anios: Optional[int] = Field(None, gt=0)
     potenciaNominal_kWp: Optional[float] = Field(None, gt=0)
-    curvaPotencia: Optional[str] = None
+    curvaPotencia: Optional[Dict[str, Any]] = None

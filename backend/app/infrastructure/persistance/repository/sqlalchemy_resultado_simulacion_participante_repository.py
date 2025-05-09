@@ -110,30 +110,30 @@ class SqlAlchemyResultadoSimulacionParticipanteRepository(ResultadoSimulacionPar
             self.db.rollback()
             raise e
 
-    def create_bulk(self, resultados: List[Dict], resultado_global_id: int) -> List[ResultadoSimulacionParticipanteEntity]:
+    def create_bulk(self, resultados: List[ResultadoSimulacionParticipanteEntity], resultado_global_id: int) -> List[ResultadoSimulacionParticipanteEntity]:
         """
         Crea múltiples registros de resultados de simulación de participantes a la vez.
         
         Args:
-            resultados: Lista de diccionarios con los resultados de participantes a guardar
+            resultados: Lista de entidades ResultadoSimulacionParticipanteEntity a guardar
             
         Returns:
-            Lista de entidades ResultadoSimulacionParticipanteEntity creadas
+            Lista de entidades ResultadoSimulacionParticipanteEntity creadas con IDs generados
         """
         models = []
         try:
             for resultado in resultados:
-                # Crear modelo a partir del diccionario de datos
+                # Crear modelo directamente a partir de la entidad
                 model = ResultadoSimulacionParticipante(
-                    costeNetoParticipante_eur=resultado.get('costeEnergeticoTotal_euros', 0),
-                    ahorroParticipante_eur=0,  # Se calculará más adelante si es necesario
-                    ahorroParticipante_pct=0,  # Se calculará más adelante si es necesario
-                    energiaAutoconsumidaDirecta_kWh=resultado.get('energiaAutoconsumidaTotal_kWh', 0),
-                    energiaRecibidaRepartoConsumida_kWh=0,  # No disponible en los datos básicos
-                    tasaAutoconsumoSCR_pct=0,  # Se calculará más adelante si es necesario
-                    tasaAutosuficienciaSSR_pct=resultado.get('porcentajeAutoconsumo', 0),
+                    costeNetoParticipante_eur=resultado.costeNetoParticipante_eur or 0,
+                    ahorroParticipante_eur=resultado.ahorroParticipante_eur or 0,
+                    ahorroParticipante_pct=resultado.ahorroParticipante_pct or 0,
+                    energiaAutoconsumidaDirecta_kWh=resultado.energiaAutoconsumidaDirecta_kWh or 0,
+                    energiaRecibidaRepartoConsumida_kWh=resultado.energiaRecibidaRepartoConsumida_kWh or 0,
+                    tasaAutoconsumoSCR_pct=resultado.tasaAutoconsumoSCR_pct or 0,
+                    tasaAutosuficienciaSSR_pct=resultado.tasaAutosuficienciaSSR_pct or 0,
                     idResultadoSimulacion=resultado_global_id,
-                    idParticipante=resultado.get('idParticipante')
+                    idParticipante=resultado.idParticipante
                 )
                 self.db.add(model)
                 models.append(model)

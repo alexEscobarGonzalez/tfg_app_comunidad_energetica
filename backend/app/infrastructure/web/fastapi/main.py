@@ -38,7 +38,6 @@ app.include_router(comunidad_energetica_routes.router)
 app.include_router(usuario_routes.router)
 app.include_router(participante_routes.router)
 app.include_router(contrato_autoconsumo_routes.router)
-app.include_router(contrato_autoconsumo_routes.router_alias)  # Añadimos el router alias para contratos-autoconsumo
 app.include_router(activo_generacion_routes.router)
 app.include_router(activo_almacenamiento_routes.router)
 app.include_router(coeficiente_reparto_routes.router)

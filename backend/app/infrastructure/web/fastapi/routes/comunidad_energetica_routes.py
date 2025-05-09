@@ -6,6 +6,7 @@ from app.domain.entities.comunidad_energetica import ComunidadEnergeticaEntity
 from app.domain.use_cases.comunidad_energetica.crear_comunidad_energetica import crear_comunidad_energetica_use_case
 from app.domain.use_cases.comunidad_energetica.mostrar_comunidad_energetica import mostrar_comunidad_energetica_use_case
 from app.domain.use_cases.comunidad_energetica.modificar_comunidad_energetica import modificar_comunidad_energetica_use_case
+from app.infrastructure.persistance.repository.sqlalchemy_comunidad_energetica_repository import SqlAlchemyComunidadEnergeticaRepository
 
 router = APIRouter(prefix="/comunidades", tags=["comunidades"])
 
@@ -18,7 +19,8 @@ def create_comunidad(comunidad: ComunidadEnergeticaCreate, db: Session = Depends
         tipoEstrategiaExcedentes=comunidad.tipoEstrategiaExcedentes,
         idUsuario=comunidad.idUsuario
     )
-    nueva_comunidad = crear_comunidad_energetica_use_case(comunidad_entity, db)
+    repo = SqlAlchemyComunidadEnergeticaRepository(db)
+    nueva_comunidad = crear_comunidad_energetica_use_case(comunidad_entity, repo)
     return ComunidadEnergeticaRead(
         idComunidadEnergetica=nueva_comunidad.idComunidadEnergetica,
         nombre=nueva_comunidad.nombre,
@@ -30,10 +32,8 @@ def create_comunidad(comunidad: ComunidadEnergeticaCreate, db: Session = Depends
 
 @router.get("/{id_comunidad}", response_model=ComunidadEnergeticaRead)
 def get_comunidad(id_comunidad: int, db: Session = Depends(get_db)):
-    """
-    Obtiene los detalles de una comunidad energética por su ID
-    """
-    comunidad = mostrar_comunidad_energetica_use_case(id_comunidad, db)
+    repo = SqlAlchemyComunidadEnergeticaRepository(db)
+    comunidad = mostrar_comunidad_energetica_use_case(id_comunidad, repo)
     return ComunidadEnergeticaRead(
         idComunidadEnergetica=comunidad.idComunidadEnergetica,
         nombre=comunidad.nombre,
@@ -45,21 +45,14 @@ def get_comunidad(id_comunidad: int, db: Session = Depends(get_db)):
 
 @router.put("/{id_comunidad}", response_model=ComunidadEnergeticaRead)
 def update_comunidad(id_comunidad: int, comunidad: ComunidadEnergeticaUpdate, db: Session = Depends(get_db)):
-    """
-    Modifica los datos de una comunidad energética existente
-    """
-    # Convertir el schema de actualización al entity
     comunidad_entity = ComunidadEnergeticaEntity(
         nombre=comunidad.nombre,
         latitud=comunidad.latitud,
         longitud=comunidad.longitud,
         tipoEstrategiaExcedentes=comunidad.tipoEstrategiaExcedentes
     )
-    
-    # Llamar al caso de uso para actualizar
-    comunidad_actualizada = modificar_comunidad_energetica_use_case(id_comunidad, comunidad_entity, db)
-    
-    # Convertir entity a schema de respuesta
+    repo = SqlAlchemyComunidadEnergeticaRepository(db)
+    comunidad_actualizada = modificar_comunidad_energetica_use_case(id_comunidad, comunidad_entity, repo)
     return ComunidadEnergeticaRead(
         idComunidadEnergetica=comunidad_actualizada.idComunidadEnergetica,
         nombre=comunidad_actualizada.nombre,

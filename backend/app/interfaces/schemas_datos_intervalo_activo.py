@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List
 from datetime import datetime
 
@@ -10,23 +10,17 @@ class DatosIntervaloActivoBase(BaseModel):
     energiaDescargada_kWh: Optional[float] = Field(None, description="Energía descargada en kWh")
     SoC_kWh: Optional[float] = Field(None, description="Estado de carga en kWh")
 
-    @validator('energiaGenerada_kWh', 'energiaCargada_kWh', 'energiaDescargada_kWh', 'SoC_kWh')
-    def validate_non_negative(cls, v):
-        if v is not None and v < 0:
-            raise ValueError('Los valores de energía no pueden ser negativos')
-        return v
 
 class DatosIntervaloActivoCreate(DatosIntervaloActivoBase):
     """Esquema para crear nuevos datos de intervalo por activo"""
     idResultadoActivoGen: Optional[int] = Field(None, description="ID del resultado del activo de generación")
     idResultadoActivoAlm: Optional[int] = Field(None, description="ID del resultado del activo de almacenamiento")
 
-    @validator('idResultadoActivoGen', 'idResultadoActivoAlm')
-    def validate_at_least_one_activo(cls, v, values):
-        if v is None and 'idResultadoActivoAlm' in values and 'idResultadoActivoGen' in values:
-            if (values['idResultadoActivoAlm'] is None and values['idResultadoActivoGen'] is None):
-                raise ValueError('Al menos uno de idResultadoActivoGen o idResultadoActivoAlm debe estar presente')
-        return v
+    @model_validator(mode='after')
+    def validate_at_least_one_activo_present(self) -> 'DatosIntervaloActivoCreate':
+        if self.idResultadoActivoGen is None and self.idResultadoActivoAlm is None:
+            raise ValueError('Al menos uno de idResultadoActivoGen o idResultadoActivoAlm debe estar presente')
+        return self
 
 class DatosIntervaloActivoBulkCreate(BaseModel):
     """Esquema para crear múltiples datos de intervalo por activo en una sola operación"""

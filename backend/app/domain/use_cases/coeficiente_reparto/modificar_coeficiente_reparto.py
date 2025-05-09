@@ -1,17 +1,16 @@
-from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.domain.entities.coeficiente_reparto import CoeficienteRepartoEntity
 from app.domain.entities.tipo_reparto import TipoReparto
-from app.infrastructure.persistance.repository.sqlalchemy_coeficiente_reparto_repository import SqlAlchemyCoeficienteRepartoRepository
+from app.domain.repositories.coeficiente_reparto_repository import CoeficienteRepartoRepository
 
-def modificar_coeficiente_reparto_use_case(id_coeficiente: int, coeficiente_datos: CoeficienteRepartoEntity, db: Session) -> CoeficienteRepartoEntity:
+def modificar_coeficiente_reparto_use_case(id_coeficiente: int, coeficiente_datos: CoeficienteRepartoEntity, repo: CoeficienteRepartoRepository) -> CoeficienteRepartoEntity:
     """
     Modifica los datos de un coeficiente de reparto existente
     
     Args:
         id_coeficiente: ID del coeficiente de reparto a modificar
         coeficiente_datos: Nuevos datos para el coeficiente de reparto
-        db: Sesión de base de datos
+        repo: Repositorio de coeficientes de reparto
         
     Returns:
         CoeficienteRepartoEntity: Datos actualizados del coeficiente de reparto
@@ -19,8 +18,6 @@ def modificar_coeficiente_reparto_use_case(id_coeficiente: int, coeficiente_dato
     Raises:
         HTTPException: Si el coeficiente de reparto no existe o si los datos no son válidos
     """
-    repo = SqlAlchemyCoeficienteRepartoRepository(db)
-    
     # Verificar que el coeficiente existe
     coeficiente_existente = repo.get_by_id(id_coeficiente)
     if not coeficiente_existente:
@@ -35,7 +32,7 @@ def modificar_coeficiente_reparto_use_case(id_coeficiente: int, coeficiente_dato
         )
     
     # Verificar que los parámetros contienen datos coherentes con el tipo de reparto
-    if coeficiente_datos.tipoReparto == TipoReparto.REPARTO_FIJO.value and "porcentaje" not in coeficiente_datos.parametros:
+    if coeficiente_datos.tipoReparto == TipoReparto.REPARTO_FIJO.value and "valor" not in coeficiente_datos.parametros:
         raise HTTPException(status_code=400, detail="El tipo de reparto fijo debe incluir el parámetro 'porcentaje'")
     
     # Mantener el ID y el ID del participante
@@ -43,5 +40,5 @@ def modificar_coeficiente_reparto_use_case(id_coeficiente: int, coeficiente_dato
     coeficiente_datos.idParticipante = coeficiente_existente.idParticipante
     
     # Actualizar en la base de datos
-    coeficiente_actualizado = repo.update(coeficiente_datos)
+    coeficiente_actualizado = repo.update(id_coeficiente, coeficiente_datos)
     return coeficiente_actualizado

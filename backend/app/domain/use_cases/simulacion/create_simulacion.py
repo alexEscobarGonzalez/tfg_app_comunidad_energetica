@@ -1,9 +1,15 @@
+from fastapi import HTTPException
 from app.domain.repositories.simulacion_repository import SimulacionRepository
 from app.domain.entities.simulacion import SimulacionEntity
 
-class CreateSimulacion:
-    def __init__(self, simulacion_repository: SimulacionRepository):
-        self.simulacion_repository = simulacion_repository
-    
-    def execute(self, simulacion: SimulacionEntity) -> SimulacionEntity:
-        return self.simulacion_repository.create(simulacion)
+def crear_simulacion_use_case(simulacion: SimulacionEntity, repo: SimulacionRepository) -> SimulacionEntity:
+    """
+    Crea una nueva simulación
+    Args:
+        simulacion: Entidad con los datos de la nueva simulación
+        repo: Repositorio de simulaciones
+    Returns:
+        SimulacionEntity: La entidad creada con su ID asignado
+    """
+    # Aquí puedes agregar validaciones si es necesario
+    return repo.create(simulacion)

@@ -6,8 +6,8 @@ from app.domain.repositories.datos_intervalo_activo_repository import DatosInter
 from app.infrastructure.persistance.models.datos_intervalo_activo_tabla import DatosIntervaloActivo
 
 class SqlAlchemyDatosIntervaloActivoRepository(DatosIntervaloActivoRepository):
-    def __init__(self, session: Session):
-        self.session = session
+    def __init__(self, db: Session):
+        self.db = db
         
     def _to_entity(self, model: DatosIntervaloActivo) -> DatosIntervaloActivoEntity:
         return DatosIntervaloActivoEntity(
@@ -34,25 +34,25 @@ class SqlAlchemyDatosIntervaloActivoRepository(DatosIntervaloActivoRepository):
         )
         
     def get_by_id(self, datos_intervalo_id: int) -> Optional[DatosIntervaloActivoEntity]:
-        datos = self.session.query(DatosIntervaloActivo).filter(
+        datos = self.db.query(DatosIntervaloActivo).filter(
             DatosIntervaloActivo.idDatosIntervaloActivo == datos_intervalo_id
         ).first()
         return self._to_entity(datos) if datos else None
     
     def get_by_resultado_activo_gen_id(self, resultado_activo_gen_id: int) -> List[DatosIntervaloActivoEntity]:
-        datos_list = self.session.query(DatosIntervaloActivo).filter(
+        datos_list = self.db.query(DatosIntervaloActivo).filter(
             DatosIntervaloActivo.idResultadoActivoGen == resultado_activo_gen_id
         ).order_by(DatosIntervaloActivo.timestamp).all()
         return [self._to_entity(datos) for datos in datos_list]
     
     def get_by_resultado_activo_alm_id(self, resultado_activo_alm_id: int) -> List[DatosIntervaloActivoEntity]:
-        datos_list = self.session.query(DatosIntervaloActivo).filter(
+        datos_list = self.db.query(DatosIntervaloActivo).filter(
             DatosIntervaloActivo.idResultadoActivoAlm == resultado_activo_alm_id
         ).order_by(DatosIntervaloActivo.timestamp).all()
         return [self._to_entity(datos) for datos in datos_list]
     
     def get_by_timestamp_range(self, resultado_activo_id: int, is_generacion: bool, start_time: datetime, end_time: datetime) -> List[DatosIntervaloActivoEntity]:
-        query = self.session.query(DatosIntervaloActivo).filter(
+        query = self.db.query(DatosIntervaloActivo).filter(
             DatosIntervaloActivo.timestamp >= start_time,
             DatosIntervaloActivo.timestamp <= end_time
         )
@@ -66,7 +66,7 @@ class SqlAlchemyDatosIntervaloActivoRepository(DatosIntervaloActivoRepository):
         return [self._to_entity(datos) for datos in datos_list]
     
     def list(self, skip: int = 0, limit: int = 100) -> List[DatosIntervaloActivoEntity]:
-        datos_list = self.session.query(DatosIntervaloActivo).order_by(
+        datos_list = self.db.query(DatosIntervaloActivo).order_by(
             DatosIntervaloActivo.timestamp
         ).offset(skip).limit(limit).all()
         return [self._to_entity(datos) for datos in datos_list]
@@ -75,9 +75,9 @@ class SqlAlchemyDatosIntervaloActivoRepository(DatosIntervaloActivoRepository):
         db_datos = self._to_model(datos_intervalo)
         db_datos.idDatosIntervaloActivo = None  # Asegurar que se autoincrementa
         
-        self.session.add(db_datos)
-        self.session.commit()
-        self.session.refresh(db_datos)
+        self.db.add(db_datos)
+        self.db.commit()
+        self.db.refresh(db_datos)
         
         return self._to_entity(db_datos)
     
@@ -86,15 +86,15 @@ class SqlAlchemyDatosIntervaloActivoRepository(DatosIntervaloActivoRepository):
         for db_datos in db_datos_list:
             db_datos.idDatosIntervaloActivo = None  # Asegurar que se autoincrementa
         
-        self.session.add_all(db_datos_list)
-        self.session.commit()
+        self.db.add_all(db_datos_list)
+        self.db.commit()
         
         # No podemos hacer refresh de múltiples objetos fácilmente
         # Devolvemos las entidades con los IDs generados
         return [self._to_entity(db_datos) for db_datos in db_datos_list]
     
     def update(self, datos_intervalo_id: int, datos_intervalo: DatosIntervaloActivoEntity) -> DatosIntervaloActivoEntity:
-        db_datos = self.session.query(DatosIntervaloActivo).filter(
+        db_datos = self.db.query(DatosIntervaloActivo).filter(
             DatosIntervaloActivo.idDatosIntervaloActivo == datos_intervalo_id
         ).first()
         
@@ -110,18 +110,18 @@ class SqlAlchemyDatosIntervaloActivoRepository(DatosIntervaloActivoRepository):
         db_datos.idResultadoActivoGen = datos_intervalo.idResultadoActivoGen
         db_datos.idResultadoActivoAlm = datos_intervalo.idResultadoActivoAlm
         
-        self.session.commit()
-        self.session.refresh(db_datos)
+        self.db.commit()
+        self.db.refresh(db_datos)
         
         return self._to_entity(db_datos)
     
     def delete(self, datos_intervalo_id: int) -> None:
-        db_datos = self.session.query(DatosIntervaloActivo).filter(
+        db_datos = self.db.query(DatosIntervaloActivo).filter(
             DatosIntervaloActivo.idDatosIntervaloActivo == datos_intervalo_id
         ).first()
         
         if not db_datos:
             raise ValueError(f"Datos de intervalo con id {datos_intervalo_id} no encontrados")
         
-        self.session.delete(db_datos)
-        self.session.commit()
+        self.db.delete(db_datos)
+        self.db.commit()

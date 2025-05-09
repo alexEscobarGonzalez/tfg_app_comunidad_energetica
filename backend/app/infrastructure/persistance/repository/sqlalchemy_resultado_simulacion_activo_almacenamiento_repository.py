@@ -137,15 +137,15 @@ class SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(ResultadoSimul
             idActivoAlmacenamiento=db_resultado.idActivoAlmacenamiento
         )
     
-    def create_bulk(self, resultados: List[Dict]) -> List[ResultadoSimulacionActivoAlmacenamientoEntity]:
+    def create_bulk(self, resultados: List[ResultadoSimulacionActivoAlmacenamientoEntity], resultado_global_id: int) -> List[ResultadoSimulacionActivoAlmacenamientoEntity]:
         """
         Crea múltiples registros de resultados de simulación de activos de almacenamiento a la vez.
         
         Args:
-            resultados: Lista de diccionarios con los resultados de activos a guardar
+            resultados: Lista de entidades ResultadoSimulacionActivoAlmacenamientoEntity a guardar
             
         Returns:
-            Lista de entidades ResultadoSimulacionActivoAlmacenamientoEntity creadas
+            Lista de entidades ResultadoSimulacionActivoAlmacenamientoEntity creadas con IDs generados
         """
         if not resultados:
             return []
@@ -153,23 +153,18 @@ class SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(ResultadoSimul
         models = []
         try:
             for resultado in resultados:
-                # Filtrar solo los resultados que contengan tipo_activo='almacenamiento'
-                if resultado.get('tipo_activo', '') != 'almacenamiento':
-                    continue
-                
-                # Crear modelo a partir del diccionario de datos
                 model = ResultadoSimulacionActivoAlmacenamiento(
-                    energiaTotalCargada_kWh=resultado.get('energiaAlmacenadaTotal_kWh', 0),
-                    energiaTotalDescargada_kWh=resultado.get('energiaLiberadaTotal_kWh', 0),
-                    ciclosEquivalentes=max(resultado.get('ciclosCarga', 0), resultado.get('ciclosDescarga', 0)),
-                    perdidasEficiencia_kWh=0,  # Calculado posteriormente si es necesario
-                    socMedio_pct=0,  # Requiere datos de intervalo para calcular
-                    socMin_pct=0,  # Requiere datos de intervalo para calcular
-                    socMax_pct=0,  # Requiere datos de intervalo para calcular
-                    degradacionEstimada_pct=0,  # Se calculará más adelante si es necesario
-                    throughputTotal_kWh=resultado.get('energiaAlmacenadaTotal_kWh', 0) + resultado.get('energiaLiberadaTotal_kWh', 0),
-                    idResultadoSimulacion=resultado.get('idSimulacion'),
-                    idActivoAlmacenamiento=resultado.get('idActivoAlmacenamiento')
+                    energiaTotalCargada_kWh=resultado.energiaTotalCargada_kWh or 0,
+                    energiaTotalDescargada_kWh=resultado.energiaTotalDescargada_kWh or 0,
+                    ciclosEquivalentes=resultado.ciclosEquivalentes or 0,
+                    perdidasEficiencia_kWh=resultado.perdidasEficiencia_kWh or 0,
+                    socMedio_pct=resultado.socMedio_pct or 0,
+                    socMin_pct=resultado.socMin_pct or 0,
+                    socMax_pct=resultado.socMax_pct or 0,
+                    degradacionEstimada_pct=resultado.degradacionEstimada_pct or 0,
+                    throughputTotal_kWh=resultado.throughputTotal_kWh or 0,
+                    idResultadoSimulacion=resultado_global_id,
+                    idActivoAlmacenamiento=resultado.idActivoAlmacenamiento
                 )
                 self.db.add(model)
                 models.append(model)

@@ -1,16 +1,15 @@
-from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.domain.entities.registro_consumo import RegistroConsumoEntity
-from app.infrastructure.persistance.repository.sqlalchemy_registro_consumo_repository import SqlAlchemyRegistroConsumoRepository
+from app.domain.repositories.registro_consumo_repository import RegistroConsumoRepository
 
-def modificar_registro_consumo_use_case(id_registro: int, registro_datos: RegistroConsumoEntity, db: Session) -> RegistroConsumoEntity:
+def modificar_registro_consumo_use_case(id_registro: int, registro_datos: RegistroConsumoEntity, repo: RegistroConsumoRepository) -> RegistroConsumoEntity:
     """
     Modifica los datos de un registro de consumo existente
     
     Args:
         id_registro: ID del registro de consumo a modificar
         registro_datos: Nuevos datos para el registro de consumo
-        db: Sesión de base de datos
+        repo: Repositorio de registro de consumo
         
     Returns:
         RegistroConsumoEntity: Datos actualizados del registro de consumo
@@ -18,8 +17,6 @@ def modificar_registro_consumo_use_case(id_registro: int, registro_datos: Regist
     Raises:
         HTTPException: Si el registro no existe o si los datos no son válidos
     """
-    repo = SqlAlchemyRegistroConsumoRepository(db)
-    
     # Verificar que el registro existe
     registro_existente = repo.get_by_id(id_registro)
     if not registro_existente:

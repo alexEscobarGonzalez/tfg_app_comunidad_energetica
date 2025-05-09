@@ -1,17 +1,21 @@
-from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.domain.entities.activo_generacion import ActivoGeneracionEntity
 from app.domain.entities.tipo_activo_generacion import TipoActivoGeneracion
-from app.infrastructure.persistance.repository.sqlalchemy_activo_generacion_repository import SqlAlchemyActivoGeneracionRepository
+from app.domain.repositories.activo_generacion_repository import ActivoGeneracionRepository
+from typing import Dict, Any
 
-def modificar_aerogenerador_use_case(id_activo: int, activo_datos: ActivoGeneracionEntity, db: Session) -> ActivoGeneracionEntity:
+def modificar_aerogenerador_use_case(
+    id_activo: int,
+    activo_datos: ActivoGeneracionEntity,
+    repo: ActivoGeneracionRepository
+) -> ActivoGeneracionEntity:
     """
     Modifica los datos de un aerogenerador existente
     
     Args:
         id_activo: ID del aerogenerador a modificar
         activo_datos: Nuevos datos para el aerogenerador
-        db: Sesión de base de datos
+        repo: Repositorio de aerogeneradores
         
     Returns:
         ActivoGeneracionEntity: Datos actualizados del aerogenerador
@@ -19,8 +23,6 @@ def modificar_aerogenerador_use_case(id_activo: int, activo_datos: ActivoGenerac
     Raises:
         HTTPException: Si el aerogenerador no existe o si no es del tipo correcto
     """
-    repo = SqlAlchemyActivoGeneracionRepository(db)
-    
     # Verificar que el activo existe
     activo_existente = repo.get_by_id(id_activo)
     if not activo_existente:
@@ -37,8 +39,7 @@ def modificar_aerogenerador_use_case(id_activo: int, activo_datos: ActivoGenerac
     activo_datos.latitud = activo_existente.latitud
     activo_datos.longitud = activo_existente.longitud
     activo_datos.tipo_activo = activo_existente.tipo_activo
-    
-    # Asignar campos específicos solo si no están vacíos
+      # Asignar campos específicos solo si no están vacíos
     if activo_datos.nombreDescriptivo is None:
         activo_datos.nombreDescriptivo = activo_existente.nombreDescriptivo
     if activo_datos.costeInstalacion_eur is None:
@@ -49,6 +50,10 @@ def modificar_aerogenerador_use_case(id_activo: int, activo_datos: ActivoGenerac
         activo_datos.potenciaNominal_kWp = activo_existente.potenciaNominal_kWp
     if activo_datos.curvaPotencia is None:
         activo_datos.curvaPotencia = activo_existente.curvaPotencia
+    else:
+        # Verificar que la nueva curva de potencia tiene formato JSON válido
+        if not isinstance(activo_datos.curvaPotencia, dict):
+            raise HTTPException(status_code=400, detail="La curva de potencia debe ser un objeto JSON con formato válido")
     
     # No copiar campos específicos de instalaciones fotovoltaicas
     activo_datos.inclinacionGrados = None
@@ -56,7 +61,6 @@ def modificar_aerogenerador_use_case(id_activo: int, activo_datos: ActivoGenerac
     activo_datos.tecnologiaPanel = None
     activo_datos.perdidaSistema = None
     activo_datos.posicionMontaje = None
-    
-    # Actualizar en la base de datos
+      # Actualizar en la base de datos
     activo_actualizado = repo.update(activo_datos)
     return activo_actualizado

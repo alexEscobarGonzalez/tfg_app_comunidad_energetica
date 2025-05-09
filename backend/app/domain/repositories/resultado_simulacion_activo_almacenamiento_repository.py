@@ -26,5 +26,5 @@ class ResultadoSimulacionActivoAlmacenamientoRepository:
     def delete(self, resultado_activo_alm_id: int) -> None:
         raise NotImplementedError
     
-    def create_bulk(self, resultados: List[ResultadoSimulacionActivoAlmacenamientoEntity]) -> List[ResultadoSimulacionActivoAlmacenamientoEntity]:
+    def create_bulk(self, resultados: List[ResultadoSimulacionActivoAlmacenamientoEntity], resultado_global_id: int) -> List[ResultadoSimulacionActivoAlmacenamientoEntity]:
         raise NotImplementedError

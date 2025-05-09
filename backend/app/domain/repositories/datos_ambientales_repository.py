@@ -24,3 +24,4 @@ class DatosAmbientalesRepository:
     
     def get_datos_ambientales(self, lat: float, lon: float, start_date: datetime, end_date: datetime) -> List[DatosAmbientalesEntity]:
         raise NotImplementedError
+    

@@ -18,6 +18,8 @@ from app.domain.use_cases.coeficiente_reparto.listar_coeficientes_reparto import
     listar_todos_coeficientes_reparto_use_case
 )
 from app.domain.entities.tipo_reparto import TipoReparto
+from app.infrastructure.persistance.repository.sqlalchemy_coeficiente_reparto_repository import SqlAlchemyCoeficienteRepartoRepository
+from app.infrastructure.persistance.repository.sqlalchemy_participante_repository import SqlAlchemyParticipanteRepository
 
 router = APIRouter(
     prefix="/coeficientes-reparto",
@@ -51,28 +53,34 @@ def crear_coeficiente_reparto(coeficiente_data: CoeficienteRepartoCreate, db: Se
         parametros=coeficiente_data.parametros,
         idParticipante=coeficiente_data.idParticipante
     )
-    return crear_coeficiente_reparto_use_case(coeficiente_entity, db)
+    participante_repo = SqlAlchemyParticipanteRepository(db)
+    coeficiente_repo = SqlAlchemyCoeficienteRepartoRepository(db)
+    return crear_coeficiente_reparto_use_case(coeficiente_entity, participante_repo, coeficiente_repo)
 
 @router.get("", response_model=List[CoeficienteRepartoRead])
 def listar_coeficientes_reparto(db: Session = Depends(get_db)):
     """
     Obtiene todos los coeficientes de reparto del sistema
     """
-    return listar_todos_coeficientes_reparto_use_case(db)
+    coeficiente_repo = SqlAlchemyCoeficienteRepartoRepository(db)
+    return listar_todos_coeficientes_reparto_use_case(coeficiente_repo)
 
 @router.get("/participante/{id_participante}", response_model=List[CoeficienteRepartoRead])
 def listar_coeficientes_reparto_por_participante(id_participante: int, db: Session = Depends(get_db)):
     """
     Obtiene todos los coeficientes de reparto asociados a un participante específico
     """
-    return listar_coeficientes_reparto_by_participante_use_case(id_participante, db)
+    participante_repo = SqlAlchemyParticipanteRepository(db)
+    coeficiente_repo = SqlAlchemyCoeficienteRepartoRepository(db)
+    return listar_coeficientes_reparto_by_participante_use_case(id_participante, participante_repo, coeficiente_repo)
 
 @router.get("/{id_coeficiente}", response_model=CoeficienteRepartoRead)
 def mostrar_coeficiente_reparto(id_coeficiente: int, db: Session = Depends(get_db)):
     """
     Obtiene los detalles de un coeficiente de reparto específico por su ID
     """
-    return mostrar_coeficiente_reparto_use_case(id_coeficiente, db)
+    coeficiente_repo = SqlAlchemyCoeficienteRepartoRepository(db)
+    return mostrar_coeficiente_reparto_use_case(id_coeficiente, coeficiente_repo)
 
 @router.put("/{id_coeficiente}", response_model=CoeficienteRepartoRead)
 def modificar_coeficiente_reparto(
@@ -88,11 +96,13 @@ def modificar_coeficiente_reparto(
         tipoReparto=coeficiente_data.tipoReparto.value if hasattr(coeficiente_data.tipoReparto, 'value') else coeficiente_data.tipoReparto,
         parametros=coeficiente_data.parametros
     )
-    return modificar_coeficiente_reparto_use_case(id_coeficiente, coeficiente_entity, db)
+    coeficiente_repo = SqlAlchemyCoeficienteRepartoRepository(db)
+    return modificar_coeficiente_reparto_use_case(id_coeficiente, coeficiente_entity, coeficiente_repo)
 
 @router.delete("/{id_coeficiente}", response_model=Dict[str, Any])
 def eliminar_coeficiente_reparto(id_coeficiente: int, db: Session = Depends(get_db)):
     """
     Elimina un coeficiente de reparto existente
     """
-    return eliminar_coeficiente_reparto_use_case(id_coeficiente, db)
+    coeficiente_repo = SqlAlchemyCoeficienteRepartoRepository(db)
+    return eliminar_coeficiente_reparto_use_case(id_coeficiente, coeficiente_repo)

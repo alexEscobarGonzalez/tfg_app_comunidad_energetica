@@ -17,6 +17,7 @@ from app.domain.use_cases.activo_generacion.modificar_instalacion_fotovoltaica i
 from app.domain.use_cases.activo_generacion.modificar_aerogenerador import modificar_aerogenerador_use_case
 from app.domain.use_cases.activo_generacion.eliminar_activo_generacion import eliminar_activo_generacion_use_case
 from app.infrastructure.persistance.repository.sqlalchemy_activo_generacion_repository import SqlAlchemyActivoGeneracionRepository
+from app.infrastructure.persistance.repository.sqlalchemy_comunidad_energetica_repository import SqlAlchemyComunidadEnergeticaRepository
 from typing import List
 from datetime import date
 
@@ -51,7 +52,9 @@ def crear_instalacion_fotovoltaica(instalacion: InstalacionFotovoltaicaCreate, d
         perdidaSistema=instalacion.perdidaSistema,
         posicionMontaje=instalacion.posicionMontaje
     )
-    return crear_instalacion_fotovoltaica_use_case(activo_entity, db)
+    comunidad_repo = SqlAlchemyComunidadEnergeticaRepository(db)
+    activo_repo = SqlAlchemyActivoGeneracionRepository(db)
+    return crear_instalacion_fotovoltaica_use_case(activo_entity, comunidad_repo, activo_repo)
 
 @router.post("/aerogenerador", response_model=ActivoGeneracionRead)
 def crear_aerogenerador(aerogenerador: AerogeneradorCreate, db: Session = Depends(get_db)):
@@ -70,14 +73,17 @@ def crear_aerogenerador(aerogenerador: AerogeneradorCreate, db: Session = Depend
         tipo_activo=TipoActivoGeneracion.AEROGENERADOR,
         curvaPotencia=aerogenerador.curvaPotencia
     )
-    return crear_aerogenerador_use_case(activo_entity, db)
+    comunidad_repo = SqlAlchemyComunidadEnergeticaRepository(db)
+    activo_repo = SqlAlchemyActivoGeneracionRepository(db)
+    return crear_aerogenerador_use_case(activo_entity, comunidad_repo, activo_repo)
 
 @router.get("/{id_activo}", response_model=ActivoGeneracionRead)
 def obtener_activo(id_activo: int, db: Session = Depends(get_db)):
     """
     Obtiene los detalles de un activo de generación por su ID
     """
-    return mostrar_activo_generacion_use_case(id_activo, db)
+    repo = SqlAlchemyActivoGeneracionRepository(db)
+    return mostrar_activo_generacion_use_case(id_activo, repo)
 
 @router.get("/comunidad/{id_comunidad}", response_model=List[ActivoGeneracionRead])
 def listar_activos_por_comunidad(id_comunidad: int, db: Session = Depends(get_db)):
@@ -111,6 +117,7 @@ def actualizar_instalacion_fotovoltaica(id_activo: int, instalacion: Instalacion
     """
     Actualiza los datos de una instalación fotovoltaica existente
     """
+    repo = SqlAlchemyActivoGeneracionRepository(db)
     activo_entity = ActivoGeneracionEntity(
         nombreDescriptivo=instalacion.nombreDescriptivo,
         costeInstalacion_eur=instalacion.costeInstalacion_eur,
@@ -122,13 +129,14 @@ def actualizar_instalacion_fotovoltaica(id_activo: int, instalacion: Instalacion
         perdidaSistema=instalacion.perdidaSistema,
         posicionMontaje=instalacion.posicionMontaje
     )
-    return modificar_instalacion_fotovoltaica_use_case(id_activo, activo_entity, db)
+    return modificar_instalacion_fotovoltaica_use_case(id_activo, activo_entity, repo)
 
 @router.put("/aerogenerador/{id_activo}", response_model=ActivoGeneracionRead)
 def actualizar_aerogenerador(id_activo: int, aerogenerador: AerogeneradorUpdate, db: Session = Depends(get_db)):
     """
     Actualiza los datos de un aerogenerador existente
     """
+    repo = SqlAlchemyActivoGeneracionRepository(db)
     activo_entity = ActivoGeneracionEntity(
         nombreDescriptivo=aerogenerador.nombreDescriptivo,
         costeInstalacion_eur=aerogenerador.costeInstalacion_eur,
@@ -136,12 +144,13 @@ def actualizar_aerogenerador(id_activo: int, aerogenerador: AerogeneradorUpdate,
         potenciaNominal_kWp=aerogenerador.potenciaNominal_kWp,
         curvaPotencia=aerogenerador.curvaPotencia
     )
-    return modificar_aerogenerador_use_case(id_activo, activo_entity, db)
+    return modificar_aerogenerador_use_case(id_activo, activo_entity, repo)
 
 @router.delete("/{id_activo}")
 def eliminar_activo(id_activo: int, db: Session = Depends(get_db)):
     """
     Elimina un activo de generación existente
     """
-    eliminar_activo_generacion_use_case(id_activo, db)
+    repo = SqlAlchemyActivoGeneracionRepository(db)
+    eliminar_activo_generacion_use_case(id_activo, repo)
     return {"mensaje": "Activo de generación eliminado correctamente"}

@@ -23,6 +23,8 @@ from app.domain.use_cases.registro_consumo.listar_registros_consumo import (
     listar_registros_consumo_by_participante_y_periodo_use_case,
     listar_todos_registros_consumo_use_case
 )
+from app.infrastructure.persistance.repository.sqlalchemy_registro_consumo_repository import SqlAlchemyRegistroConsumoRepository
+from app.infrastructure.persistance.repository.sqlalchemy_participante_repository import SqlAlchemyParticipanteRepository
 
 router = APIRouter(
     prefix="/registros-consumo",
@@ -40,7 +42,9 @@ def crear_registro_consumo(registro_data: RegistroConsumoCreate, db: Session = D
         consumoEnergia=registro_data.consumoEnergia,
         idParticipante=registro_data.idParticipante
     )
-    return crear_registro_consumo_use_case(registro_entity, db)
+    participante_repo = SqlAlchemyParticipanteRepository(db)
+    registro_repo = SqlAlchemyRegistroConsumoRepository(db)
+    return crear_registro_consumo_use_case(registro_entity, participante_repo, registro_repo)
 
 
 @router.post("/importar/{id_participante}", response_model=Dict[str, Any])
@@ -59,10 +63,10 @@ def importar_registros_consumo(
         ...
     ]
     """
-    # Convertir la lista de diccionarios a un string JSON
+    participante_repo = SqlAlchemyParticipanteRepository(db)
+    registro_repo = SqlAlchemyRegistroConsumoRepository(db)
     datos_json = json.dumps(datos)
-    return importar_registros_consumo_use_case(datos_json, id_participante, db)
-
+    return importar_registros_consumo_use_case(datos_json, id_participante, participante_repo, registro_repo)
 
 @router.get("", response_model=List[RegistroConsumoRead])
 def listar_registros_consumo(
@@ -74,9 +78,10 @@ def listar_registros_consumo(
     Obtiene todos los registros de consumo del sistema.
     Opcionalmente se pueden filtrar por rango de fechas.
     """
+    registro_repo = SqlAlchemyRegistroConsumoRepository(db)
     if fecha_inicio and fecha_fin:
-        return listar_registros_consumo_by_periodo_use_case(fecha_inicio, fecha_fin, db)
-    return listar_todos_registros_consumo_use_case(db)
+        return listar_registros_consumo_by_periodo_use_case(fecha_inicio, fecha_fin, registro_repo)
+    return listar_todos_registros_consumo_use_case(registro_repo)
 
 @router.get("/participante/{id_participante}", response_model=List[RegistroConsumoRead])
 def listar_registros_consumo_por_participante(
@@ -89,16 +94,19 @@ def listar_registros_consumo_por_participante(
     Obtiene todos los registros de consumo asociados a un participante específico.
     Opcionalmente se pueden filtrar por rango de fechas.
     """
+    participante_repo = SqlAlchemyParticipanteRepository(db)
+    registro_repo = SqlAlchemyRegistroConsumoRepository(db)
     if fecha_inicio and fecha_fin:
-        return listar_registros_consumo_by_participante_y_periodo_use_case(id_participante, fecha_inicio, fecha_fin, db)
-    return listar_registros_consumo_by_participante_use_case(id_participante, db)
+        return listar_registros_consumo_by_participante_y_periodo_use_case(id_participante, fecha_inicio, fecha_fin, participante_repo, registro_repo)
+    return listar_registros_consumo_by_participante_use_case(id_participante, participante_repo, registro_repo)
 
 @router.get("/{id_registro}", response_model=RegistroConsumoRead)
 def mostrar_registro_consumo(id_registro: int, db: Session = Depends(get_db)):
     """
     Obtiene los detalles de un registro de consumo específico por su ID
     """
-    return mostrar_registro_consumo_use_case(id_registro, db)
+    registro_repo = SqlAlchemyRegistroConsumoRepository(db)
+    return mostrar_registro_consumo_use_case(id_registro, registro_repo)
 
 @router.put("/{id_registro}", response_model=RegistroConsumoRead)
 def modificar_registro_consumo(
@@ -113,11 +121,13 @@ def modificar_registro_consumo(
         timestamp=registro_data.timestamp,
         consumoEnergia=registro_data.consumoEnergia
     )
-    return modificar_registro_consumo_use_case(id_registro, registro_entity, db)
+    registro_repo = SqlAlchemyRegistroConsumoRepository(db)
+    return modificar_registro_consumo_use_case(id_registro, registro_entity, registro_repo)
 
 @router.delete("/{id_registro}", response_model=Dict[str, Any])
 def eliminar_registro_consumo(id_registro: int, db: Session = Depends(get_db)):
     """
     Elimina un registro de consumo existente
     """
-    return eliminar_registro_consumo_use_case(id_registro, db)
+    registro_repo = SqlAlchemyRegistroConsumoRepository(db)
+    return eliminar_registro_consumo_use_case(id_registro, registro_repo)

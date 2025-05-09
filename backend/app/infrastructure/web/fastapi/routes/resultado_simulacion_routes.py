@@ -6,11 +6,11 @@ from app.infrastructure.persistance.database import get_db
 from app.interfaces.schemas_resultado_simulacion import ResultadoSimulacionCreate, ResultadoSimulacionRead, ResultadoSimulacionUpdate
 from app.domain.entities.resultado_simulacion import ResultadoSimulacionEntity
 from app.infrastructure.persistance.repository.sqlalchemy_resultado_simulacion_repository import SqlAlchemyResultadoSimulacionRepository
-from app.domain.use_cases.resultado_simulacion.get_resultado_simulacion import GetResultadoSimulacion, GetResultadoBySimulacion
-from app.domain.use_cases.resultado_simulacion.list_resultados_simulacion import ListResultadosSimulacion
-from app.domain.use_cases.resultado_simulacion.create_resultado_simulacion import CreateResultadoSimulacion
-from app.domain.use_cases.resultado_simulacion.update_resultado_simulacion import UpdateResultadoSimulacion
-from app.domain.use_cases.resultado_simulacion.delete_resultado_simulacion import DeleteResultadoSimulacion
+from app.domain.use_cases.resultado_simulacion.get_resultado_simulacion import mostrar_resultado_simulacion_use_case, mostrar_resultado_por_simulacion_use_case
+from app.domain.use_cases.resultado_simulacion.list_resultados_simulacion import listar_resultados_simulacion_use_case
+from app.domain.use_cases.resultado_simulacion.create_resultado_simulacion import crear_resultado_simulacion_use_case
+from app.domain.use_cases.resultado_simulacion.update_resultado_simulacion import modificar_resultado_simulacion_use_case
+from app.domain.use_cases.resultado_simulacion.delete_resultado_simulacion import eliminar_resultado_simulacion_use_case
 
 router = APIRouter(
     prefix="/resultados-simulacion",
@@ -25,7 +25,7 @@ def crear_resultado_simulacion(resultado: ResultadoSimulacionCreate, db: Session
     """
     # Verificar si ya existe un resultado para esta simulación
     repo = SqlAlchemyResultadoSimulacionRepository(db)
-    resultado_existente = GetResultadoBySimulacion(repo).execute(resultado.idSimulacion)
+    resultado_existente = mostrar_resultado_por_simulacion_use_case(resultado.idSimulacion, repo)
     if resultado_existente:
         raise HTTPException(
             status_code=400,
@@ -49,8 +49,7 @@ def crear_resultado_simulacion(resultado: ResultadoSimulacionCreate, db: Session
         idSimulacion=resultado.idSimulacion
     )
     
-    use_case = CreateResultadoSimulacion(repo)
-    return use_case.execute(resultado_entity)
+    return crear_resultado_simulacion_use_case(resultado_entity, repo)
 
 @router.get("/{id_resultado}", response_model=ResultadoSimulacionRead)
 def obtener_resultado(id_resultado: int, db: Session = Depends(get_db)):
@@ -58,16 +57,8 @@ def obtener_resultado(id_resultado: int, db: Session = Depends(get_db)):
     Obtiene un resultado de simulación por su ID
     """
     repo = SqlAlchemyResultadoSimulacionRepository(db)
-    use_case = GetResultadoSimulacion(repo)
-    resultado = use_case.execute(id_resultado)
-    
-    if resultado is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Resultado de simulación con ID {id_resultado} no encontrado"
-        )
-        
-    return resultado
+    # La función ya maneja el caso de no encontrar el resultado y lanza una excepción HTTPException
+    return mostrar_resultado_simulacion_use_case(id_resultado, repo)
 
 @router.get("/simulacion/{id_simulacion}", response_model=ResultadoSimulacionRead)
 def obtener_resultado_por_simulacion(id_simulacion: int, db: Session = Depends(get_db)):
@@ -75,8 +66,7 @@ def obtener_resultado_por_simulacion(id_simulacion: int, db: Session = Depends(g
     Obtiene el resultado asociado a una simulación específica
     """
     repo = SqlAlchemyResultadoSimulacionRepository(db)
-    use_case = GetResultadoBySimulacion(repo)
-    resultado = use_case.execute(id_simulacion)
+    resultado = mostrar_resultado_por_simulacion_use_case(id_simulacion, repo)
     
     if resultado is None:
         raise HTTPException(
@@ -92,8 +82,7 @@ def listar_resultados(skip: int = 0, limit: int = 100, db: Session = Depends(get
     Lista todos los resultados de simulaciones
     """
     repo = SqlAlchemyResultadoSimulacionRepository(db)
-    use_case = ListResultadosSimulacion(repo)
-    return use_case.execute(skip, limit)
+    return listar_resultados_simulacion_use_case(repo, skip, limit)
 
 @router.put("/{id_resultado}", response_model=ResultadoSimulacionRead)
 def actualizar_resultado(id_resultado: int, resultado: ResultadoSimulacionUpdate, db: Session = Depends(get_db)):
@@ -102,14 +91,8 @@ def actualizar_resultado(id_resultado: int, resultado: ResultadoSimulacionUpdate
     """
     repo = SqlAlchemyResultadoSimulacionRepository(db)
     
-    # Verificar si el resultado existe
-    get_use_case = GetResultadoSimulacion(repo)
-    resultado_existente = get_use_case.execute(id_resultado)
-    if resultado_existente is None:
-        raise HTTPException(
-            status_code=404, 
-            detail=f"Resultado de simulación con ID {id_resultado} no encontrado"
-        )
+    # Verificar si el resultado existe - esta verificación la hace la función modificar_resultado_simulacion_use_case
+    resultado_existente = mostrar_resultado_simulacion_use_case(id_resultado, repo)
     
     # Crear entidad con los campos actualizados
     resultado_entity = ResultadoSimulacionEntity(
@@ -131,8 +114,7 @@ def actualizar_resultado(id_resultado: int, resultado: ResultadoSimulacionUpdate
         idSimulacion=resultado_existente.idSimulacion
     )
     
-    update_use_case = UpdateResultadoSimulacion(repo)
-    return update_use_case.execute(id_resultado, resultado_entity)
+    return modificar_resultado_simulacion_use_case(id_resultado, resultado_entity, repo)
 
 @router.delete("/{id_resultado}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar_resultado(id_resultado: int, db: Session = Depends(get_db)):
@@ -141,16 +123,7 @@ def eliminar_resultado(id_resultado: int, db: Session = Depends(get_db)):
     """
     repo = SqlAlchemyResultadoSimulacionRepository(db)
     
-    # Verificar si el resultado existe
-    get_use_case = GetResultadoSimulacion(repo)
-    resultado_existente = get_use_case.execute(id_resultado)
-    if resultado_existente is None:
-        raise HTTPException(
-            status_code=404, 
-            detail=f"Resultado de simulación con ID {id_resultado} no encontrado"
-        )
-    
-    delete_use_case = DeleteResultadoSimulacion(repo)
-    delete_use_case.execute(id_resultado)
+    # Verificar si el resultado existe - ahora esta verificación la hace la función eliminar_resultado_simulacion_use_case
+    eliminar_resultado_simulacion_use_case(id_resultado, repo)
     
     return None

@@ -7,11 +7,11 @@ from app.interfaces.schemas_simulacion import (
     SimulacionUpdate,
 )
 from app.domain.entities.simulacion import SimulacionEntity, EstadoSimulacion, TipoEstrategiaExcedentes
-from app.domain.use_cases.simulacion.get_simulacion import GetSimulacion
-from app.domain.use_cases.simulacion.list_simulaciones import ListSimulaciones, ListSimulacionesByComunidad, ListSimulacionesByUsuario
-from app.domain.use_cases.simulacion.create_simulacion import CreateSimulacion
-from app.domain.use_cases.simulacion.update_simulacion import UpdateSimulacion, UpdateEstadoSimulacion
-from app.domain.use_cases.simulacion.delete_simulacion import DeleteSimulacion
+from app.domain.use_cases.simulacion.create_simulacion import crear_simulacion_use_case
+from app.domain.use_cases.simulacion.get_simulacion import mostrar_simulacion_use_case
+from app.domain.use_cases.simulacion.list_simulaciones import listar_simulaciones_use_case, listar_simulaciones_por_comunidad_use_case, listar_simulaciones_por_usuario_use_case
+from app.domain.use_cases.simulacion.update_simulacion import modificar_simulacion_use_case, actualizar_estado_simulacion_use_case
+from app.domain.use_cases.simulacion.delete_simulacion import eliminar_simulacion_use_case
 from app.domain.use_cases.simulacion.motor_simulacion.motor_simulacion import MotorSimulacion
 from app.infrastructure.persistance.repository.sqlalchemy_simulacion_repository import SqlAlchemySimulacionRepository
 from typing import List
@@ -19,16 +19,13 @@ import time
 from app.interfaces.schemas_resultado_simulacion import ResultadoSimulacionCreate
 from app.domain.entities.resultado_simulacion import ResultadoSimulacionEntity
 from app.infrastructure.persistance.repository.sqlalchemy_resultado_simulacion_repository import SqlAlchemyResultadoSimulacionRepository
-from app.domain.use_cases.resultado_simulacion.create_resultado_simulacion import CreateResultadoSimulacion
 from app.domain.entities.estado_simulacion import EstadoSimulacion
 
 router = APIRouter(prefix="/simulaciones", tags=["simulaciones"])
 
 @router.post("", response_model=SimulacionResponse)
-def crear_simulacion(simulacion: SimulacionCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    """
-    Crea una nueva simulación para una comunidad energética y programa su procesamiento
-    """
+def crear_simulacion(simulacion: SimulacionCreate, db: Session = Depends(get_db)):
+    repo = SqlAlchemySimulacionRepository(db)
     simulacion_entity = SimulacionEntity(
         nombreSimulacion=simulacion.nombreSimulacion,
         fechaInicio=simulacion.fechaInicio,
@@ -39,69 +36,34 @@ def crear_simulacion(simulacion: SimulacionCreate, background_tasks: BackgroundT
         idUsuario_creador=simulacion.idUsuario_creador,
         idComunidadEnergetica=simulacion.idComunidadEnergetica
     )
-    
-    repo = SqlAlchemySimulacionRepository(db)
-    use_case = CreateSimulacion(repo)
-    nueva_simulacion = use_case.execute(simulacion_entity)
-    
-    
-    return nueva_simulacion
+    return crear_simulacion_use_case(simulacion_entity, repo)
 
 @router.get("/{id_simulacion}", response_model=SimulacionResponse)
 def obtener_simulacion(id_simulacion: int, db: Session = Depends(get_db)):
-    """
-    Obtiene los detalles de una simulación por su ID
-    """
     repo = SqlAlchemySimulacionRepository(db)
-    use_case = GetSimulacion(repo)
-    simulacion = use_case.execute(id_simulacion)
-    
-    if not simulacion:
-        raise HTTPException(status_code=404, detail="Simulación no encontrada")
-    
-    return simulacion
+    return mostrar_simulacion_use_case(id_simulacion, repo)
 
 @router.get("/comunidad/{id_comunidad}", response_model=List[SimulacionResponse])
 def listar_simulaciones_por_comunidad(id_comunidad: int, db: Session = Depends(get_db)):
-    """
-    Lista todas las simulaciones de una comunidad energética
-    """
     repo = SqlAlchemySimulacionRepository(db)
-    use_case = ListSimulacionesByComunidad(repo)
-    return use_case.execute(id_comunidad)
+    return listar_simulaciones_por_comunidad_use_case(id_comunidad, repo)
 
 @router.get("/usuario/{id_usuario}", response_model=List[SimulacionResponse])
 def listar_simulaciones_por_usuario(id_usuario: int, db: Session = Depends(get_db)):
-    """
-    Lista todas las simulaciones creadas por un usuario
-    """
     repo = SqlAlchemySimulacionRepository(db)
-    use_case = ListSimulacionesByUsuario(repo)
-    return use_case.execute(id_usuario)
+    return listar_simulaciones_por_usuario_use_case(id_usuario, repo)
 
 @router.get("", response_model=List[SimulacionResponse])
 def listar_simulaciones(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """
-    Lista todas las simulaciones registradas
-    """
     repo = SqlAlchemySimulacionRepository(db)
-    use_case = ListSimulaciones(repo)
-    return use_case.execute(skip, limit)
+    return listar_simulaciones_use_case(repo, skip, limit)
 
 @router.put("/{id_simulacion}", response_model=SimulacionResponse)
 def actualizar_simulacion(id_simulacion: int, simulacion: SimulacionUpdate, db: Session = Depends(get_db)):
-    """
-    Actualiza los datos de una simulación existente
-    """
-    # Primero obtenemos la simulación existente
     repo = SqlAlchemySimulacionRepository(db)
-    get_use_case = GetSimulacion(repo)
-    simulacion_existente = get_use_case.execute(id_simulacion)
-    
+    simulacion_existente = mostrar_simulacion_use_case(id_simulacion, repo)
     if not simulacion_existente:
         raise HTTPException(status_code=404, detail="Simulación no encontrada")
-    
-    # Creamos una nueva entidad con los valores actualizados
     simulacion_entity = SimulacionEntity(
         idSimulacion=id_simulacion,
         nombreSimulacion=simulacion.nombreSimulacion if simulacion.nombreSimulacion is not None else simulacion_existente.nombreSimulacion,
@@ -113,51 +75,12 @@ def actualizar_simulacion(id_simulacion: int, simulacion: SimulacionUpdate, db: 
         idUsuario_creador=simulacion_existente.idUsuario_creador,
         idComunidadEnergetica=simulacion_existente.idComunidadEnergetica
     )
-    
-    update_use_case = UpdateSimulacion(repo)
-    return update_use_case.execute(id_simulacion, simulacion_entity)
-
-@router.put("/{id_simulacion}/estado", response_model=SimulacionResponse)
-def actualizar_estado_simulacion(id_simulacion: int, estado_data: dict, db: Session = Depends(get_db)):
-    """
-    Actualiza el estado de una simulación existente
-    """
-    if "estado" not in estado_data:
-        raise HTTPException(status_code=400, detail="El campo 'estado' es requerido")
-    
-    # Validar que el estado sea válido
-    try:
-        estado = EstadoSimulacion(estado_data["estado"])
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Estado de simulación no válido")
-    
-    repo = SqlAlchemySimulacionRepository(db)
-    use_case = UpdateEstadoSimulacion(repo)
-    
-    simulacion = use_case.execute(id_simulacion, estado.value)
-    if not simulacion:
-        raise HTTPException(status_code=404, detail="Simulación no encontrada")
-    
-    return simulacion
+    return modificar_simulacion_use_case(id_simulacion, simulacion_entity, repo)
 
 @router.delete("/{id_simulacion}")
 def eliminar_simulacion(id_simulacion: int, db: Session = Depends(get_db)):
-    """
-    Elimina una simulación existente
-    """
     repo = SqlAlchemySimulacionRepository(db)
-    
-    # Primero verificamos que exista
-    get_use_case = GetSimulacion(repo)
-    simulacion = get_use_case.execute(id_simulacion)
-    if not simulacion:
-        raise HTTPException(status_code=404, detail="Simulación no encontrada")
-    
-    # Luego la eliminamos
-    delete_use_case = DeleteSimulacion(repo)
-    delete_use_case.execute(id_simulacion)
-    
-    return {"mensaje": "Simulación eliminada correctamente"}
+    return eliminar_simulacion_use_case(id_simulacion, repo)
 
 @router.post("/{id_simulacion}/ejecutar", status_code=202)
 def ejecutar_simulacion(id_simulacion: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
@@ -166,8 +89,7 @@ def ejecutar_simulacion(id_simulacion: int, background_tasks: BackgroundTasks, d
     """
     # Verificar que la simulación existe
     repo = SqlAlchemySimulacionRepository(db)
-    get_use_case = GetSimulacion(repo)
-    simulacion = get_use_case.execute(id_simulacion)
+    simulacion = mostrar_simulacion_use_case(id_simulacion, repo)
     
     if not simulacion:
         raise HTTPException(status_code=404, detail="Simulación no encontrada")
@@ -183,8 +105,63 @@ def ejecutar_simulacion(id_simulacion: int, background_tasks: BackgroundTasks, d
     # Función para ejecutar el motor de simulación en segundo plano
     def ejecutar_motor_simulacion(sim_id: int, db_session: Session):
         try:
-            # Inicializar el motor de simulación
-            motor = MotorSimulacion(db_session)
+            # Importar los repositorios necesarios
+            from app.infrastructure.persistance.repository.sqlalchemy_comunidad_energetica_repository import SqlAlchemyComunidadEnergeticaRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_participante_repository import SqlAlchemyParticipanteRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_activo_generacion_repository import SqlAlchemyActivoGeneracionRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_activo_almacenamiento_repository import SqlAlchemyActivoAlmacenamientoRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_coeficiente_reparto_repository import SqlAlchemyCoeficienteRepartoRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_contrato_autoconsumo_repository import SqlAlchemyContratoAutoconsumoRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_registro_consumo_repository import SqlAlchemyRegistroConsumoRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_datos_ambientales_repository import SqlAlchemyDatosAmbientalesRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_resultado_simulacion_repository import SqlAlchemyResultadoSimulacionRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_resultado_simulacion_participante_repository import SqlAlchemyResultadoSimulacionParticipanteRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_resultado_simulacion_activo_generacion_repository import SqlAlchemyResultadoSimulacionActivoGeneracionRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_resultado_simulacion_activo_almacenamiento_repository import SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_datos_intervalo_participante_repository import SqlAlchemyDatosIntervaloParticipanteRepository
+            from app.infrastructure.persistance.repository.sqlalchemy_datos_intervalo_activo_repository import SqlAlchemyDatosIntervaloActivoRepository
+            from app.infrastructure.pvgis.datos_ambientales_api_repository import DatosAmbientalesApiRepository
+            
+            # Inicializar todos los repositorios necesarios
+            simulacion_repo = SqlAlchemySimulacionRepository(db_session)
+            comunidad_repo = SqlAlchemyComunidadEnergeticaRepository(db_session)
+            participante_repo = SqlAlchemyParticipanteRepository(db_session)
+            activo_gen_repo = SqlAlchemyActivoGeneracionRepository(db_session)
+            activo_alm_repo = SqlAlchemyActivoAlmacenamientoRepository(db_session)
+            coeficiente_repo = SqlAlchemyCoeficienteRepartoRepository(db_session)
+            contrato_repo = SqlAlchemyContratoAutoconsumoRepository(db_session)
+            registro_consumo_repo = SqlAlchemyRegistroConsumoRepository(db_session)
+            datos_ambientales_repo = SqlAlchemyDatosAmbientalesRepository(db_session)
+            resultado_simulacion_repo = SqlAlchemyResultadoSimulacionRepository(db_session)
+            resultado_participante_repo = SqlAlchemyResultadoSimulacionParticipanteRepository(db_session)
+            resultado_activo_gen_repo = SqlAlchemyResultadoSimulacionActivoGeneracionRepository(db_session)
+            resultado_activo_alm_repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db_session)
+            datos_intervalo_participante_repo = SqlAlchemyDatosIntervaloParticipanteRepository(db_session)
+            datos_intervalo_activo_repo = SqlAlchemyDatosIntervaloActivoRepository(db_session)
+            datos_ambientales_api_repo = DatosAmbientalesApiRepository()
+            
+        
+            
+            # Inicializar el motor de simulación con todos los repositorios requeridos
+            motor = MotorSimulacion(
+                simulacion_repo=simulacion_repo,
+                comunidad_repo=comunidad_repo,
+                participante_repo=participante_repo,
+                activo_gen_repo=activo_gen_repo,
+                activo_alm_repo=activo_alm_repo,
+                coeficiente_repo=coeficiente_repo,
+                contrato_repo=contrato_repo,
+                registro_consumo_repo=registro_consumo_repo,
+                datos_ambientales_repo=datos_ambientales_repo,
+                resultado_simulacion_repo=resultado_simulacion_repo,
+                resultado_participante_repo=resultado_participante_repo,
+                resultado_activo_gen_repo=resultado_activo_gen_repo,
+                resultado_activo_alm_repo=resultado_activo_alm_repo,
+                datos_intervalo_participante_repo=datos_intervalo_participante_repo,
+                datos_intervalo_activo_repo=datos_intervalo_activo_repo,
+                datos_ambientales_api_repo=datos_ambientales_api_repo,
+                db_session=db_session
+            )
             
             # Ejecutar la simulación
             print(f"Iniciando motor de simulación avanzado para simulación ID: {sim_id}")
@@ -195,14 +172,12 @@ def ejecutar_simulacion(id_simulacion: int, background_tasks: BackgroundTasks, d
             # Actualizar el estado a error en caso de fallo
             try:
                 repo = SqlAlchemySimulacionRepository(db_session)
-                update_estado_use_case = UpdateEstadoSimulacion(repo)
-                update_estado_use_case.execute(sim_id, EstadoSimulacion.FALLIDA.value)
+                actualizar_estado_simulacion_use_case(sim_id, EstadoSimulacion.FALLIDA.value, repo)
             except Exception as update_error:
                 print(f"Error adicional al actualizar el estado: {str(update_error)}")
     
     # Actualizar el estado a 'En ejecución'
-    update_use_case = UpdateEstadoSimulacion(repo)
-    update_use_case.execute(id_simulacion, EstadoSimulacion.EJECUTANDO.value)
+    actualizar_estado_simulacion_use_case(id_simulacion, EstadoSimulacion.EJECUTANDO.value, repo)
     
     # Programar la ejecución en segundo plano
     background_tasks.add_task(ejecutar_motor_simulacion, id_simulacion, db)

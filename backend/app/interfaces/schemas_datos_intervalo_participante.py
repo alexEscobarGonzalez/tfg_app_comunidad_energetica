@@ -6,13 +6,11 @@ class DatosIntervaloParticipanteBase(BaseModel):
     """Clase base para los esquemas de datos de intervalo por participante"""
     timestamp: datetime = Field(..., description="Marca de tiempo del intervalo")
     consumoReal_kWh: Optional[float] = Field(None, description="Consumo real en kWh")
-    produccionPropia_kWh: Optional[float] = Field(None, description="Producción propia en kWh")
+    autoconsumo_kWh: Optional[float] = Field(None, description="Producción propia en kWh")
     energiaRecibidaReparto_kWh: Optional[float] = Field(None, description="Energía recibida por reparto en kWh")
-    energiaDesdeAlmacenamientoInd_kWh: Optional[float] = Field(None, description="Energía desde almacenamiento individual en kWh")
-    energiaHaciaAlmacenamientoInd_kWh: Optional[float] = Field(None, description="Energía hacia almacenamiento individual en kWh")
-    energiaDesdeRed_kWh: Optional[float] = Field(None, description="Energía importada desde la red en kWh")
+    energiaAlmacenamiento_kWh: Optional[float] = Field(None, description="Energía desde almacenamiento individual en kWh")
+    energiaDiferencia_kWh: Optional[float] = Field(None, description="Energía importada desde la red en kWh")
     excedenteVertidoCompensado_kWh: Optional[float] = Field(None, description="Excedente vertido compensado en kWh")
-    estadoAlmacenamientoInd_kWh: Optional[float] = Field(None, description="Estado del almacenamiento individual en kWh")
     precioImportacionIntervalo: Optional[float] = Field(None, description="Precio de importación en el intervalo")
     precioExportacionIntervalo: Optional[float] = Field(None, description="Precio de exportación en el intervalo")
 
@@ -28,13 +26,11 @@ class DatosIntervaloParticipanteUpdate(BaseModel):
     """Esquema para actualizar datos existentes"""
     timestamp: Optional[datetime] = None
     consumoReal_kWh: Optional[float] = None
-    produccionPropia_kWh: Optional[float] = None
+    autoconsumo_kWh: Optional[float] = None
     energiaRecibidaReparto_kWh: Optional[float] = None
-    energiaDesdeAlmacenamientoInd_kWh: Optional[float] = None
-    energiaHaciaAlmacenamientoInd_kWh: Optional[float] = None
-    energiaDesdeRed_kWh: Optional[float] = None
+    energiaAlmacenamiento_kWh: Optional[float] = None
+    energiaDiferencia_kWh: Optional[float] = None
     excedenteVertidoCompensado_kWh: Optional[float] = None
-    estadoAlmacenamientoInd_kWh: Optional[float] = None
     precioImportacionIntervalo: Optional[float] = None
     precioExportacionIntervalo: Optional[float] = None
 

@@ -1,16 +1,15 @@
-from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.domain.entities.comunidad_energetica import ComunidadEnergeticaEntity
-from app.infrastructure.persistance.repository.sqlalchemy_comunidad_energetica_repository import SqlAlchemyComunidadEnergeticaRepository
+from app.domain.repositories.comunidad_energetica_repository import ComunidadEnergeticaRepository
 
-def modificar_comunidad_energetica_use_case(id_comunidad: int, comunidad_datos: ComunidadEnergeticaEntity, db: Session) -> ComunidadEnergeticaEntity:
+def modificar_comunidad_energetica_use_case(id_comunidad: int, comunidad_datos: ComunidadEnergeticaEntity, repo: ComunidadEnergeticaRepository) -> ComunidadEnergeticaEntity:
     """
     Modifica los datos de una comunidad energética existente
     
     Args:
         id_comunidad: ID de la comunidad energética a modificar
         comunidad_datos: Nuevos datos para la comunidad energética
-        db: Sesión de base de datos
+        repo: Repositorio de comunidad energética
         
     Returns:
         ComunidadEnergetica: Datos actualizados de la comunidad energética
@@ -18,7 +17,6 @@ def modificar_comunidad_energetica_use_case(id_comunidad: int, comunidad_datos: 
     Raises:
         HTTPException: Si la comunidad no existe
     """
-    repo = SqlAlchemyComunidadEnergeticaRepository(db)
     
     # Verificar que la comunidad existe
     comunidad_existente = repo.get_by_id(id_comunidad)
@@ -32,5 +30,5 @@ def modificar_comunidad_energetica_use_case(id_comunidad: int, comunidad_datos: 
     comunidad_datos.idUsuario = comunidad_existente.idUsuario
     
     # Actualizar en la base de datos
-    comunidad_actualizada = repo.update(comunidad_datos)
+    comunidad_actualizada = repo.update(id_comunidad, comunidad_datos)
     return comunidad_actualizada

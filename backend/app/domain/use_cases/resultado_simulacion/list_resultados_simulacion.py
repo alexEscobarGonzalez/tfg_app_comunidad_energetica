@@ -2,9 +2,14 @@ from app.domain.repositories.resultado_simulacion_repository import ResultadoSim
 from app.domain.entities.resultado_simulacion import ResultadoSimulacionEntity
 from typing import List
 
-class ListResultadosSimulacion:
-    def __init__(self, resultado_repository: ResultadoSimulacionRepository):
-        self.resultado_repository = resultado_repository
-    
-    def execute(self, skip: int = 0, limit: int = 100) -> List[ResultadoSimulacionEntity]:
-        return self.resultado_repository.list(skip=skip, limit=limit)
+def listar_resultados_simulacion_use_case(repo: ResultadoSimulacionRepository, skip: int = 0, limit: int = 100) -> List[ResultadoSimulacionEntity]:
+    """
+    Lista todos los resultados de simulación
+    Args:
+        repo: Repositorio de resultados de simulación
+        skip: Número de resultados a omitir
+        limit: Límite de resultados
+    Returns:
+        List[ResultadoSimulacionEntity]: Lista de resultados
+    """
+    return repo.list(skip=skip, limit=limit)

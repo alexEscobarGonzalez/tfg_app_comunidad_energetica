@@ -6,8 +6,8 @@ from app.domain.repositories.resultado_simulacion_activo_generacion_repository i
 from app.infrastructure.persistance.models.resultado_simulacion_activo_generacion_tabla import ResultadoSimulacionActivoGeneracion
 
 class SqlAlchemyResultadoSimulacionActivoGeneracionRepository(ResultadoSimulacionActivoGeneracionRepository):
-    def __init__(self, session: Session):
-        self.session = session
+    def __init__(self, db: Session):
+        self.db = db
         
     def _to_entity(self, model: ResultadoSimulacionActivoGeneracion) -> ResultadoSimulacionActivoGeneracionEntity:
         return ResultadoSimulacionActivoGeneracionEntity(
@@ -32,46 +32,46 @@ class SqlAlchemyResultadoSimulacionActivoGeneracionRepository(ResultadoSimulacio
         )
         
     def get_by_id(self, resultado_activo_gen_id: int) -> Optional[ResultadoSimulacionActivoGeneracionEntity]:
-        resultado = self.session.query(ResultadoSimulacionActivoGeneracion).filter(
+        resultado = self.db.query(ResultadoSimulacionActivoGeneracion).filter(
             ResultadoSimulacionActivoGeneracion.idResultadoActivoGen == resultado_activo_gen_id
         ).first()
         return self._to_entity(resultado) if resultado else None
     
     def get_by_resultado_simulacion_id(self, resultado_simulacion_id: int) -> List[ResultadoSimulacionActivoGeneracionEntity]:
-        resultados = self.session.query(ResultadoSimulacionActivoGeneracion).filter(
+        resultados = self.db.query(ResultadoSimulacionActivoGeneracion).filter(
             ResultadoSimulacionActivoGeneracion.idResultadoSimulacion == resultado_simulacion_id
         ).all()
         return [self._to_entity(r) for r in resultados]
     
     def get_by_activo_generacion_id(self, activo_generacion_id: int) -> List[ResultadoSimulacionActivoGeneracionEntity]:
-        resultados = self.session.query(ResultadoSimulacionActivoGeneracion).filter(
+        resultados = self.db.query(ResultadoSimulacionActivoGeneracion).filter(
             ResultadoSimulacionActivoGeneracion.idActivoGeneracion == activo_generacion_id
         ).all()
         return [self._to_entity(r) for r in resultados]
     
     def get_by_resultado_simulacion_and_activo(self, resultado_simulacion_id: int, activo_generacion_id: int) -> Optional[ResultadoSimulacionActivoGeneracionEntity]:
-        resultado = self.session.query(ResultadoSimulacionActivoGeneracion).filter(
+        resultado = self.db.query(ResultadoSimulacionActivoGeneracion).filter(
             ResultadoSimulacionActivoGeneracion.idResultadoSimulacion == resultado_simulacion_id,
             ResultadoSimulacionActivoGeneracion.idActivoGeneracion == activo_generacion_id
         ).first()
         return self._to_entity(resultado) if resultado else None
     
     def list(self, skip: int = 0, limit: int = 100) -> List[ResultadoSimulacionActivoGeneracionEntity]:
-        resultados = self.session.query(ResultadoSimulacionActivoGeneracion).offset(skip).limit(limit).all()
+        resultados = self.db.query(ResultadoSimulacionActivoGeneracion).offset(skip).limit(limit).all()
         return [self._to_entity(r) for r in resultados]
     
     def create(self, resultado_activo_gen: ResultadoSimulacionActivoGeneracionEntity) -> ResultadoSimulacionActivoGeneracionEntity:
         db_resultado = self._to_model(resultado_activo_gen)
         db_resultado.idResultadoActivoGen = None  # Aseguramos que se autoincrementa
         
-        self.session.add(db_resultado)
-        self.session.commit()
-        self.session.refresh(db_resultado)
+        self.db.add(db_resultado)
+        self.db.commit()
+        self.db.refresh(db_resultado)
         
         return self._to_entity(db_resultado)
     
     def update(self, resultado_activo_gen_id: int, resultado_activo_gen: ResultadoSimulacionActivoGeneracionEntity) -> ResultadoSimulacionActivoGeneracionEntity:
-        db_resultado = self.session.query(ResultadoSimulacionActivoGeneracion).filter(
+        db_resultado = self.db.query(ResultadoSimulacionActivoGeneracion).filter(
             ResultadoSimulacionActivoGeneracion.idResultadoActivoGen == resultado_activo_gen_id
         ).first()
         
@@ -84,58 +84,62 @@ class SqlAlchemyResultadoSimulacionActivoGeneracionRepository(ResultadoSimulacio
         db_resultado.performanceRatio_pct = resultado_activo_gen.performanceRatio_pct
         db_resultado.horasOperacionEquivalentes = resultado_activo_gen.horasOperacionEquivalentes
         
-        self.session.commit()
-        self.session.refresh(db_resultado)
+        self.db.commit()
+        self.db.refresh(db_resultado)
         
         return self._to_entity(db_resultado)
     
     def delete(self, resultado_activo_gen_id: int) -> None:
-        db_resultado = self.session.query(ResultadoSimulacionActivoGeneracion).filter(
+        db_resultado = self.db.query(ResultadoSimulacionActivoGeneracion).filter(
             ResultadoSimulacionActivoGeneracion.idResultadoActivoGen == resultado_activo_gen_id
         ).first()
         
         if not db_resultado:
             raise ValueError(f"Resultado con id {resultado_activo_gen_id} no encontrado")
         
-        self.session.delete(db_resultado)
-        self.session.commit()
+        self.db.delete(db_resultado)
+        self.db.commit()
     
-    def create_bulk(self, resultados: List[Dict]) -> List[ResultadoSimulacionActivoGeneracionEntity]:
+    def create_bulk(self, resultados: List[ResultadoSimulacionActivoGeneracionEntity], resultado_global_id: int) -> List[ResultadoSimulacionActivoGeneracionEntity]:
         """
         Crea múltiples registros de resultados de simulación de activos de generación a la vez.
         
         Args:
-            resultados: Lista de diccionarios con los resultados de activos a guardar
+            resultados: Lista de entidades ResultadoSimulacionActivoGeneracionEntity a guardar
             
         Returns:
-            Lista de entidades ResultadoSimulacionActivoGeneracionEntity creadas
+            Lista de entidades ResultadoSimulacionActivoGeneracionEntity creadas con IDs generados
         """
+        if not resultados:
+            return []
+            
         models = []
         try:
             for resultado in resultados:
-                # Crear modelo a partir del diccionario de datos
+                # Crear modelo directamente a partir de la entidad
                 model = ResultadoSimulacionActivoGeneracion(
-                    energiaTotalGenerada_kWh=resultado.get('energiaGeneradaTotal_kWh', 0),
-                    factorCapacidad_pct=resultado.get('factorCapacidad', 0),
-                    performanceRatio_pct=resultado.get('eficienciaUtilizacion', 0),
-                    horasOperacionEquivalentes=resultado.get('horasProduccion', 0),
-                    idResultadoSimulacion=resultado.get('idSimulacion'),
-                    idActivoGeneracion=resultado.get('idActivoGeneracion')
+                    energiaTotalGenerada_kWh=resultado.energiaTotalGenerada_kWh or 0,
+                    factorCapacidad_pct=resultado.factorCapacidad_pct or 0,
+                    performanceRatio_pct=resultado.performanceRatio_pct or 0,
+                    horasOperacionEquivalentes=resultado.horasOperacionEquivalentes or 0,
+                    idResultadoSimulacion=resultado_global_id,
+                    idActivoGeneracion=resultado.idActivoGeneracion
                 )
-                self.session.add(model)
+                self.db.add(model)
                 models.append(model)
             
             # Hacer commit de todos los cambios a la vez
-            self.session.commit()
-            
-            # Refrescar todos los modelos para obtener sus IDs generados
-            for model in models:
-                self.session.refresh(model)
+            if models:
+                self.db.commit()
+                
+                # Refrescar todos los modelos para obtener sus IDs generados
+                for model in models:
+                    self.db.refresh(model)
             
             # Mapear modelos a entidades
             return [self._to_entity(model) for model in models]
         
         except SQLAlchemyError as e:
-            self.session.rollback()
+            self.db.rollback()
             print(f"Error al crear resultados de activos de generación en bloque: {e}")
             raise e

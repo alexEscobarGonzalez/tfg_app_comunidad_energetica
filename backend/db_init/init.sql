@@ -98,8 +98,7 @@ CREATE TABLE `ACTIVO_GENERACION_UNICA` (
     `potenciaNominal_kWp` FLOAT,
     `idComunidadEnergetica` INT NOT NULL,
     `tipo_activo` VARCHAR(100) NOT NULL, -- 'Fotovoltaica', 'Aerogenerador', etc.
-    
-    -- Atributos de INSTALACION_FOTOVOLTAICA (ahora NULLABLE)
+      -- Atributos de INSTALACION_FOTOVOLTAICA (ahora NULLABLE)
     `inclinacionGrados` FLOAT NULL,
     `azimutGrados` FLOAT NULL,
     `tecnologiaPanel` VARCHAR(100) NULL,
@@ -107,7 +106,7 @@ CREATE TABLE `ACTIVO_GENERACION_UNICA` (
     `posicionMontaje` VARCHAR(100) NULL,
     
     -- Atributos de AEROGENERADOR (ahora NULLABLE)
-    `curvaPotencia` TEXT NULL,
+    `curvaPotencia` JSON NULL,
     
     PRIMARY KEY (`idActivoGeneracion`),
     FOREIGN KEY (`idComunidadEnergetica`) REFERENCES `COMUNIDAD_ENERGETICA`(`idComunidadEnergetica`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -237,13 +236,11 @@ CREATE TABLE `DATOS_INTERVALO_PARTICIPANTE` (
     `idDatosIntervaloParticipante` INT NOT NULL AUTO_INCREMENT,
     `timestamp` DATETIME NOT NULL,
     `consumoReal_kWh` FLOAT,
-    `produccionPropia_kWh` FLOAT,
+    `autoconsumo_kWh` FLOAT,
     `energiaRecibidaReparto_kWh` FLOAT,
-    `energiaDesdeAlmacenamientoInd_kWh` FLOAT,
-    `energiaHaciaAlmacenamientoInd_kWh` FLOAT,
-    `energiaDesdeRed_kWh` FLOAT,
+    `energiaAlmacenamiento_kWh` FLOAT,
+    `energiaDiferencia_kWh` FLOAT,
     `excedenteVertidoCompensado_kWh` FLOAT,
-    `estadoAlmacenamientoInd_kWh` FLOAT, -- ¿Nivel de carga?
     `precioImportacionIntervalo` FLOAT,
     `precioExportacionIntervalo` FLOAT,
     `idResultadoParticipante` INT NOT NULL,
