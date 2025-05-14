@@ -18,4 +18,3 @@ class DatosAmbientalesRead(DatosAmbientalesBase):
 
     model_config = ConfigDict(from_attributes=True)
 
-# No se definen esquemas Update/Delete ya que no son operaciones comunes para estos datos

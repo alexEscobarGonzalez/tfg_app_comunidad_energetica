@@ -9,7 +9,6 @@ class SqlAlchemyActivoAlmacenamientoRepository(ActivoAlmacenamientoRepository):
         self.db = db
         
     def _map_to_entity(self, model: ActivoAlmacenamiento) -> ActivoAlmacenamientoEntity:
-        """Convierte un modelo de tabla a una entidad de dominio"""
         return ActivoAlmacenamientoEntity(
             idActivoAlmacenamiento=model.idActivoAlmacenamiento,
             capacidadNominal_kWh=model.capacidadNominal_kWh,
@@ -57,7 +56,6 @@ class SqlAlchemyActivoAlmacenamientoRepository(ActivoAlmacenamientoRepository):
             model.potenciaMaximaDescarga_kW = activo.potenciaMaximaDescarga_kW
             model.eficienciaCicloCompleto_pct = activo.eficienciaCicloCompleto_pct
             model.profundidadDescargaMax_pct = activo.profundidadDescargaMax_pct
-            # No actualizamos el idComunidadEnergetica ya que es una relación fija
             
             self.db.commit()
             self.db.refresh(model)

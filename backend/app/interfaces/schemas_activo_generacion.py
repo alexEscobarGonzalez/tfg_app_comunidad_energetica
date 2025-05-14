@@ -3,7 +3,7 @@ from typing import Optional, Dict, Any
 from datetime import date
 from app.domain.entities.tipo_activo_generacion import TipoActivoGeneracion
 
-# Esquema base con los campos comunes
+
 class ActivoGeneracionBase(BaseModel):
     nombreDescriptivo: str
     fechaInstalacion: date
@@ -15,7 +15,7 @@ class ActivoGeneracionBase(BaseModel):
     idComunidadEnergetica: int
     tipo_activo: TipoActivoGeneracion
 
-# Esquema para instalación fotovoltaica
+
 class InstalacionFotovoltaicaCreate(ActivoGeneracionBase):
     inclinacionGrados: float
     azimutGrados: float
@@ -29,7 +29,7 @@ class InstalacionFotovoltaicaCreate(ActivoGeneracionBase):
             raise ValueError('El tipo de activo debe ser Instalación Fotovoltaica')
         return v
 
-# Esquema para aerogenerador
+
 class AerogeneradorCreate(ActivoGeneracionBase):
     curvaPotencia: Dict[str, Any]
     
@@ -41,13 +41,11 @@ class AerogeneradorCreate(ActivoGeneracionBase):
         
     @field_validator('curvaPotencia')
     def validar_curva_potencia(cls, v):
-        # Verificar que la curva de potencia tenga el formato correcto
-        # Por ejemplo, que tenga una estructura como {"velocidad_viento": [valores], "potencia_kw": [valores]}
         if not isinstance(v, dict):
             raise ValueError('La curva de potencia debe ser un objeto JSON')
         return v
 
-# Esquema genérico para leer cualquier tipo de activo
+
 class ActivoGeneracionRead(BaseModel):
     idActivoGeneracion: int
     nombreDescriptivo: str
@@ -59,7 +57,6 @@ class ActivoGeneracionRead(BaseModel):
     potenciaNominal_kWp: float
     idComunidadEnergetica: int
     tipo_activo: TipoActivoGeneracion
-      # Campos específicos opcionales
     inclinacionGrados: Optional[float] = None
     azimutGrados: Optional[float] = None
     tecnologiaPanel: Optional[str] = None
@@ -69,7 +66,7 @@ class ActivoGeneracionRead(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
-# Esquema para actualizar una instalación fotovoltaica
+
 class InstalacionFotovoltaicaUpdate(BaseModel):
     nombreDescriptivo: Optional[str] = None
     costeInstalacion_eur: Optional[float] = Field(None, gt=0)
@@ -81,7 +78,7 @@ class InstalacionFotovoltaicaUpdate(BaseModel):
     perdidaSistema: Optional[float] = None
     posicionMontaje: Optional[str] = None
 
-# Esquema para actualizar un aerogenerador
+
 class AerogeneradorUpdate(BaseModel):
     nombreDescriptivo: Optional[str] = None
     costeInstalacion_eur: Optional[float] = Field(None, gt=0)

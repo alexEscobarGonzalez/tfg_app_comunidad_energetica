@@ -11,8 +11,6 @@ class ActivoAlmacenamientoBase(BaseModel):
 
     @field_validator('eficienciaCicloCompleto_pct', 'profundidadDescargaMax_pct', mode='before')
     def normalize_percentages(cls, v):
-        # Si el valor es mayor que 1, asumimos que es un porcentaje (0-100)
-        # y lo convertimos a la escala 0-1 para su uso interno
         if v > 1:
             return v / 100.0
         return v
@@ -31,8 +29,6 @@ class ActivoAlmacenamientoUpdate(BaseModel):
     def normalize_percentages(cls, v):
         if v is None:
             return v
-        # Si el valor es mayor que 1, asumimos que es un porcentaje (0-100)
-        # y lo convertimos a la escala 0-1 para su uso interno
         if v > 1:
             return v / 100.0
         return v

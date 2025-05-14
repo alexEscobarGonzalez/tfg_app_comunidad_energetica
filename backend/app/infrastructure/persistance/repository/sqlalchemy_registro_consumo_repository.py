@@ -88,7 +88,6 @@ class SqlAlchemyRegistroConsumoRepository(RegistroConsumoRepository):
         if model:
             model.timestamp = registro.timestamp
             model.consumoEnergia = registro.consumoEnergia
-            # No actualizamos el idParticipante ya que es una relación fija
             
             self.db.commit()
             self.db.refresh(model)

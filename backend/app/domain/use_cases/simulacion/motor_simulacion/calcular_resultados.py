@@ -29,6 +29,7 @@ def calcular_resultados_participantes(resultados_intervalo_participantes):
     # Diccionario para agrupar por participante
     participantes_dict = {}
     
+    
     # Agrupar datos por participante
     for resultado in resultados_intervalo_participantes:
         participante_id = resultado.get('idParticipante')
@@ -43,6 +44,7 @@ def calcular_resultados_participantes(resultados_intervalo_participantes):
                 'energiaExportadaRed_kWh': 0.0,
                 'costeImportacion_eur': 0.0,
                 'ingresoExportacion_eur': 0.0,
+                'costeBaseEstimado_eur': 0.0,
                 'numIntervalos': 0
             }
         
@@ -77,7 +79,7 @@ def calcular_resultados_participantes(resultados_intervalo_participantes):
         datos_part['energiaExportadaRed_kWh'] += excedente_vertido
         datos_part['costeImportacion_eur'] += coste_importacion
         datos_part['ingresoExportacion_eur'] += ingreso_exportacion
-        datos_part['numIntervalos'] += 1
+        datos_part['costeBaseEstimado_eur'] += consumo * precio_importacion
     
     # Crear entidades a partir del diccionario agrupado
     resultados = []
@@ -92,30 +94,16 @@ def calcular_resultados_participantes(resultados_intervalo_participantes):
         coste_neto = datos['costeImportacion_eur'] - datos['ingresoExportacion_eur']
         
         # Calcular coste sin autoconsumo (todo el consumo a precio de importación)
-        coste_base_estimado = consumo_total * (datos['costeImportacion_eur'] / datos['energiaImportadaRed_kWh'] if datos['energiaImportadaRed_kWh'] > 0 else 0)
+        coste_base_estimado = datos['costeBaseEstimado_eur']
         
         # Ahorro (diferencia entre coste base y coste neto)
         ahorro_eur = coste_base_estimado - coste_neto
         ahorro_pct = (ahorro_eur / coste_base_estimado * 100) if coste_base_estimado > 0 else 0
         
         # Calcular tasas de autoconsumo y autosuficiencia
-        energia_local_consumida = energia_autoconsumida + energia_reparto + max(0, energia_almacenamiento)
-        
-        tasa_autosuficiencia = 0
-        if consumo_total > 0:
-            tasa_autosuficiencia = (energia_local_consumida / consumo_total) * 100
-        
-        # SCR: Porcentaje de energía generada/asignada que se consume localmente
-        # Toda la energía disponible para el participante
-        energia_total_disponible = datos['energiaAutoconsumidaDirecta_kWh'] +  datos['energiaRecibidaRepartoConsumida_kWh'] +  max(0, datos['energiaAlmacenamiento_kWh'])
-
-        # Toda la energía que se le asignó (incluyendo lo que pudo exportar)
-        energia_total_asignada = datos['energiaRecibidaRepartoConsumida_kWh'] + datos['energiaExportadaRed_kWh']
-
-        # SCR: Cuánta de la energía asignada se usó localmente
-        tasa_autoconsumo = 0
-        if energia_total_asignada > 0:
-            tasa_autoconsumo = (energia_total_disponible / energia_total_asignada) * 100
+        tasa_autosuficiencia = (energia_autoconsumida / consumo_total * 100) 
+    
+        tasa_autoconsumo = (energia_autoconsumida / energia_reparto * 100) 
         
         # Crear la entidad
         resultado = ResultadoSimulacionParticipanteEntity(
@@ -126,6 +114,7 @@ def calcular_resultados_participantes(resultados_intervalo_participantes):
             tasaAutoconsumoSCR_pct=tasa_autoconsumo,
             costeNetoParticipante_eur=coste_neto,
             ahorroParticipante_eur=ahorro_eur,
+            consumo_kWh=consumo_total,
             ahorroParticipante_pct=ahorro_pct
         )
         resultados.append(resultado)
@@ -425,11 +414,7 @@ def calcular_resultados_globales(simulacion, resultados_intervalo_participantes,
     total_descarga_alm = 0.0
     total_coste_importacion = 0.0
     total_ingreso_exportacion = 0.0
-    energia_compartida_interna = 0.0
-    
-    # Para calcular reducción de pico de demanda
-    demanda_por_intervalo = {}  # {timestamp: demanda_kW}
-    demanda_base_por_intervalo = {}  # {timestamp: demanda_base_kW} (estimación sin autoconsumo)
+    coste_base_estimado = 0.0     
     
     # Calcular consumo, autoconsumo, importación, exportación, etc.
     for resultado in resultados_intervalo_participantes:
@@ -439,6 +424,8 @@ def calcular_resultados_globales(simulacion, resultados_intervalo_participantes,
         energia_reparto = resultado.get('energiaRecibidaReparto_kWh', 0) or 0
         excedente = resultado.get('excedenteVertidoCompensado_kWh', 0) or 0
         diferencia = resultado.get('energiaDiferencia_kWh', 0) or 0
+        precio_importacion = resultado.get('precioImportacionIntervalo', 0) or 0
+
         
         # Importación: energía que se compra de la red (diferencia negativa)
         importacion = -diferencia if diferencia < 0 else 0
@@ -448,6 +435,7 @@ def calcular_resultados_globales(simulacion, resultados_intervalo_participantes,
         total_autoconsumo += autoconsumo
         total_importacion += importacion
         total_exportacion += excedente
+        coste_base_estimado += consumo * precio_importacion
         
         # Cálculos económicos con precios por intervalo
         precio_importacion = resultado.get('precioImportacionIntervalo', 0) or 0
@@ -456,20 +444,6 @@ def calcular_resultados_globales(simulacion, resultados_intervalo_participantes,
         total_coste_importacion += importacion * precio_importacion
         total_ingreso_exportacion += excedente * precio_exportacion
         
-        # Para energía compartida interna: suma de la energía recibida por reparto y consumida
-        # Este es un estimado, ya que no tenemos el detalle exacto de quién genera y quién consume
-        if energia_reparto > 0 and energia_reparto < consumo:
-            energia_compartida_interna += energia_reparto
-        
-        # Para cálculo de reducción de pico de demanda
-        if timestamp not in demanda_por_intervalo:
-            demanda_por_intervalo[timestamp] = 0
-            demanda_base_por_intervalo[timestamp] = 0
-        
-        # Demanda real con autoconsumo: lo que se importa de la red
-        demanda_por_intervalo[timestamp] += importacion
-        # Demanda base sin autoconsumo: todo el consumo se importaría
-        demanda_base_por_intervalo[timestamp] += consumo
     
     # Calcular generación total
     for resultado in resultados_intervalo_activos_generacion:
@@ -486,13 +460,6 @@ def calcular_resultados_globales(simulacion, resultados_intervalo_participantes,
     tasa_autoconsumo = (total_autoconsumo / total_generacion * 100) if total_generacion > 0 else 0
     tasa_autosuficiencia = (total_autoconsumo / total_consumo * 100) if total_consumo > 0 else 0
     
-    # 2. Cálculo de reducción de pico de demanda
-    pico_demanda = max(demanda_por_intervalo.values()) if demanda_por_intervalo else 0
-    pico_demanda_base = max(demanda_base_por_intervalo.values()) if demanda_base_por_intervalo else 0
-    
-    reduccion_pico = pico_demanda_base - pico_demanda
-    reduccion_pico_pct = (reduccion_pico / pico_demanda_base * 100) if pico_demanda_base > 0 else 0
-    
     # ---- Cálculos económicos ----
     
     # 3. Coste total de energía
@@ -502,12 +469,12 @@ def calcular_resultados_globales(simulacion, resultados_intervalo_participantes,
     
     # 4. Ahorro total
     # Coste base: todo el consumo se pagaría al precio medio de importación
-    precio_medio_importacion = (total_coste_importacion / total_importacion) if total_importacion > 0 else 0
-    coste_base_estimado = total_consumo * precio_medio_importacion
+    coste_base_estimado = coste_base_estimado
     
     ahorro_total = coste_base_estimado - coste_total_energia
     
     # 5. Cálculos financieros (payback y ROI)
+    # Todo Añadir mas información sobre costes de instalación y operación. (Inversion inicial)
     payback_period = None
     roi = None
     
@@ -553,9 +520,6 @@ def calcular_resultados_globales(simulacion, resultados_intervalo_participantes,
         tasaAutosuficienciaSSR_pct=tasa_autosuficiencia,
         energiaTotalImportada_kWh=total_importacion,
         energiaTotalExportada_kWh=total_exportacion,
-        energiaCompartidaInterna_kWh=energia_compartida_interna,
-        reduccionPicoDemanda_kW=reduccion_pico,
-        reduccionPicoDemanda_pct=reduccion_pico_pct,
         reduccionCO2_kg=reduccion_co2,
         idSimulacion=simulacion.idSimulacion 
     )

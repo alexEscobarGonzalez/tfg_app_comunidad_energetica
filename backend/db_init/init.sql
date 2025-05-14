@@ -28,7 +28,7 @@ CREATE TABLE `USUARIO` (
     `idUsuario` INT NOT NULL AUTO_INCREMENT,
     `nombre` VARCHAR(255) NOT NULL,
     `correo` VARCHAR(255) NOT NULL UNIQUE,
-    `hashContrasena` VARCHAR(255) NOT NULL, -- Ajustar longitud según el método de hash
+    `hashContrasena` VARCHAR(255) NOT NULL, 
     PRIMARY KEY (`idUsuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -38,7 +38,7 @@ CREATE TABLE `COMUNIDAD_ENERGETICA` (
     `nombre` VARCHAR(255) NOT NULL,
     `latitud` FLOAT,
     `longitud` FLOAT,
-    `tipoEstrategiaExcedentes` VARCHAR(100), -- Podría ser ENUM('Venta', 'Compensacion', 'Almacenamiento', ...)
+    `tipoEstrategiaExcedentes` VARCHAR(100), 
     `idUsuario_gestor` INT NOT NULL,
     PRIMARY KEY (`idComunidadEnergetica`),
     FOREIGN KEY (`idUsuario_gestor`) REFERENCES `USUARIO`(`idUsuario`) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -56,20 +56,20 @@ CREATE TABLE `PARTICIPANTE` (
 -- Tabla CONTRATO_AUTOCONSUMO
 CREATE TABLE `CONTRATO_AUTOCONSUMO` (
     `idContrato` INT NOT NULL AUTO_INCREMENT,
-    `tipoContrato` VARCHAR(100), -- Podría ser ENUM('Individual', 'Colectivo', ...)
+    `tipoContrato` VARCHAR(100), 
     `precioEnergiaImportacion_eur_kWh` FLOAT,
     `precioCompensacionExcedentes_eur_kWh` FLOAT,
     `potenciaContratada_kW` FLOAT,
-    `precioPotenciaContratado_eur_kWh` FLOAT, -- Revisar unidad, ¿quizás eur/kW/año?
-    `idParticipante` INT NOT NULL UNIQUE, -- Asume un contrato por participante
+    `precioPotenciaContratado_eur_kWh` FLOAT, 
+    `idParticipante` INT NOT NULL UNIQUE, 
     PRIMARY KEY (`idContrato`),
     FOREIGN KEY (`idParticipante`) REFERENCES `PARTICIPANTE`(`idParticipante`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `COEFICIENTE_REPARTO` (
     `idCoeficienteReparto` INT NOT NULL AUTO_INCREMENT,
-    `tipoReparto` VARCHAR(100), -- Podría ser ENUM('Fijo', 'Variable', 'Programado', ...)
-    `parametros` JSON, -- Campo JSON para almacenar todos los parámetros de forma flexible
+    `tipoReparto` VARCHAR(100), 
+    `parametros` JSON, 
     `idParticipante` INT NOT NULL,
     PRIMARY KEY (`idCoeficienteReparto`),
     FOREIGN KEY (`idParticipante`) REFERENCES `PARTICIPANTE`(`idParticipante`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -79,11 +79,11 @@ CREATE TABLE `COEFICIENTE_REPARTO` (
 CREATE TABLE `REGISTRO_CONSUMO` (
     `idRegistroConsumo` INT NOT NULL AUTO_INCREMENT,
     `timestamp` DATETIME NOT NULL,
-    `consumoEnergia` FLOAT NOT NULL, -- Asumiendo kWh
+    `consumoEnergia` FLOAT NOT NULL, 
     `idParticipante` INT NOT NULL,
     PRIMARY KEY (`idRegistroConsumo`),
     FOREIGN KEY (`idParticipante`) REFERENCES `PARTICIPANTE`(`idParticipante`) ON DELETE CASCADE ON UPDATE CASCADE,
-    INDEX `idx_registro_consumo_participante_ts` (`idParticipante`, `timestamp`) -- Índice útil para búsquedas por participante y fecha
+    INDEX `idx_registro_consumo_participante_ts` (`idParticipante`, `timestamp`) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla ACTIVO_GENERACION_UNICA (Combinación de las tablas anteriores)
@@ -97,15 +97,13 @@ CREATE TABLE `ACTIVO_GENERACION_UNICA` (
     `longitud` FLOAT,
     `potenciaNominal_kWp` FLOAT,
     `idComunidadEnergetica` INT NOT NULL,
-    `tipo_activo` VARCHAR(100) NOT NULL, -- 'Fotovoltaica', 'Aerogenerador', etc.
-      -- Atributos de INSTALACION_FOTOVOLTAICA (ahora NULLABLE)
+    `tipo_activo` VARCHAR(100) NOT NULL, 
     `inclinacionGrados` FLOAT NULL,
     `azimutGrados` FLOAT NULL,
     `tecnologiaPanel` VARCHAR(100) NULL,
     `perdidaSistema` FLOAT NULL,
     `posicionMontaje` VARCHAR(100) NULL,
-    
-    -- Atributos de AEROGENERADOR (ahora NULLABLE)
+
     `curvaPotencia` JSON NULL,
     
     PRIMARY KEY (`idActivoGeneracion`),
@@ -115,7 +113,7 @@ CREATE TABLE `ACTIVO_GENERACION_UNICA` (
 -- Tabla ACTIVO_ALMACENAMIENTO
 CREATE TABLE `ACTIVO_ALMACENAMIENTO` (
     `idActivoAlmacenamiento` INT NOT NULL AUTO_INCREMENT,
-    `nombreDescriptivo` VARCHAR(255), -- Añadido, suele ser útil
+    `nombreDescriptivo` VARCHAR(255),
     `capacidadNominal_kWh` FLOAT NOT NULL,
     `potenciaMaximaCarga_kW` FLOAT,
     `potenciaMaximaDescarga_kW` FLOAT,
@@ -130,11 +128,11 @@ CREATE TABLE `ACTIVO_ALMACENAMIENTO` (
 CREATE TABLE `SIMULACION` (
     `idSimulacion` INT NOT NULL AUTO_INCREMENT,
     `nombreSimulacion` VARCHAR(255),
-    `fechaInicio` DATE NOT NULL,
-    `fechaFin` DATE NOT NULL,
-    `tiempo_medicion` INT, -- ¿Minutos, segundos? Añadir unidad en comentario o nombre
-    `estado` VARCHAR(50), -- Podría ser ENUM('Pendiente', 'Ejecutando', 'Completada', 'Error')
-    `tipoEstrategiaExcedentes` VARCHAR(100), -- Podría ser ENUM(...) Igual que en COMUNIDAD_ENERGETICA? O específico de la simulación?
+    `fechaInicio` DATETIME NOT NULL,
+    `fechaFin` DATETIME NOT NULL,
+    `tiempo_medicion` INT, 
+    `estado` VARCHAR(50), 
+    `tipoEstrategiaExcedentes` VARCHAR(100), 
     `idUsuario_creador` INT NOT NULL,
     `idComunidadEnergetica` INT NOT NULL,
     PRIMARY KEY (`idSimulacion`),
@@ -153,7 +151,7 @@ CREATE TABLE `DATOS_AMBIENTALES` (
     `idSimulacion` INT NOT NULL,
     PRIMARY KEY (`idRegistro`),
     FOREIGN KEY (`idSimulacion`) REFERENCES `SIMULACION`(`idSimulacion`) ON DELETE CASCADE ON UPDATE CASCADE,
-    INDEX `idx_datos_ambientales_sim_ts` (`idSimulacion`, `timestamp`) -- Índice útil
+    INDEX `idx_datos_ambientales_sim_ts` (`idSimulacion`, `timestamp`) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla RESULTADO_SIMULACION (Resultados globales)
@@ -169,11 +167,8 @@ CREATE TABLE `RESULTADO_SIMULACION` (
     `tasaAutosuficienciaSSR_pct` FLOAT,
     `energiaTotalImportada_kWh` FLOAT,
     `energiaTotalExportada_kWh` FLOAT,
-    `energiaCompartidaInterna_kWh` FLOAT,
-    `reduccionPicoDemanda_kW` FLOAT,
-    `reduccionPicoDemanda_pct` FLOAT,
     `reduccionCO2_kg` FLOAT,
-    `idSimulacion` INT NOT NULL UNIQUE, -- Asume un resultado global por simulación
+    `idSimulacion` INT NOT NULL UNIQUE, 
     PRIMARY KEY (`idResultado`),
     FOREIGN KEY (`idSimulacion`) REFERENCES `SIMULACION`(`idSimulacion`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -188,12 +183,13 @@ CREATE TABLE `RESULTADO_SIMULACION_PARTICIPANTE` (
     `energiaRecibidaRepartoConsumida_kWh` FLOAT,
     `tasaAutoconsumoSCR_pct` FLOAT,
     `tasaAutosuficienciaSSR_pct` FLOAT,
+    `consumo_kWh` FLOAT,
     `idResultadoSimulacion` INT NOT NULL,
     `idParticipante` INT NOT NULL,
     PRIMARY KEY (`idResultadoParticipante`),
     FOREIGN KEY (`idResultadoSimulacion`) REFERENCES `RESULTADO_SIMULACION`(`idResultado`) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (`idParticipante`) REFERENCES `PARTICIPANTE`(`idParticipante`) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE KEY `uq_resultado_sim_participante` (`idResultadoSimulacion`, `idParticipante`) -- Un resultado por participante por simulación
+    UNIQUE KEY `uq_resultado_sim_participante` (`idResultadoSimulacion`, `idParticipante`) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla RESULTADO_SIMULACION_ACTIVO_GENERACION
@@ -228,7 +224,7 @@ CREATE TABLE `RESULTADO_SIMULACION_ACTIVO_ALMACENAMIENTO` (
     PRIMARY KEY (`idResultadoActivoAlm`),
     FOREIGN KEY (`idResultadoSimulacion`) REFERENCES `RESULTADO_SIMULACION`(`idResultado`) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (`idActivoAlmacenamiento`) REFERENCES `ACTIVO_ALMACENAMIENTO`(`idActivoAlmacenamiento`) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE KEY `uq_resultado_sim_activo_alm` (`idResultadoSimulacion`, `idActivoAlmacenamiento`) -- Un resultado por activo alm por simulación
+    UNIQUE KEY `uq_resultado_sim_activo_alm` (`idResultadoSimulacion`, `idActivoAlmacenamiento`) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla DATOS_INTERVALO_PARTICIPANTE (Datos detallados por intervalo)
@@ -246,7 +242,7 @@ CREATE TABLE `DATOS_INTERVALO_PARTICIPANTE` (
     `idResultadoParticipante` INT NOT NULL,
     PRIMARY KEY (`idDatosIntervaloParticipante`),
     FOREIGN KEY (`idResultadoParticipante`) REFERENCES `RESULTADO_SIMULACION_PARTICIPANTE`(`idResultadoParticipante`) ON DELETE CASCADE ON UPDATE CASCADE,
-    INDEX `idx_intervalo_participante_ts` (`idResultadoParticipante`, `timestamp`) -- Índice útil
+    INDEX `idx_intervalo_participante_ts` (`idResultadoParticipante`, `timestamp`) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `DATOS_INTERVALO_ACTIVO` (
@@ -255,13 +251,11 @@ CREATE TABLE `DATOS_INTERVALO_ACTIVO` (
     `energiaGenerada_kWh` FLOAT NULL,
     `energiaCargada_kWh` FLOAT NULL,
     `energiaDescargada_kWh` FLOAT NULL,
-    `SoC_kWh` FLOAT NULL, -- Estado de carga en kWh (o podría ser %)
-    `idResultadoActivoGen` INT NULL, -- FK a resultado de generación (si aplica)
-    `idResultadoActivoAlm` INT NULL, -- FK a resultado de almacenamiento (si aplica)
+    `SoC_kWh` FLOAT NULL, 
+    `idResultadoActivoGen` INT NULL, 
+    `idResultadoActivoAlm` INT NULL, 
     PRIMARY KEY (`idDatosIntervaloActivo`),
     FOREIGN KEY (`idResultadoActivoGen`) REFERENCES `RESULTADO_SIMULACION_ACTIVO_GENERACION`(`idResultadoActivoGen`) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (`idResultadoActivoAlm`) REFERENCES `RESULTADO_SIMULACION_ACTIVO_ALMACENAMIENTO`(`idResultadoActivoAlm`) ON DELETE CASCADE ON UPDATE CASCADE,
-    INDEX `idx_intervalo_activo_ts` (`timestamp`) -- Índice útil
-    -- Se podría añadir un CHECK constraint para asegurar que al menos uno de los FKs no es NULL si fuera necesario
-    -- CONSTRAINT `chk_activo_fk` CHECK (`idResultadoActivoGen` IS NOT NULL OR `idResultadoActivoAlm` IS NOT NULL) -- Opcional: asegura que el registro pertenece a un activo -> Removed due to compatibility issues
+    INDEX `idx_intervalo_activo_ts` (`timestamp`) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

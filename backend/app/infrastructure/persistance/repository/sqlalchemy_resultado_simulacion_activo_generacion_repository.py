@@ -62,7 +62,7 @@ class SqlAlchemyResultadoSimulacionActivoGeneracionRepository(ResultadoSimulacio
     
     def create(self, resultado_activo_gen: ResultadoSimulacionActivoGeneracionEntity) -> ResultadoSimulacionActivoGeneracionEntity:
         db_resultado = self._to_model(resultado_activo_gen)
-        db_resultado.idResultadoActivoGen = None  # Aseguramos que se autoincrementa
+        db_resultado.idResultadoActivoGen = None  
         
         self.db.add(db_resultado)
         self.db.commit()
@@ -78,7 +78,6 @@ class SqlAlchemyResultadoSimulacionActivoGeneracionRepository(ResultadoSimulacio
         if not db_resultado:
             raise ValueError(f"Resultado con id {resultado_activo_gen_id} no encontrado")
         
-        # Actualizar atributos
         db_resultado.energiaTotalGenerada_kWh = resultado_activo_gen.energiaTotalGenerada_kWh
         db_resultado.factorCapacidad_pct = resultado_activo_gen.factorCapacidad_pct
         db_resultado.performanceRatio_pct = resultado_activo_gen.performanceRatio_pct
@@ -101,22 +100,12 @@ class SqlAlchemyResultadoSimulacionActivoGeneracionRepository(ResultadoSimulacio
         self.db.commit()
     
     def create_bulk(self, resultados: List[ResultadoSimulacionActivoGeneracionEntity], resultado_global_id: int) -> List[ResultadoSimulacionActivoGeneracionEntity]:
-        """
-        Crea múltiples registros de resultados de simulación de activos de generación a la vez.
-        
-        Args:
-            resultados: Lista de entidades ResultadoSimulacionActivoGeneracionEntity a guardar
-            
-        Returns:
-            Lista de entidades ResultadoSimulacionActivoGeneracionEntity creadas con IDs generados
-        """
         if not resultados:
             return []
             
         models = []
         try:
             for resultado in resultados:
-                # Crear modelo directamente a partir de la entidad
                 model = ResultadoSimulacionActivoGeneracion(
                     energiaTotalGenerada_kWh=resultado.energiaTotalGenerada_kWh or 0,
                     factorCapacidad_pct=resultado.factorCapacidad_pct or 0,
@@ -128,15 +117,12 @@ class SqlAlchemyResultadoSimulacionActivoGeneracionRepository(ResultadoSimulacio
                 self.db.add(model)
                 models.append(model)
             
-            # Hacer commit de todos los cambios a la vez
             if models:
                 self.db.commit()
                 
-                # Refrescar todos los modelos para obtener sus IDs generados
                 for model in models:
                     self.db.refresh(model)
             
-            # Mapear modelos a entidades
             return [self._to_entity(model) for model in models]
         
         except SQLAlchemyError as e:

@@ -9,7 +9,6 @@ class SqlAlchemyCoeficienteRepartoRepository(CoeficienteRepartoRepository):
         self.db = db
         
     def _map_to_entity(self, model: CoeficienteRepartoModel) -> CoeficienteRepartoEntity:
-        """Convierte un modelo de tabla a una entidad de dominio"""
         return CoeficienteRepartoEntity(
             idCoeficienteReparto=model.idCoeficienteReparto,
             tipoReparto=model.tipoReparto,
@@ -48,7 +47,6 @@ class SqlAlchemyCoeficienteRepartoRepository(CoeficienteRepartoRepository):
         if model:
             model.tipoReparto = coeficiente.tipoReparto
             model.parametros = coeficiente.parametros
-            # No actualizamos el idParticipante ya que es una relación fija
             
             self.db.commit()
             self.db.refresh(model)

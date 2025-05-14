@@ -13,9 +13,11 @@ class ResultadoSimulacionParticipante(Base):
     energiaRecibidaRepartoConsumida_kWh = Column(Float, nullable=True)
     tasaAutoconsumoSCR_pct = Column(Float, nullable=True)
     tasaAutosuficienciaSSR_pct = Column(Float, nullable=True)
+    consumo_kWh = Column(Float, nullable=True)
     idResultadoSimulacion = Column(Integer, ForeignKey("RESULTADO_SIMULACION.idResultado", ondelete="CASCADE"), nullable=False)
     idParticipante = Column(Integer, ForeignKey("PARTICIPANTE.idParticipante", ondelete="CASCADE"), nullable=False)
 
+    # Relaciones
     resultado_simulacion = relationship("ResultadoSimulacion") 
     participante = relationship("Participante") 
     datos_intervalos_participante = relationship("DatosIntervaloParticipante", back_populates="resultado_simulacion_participante", cascade="all, delete-orphan")

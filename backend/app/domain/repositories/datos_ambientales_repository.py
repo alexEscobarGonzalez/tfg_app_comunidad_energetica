@@ -19,7 +19,6 @@ class DatosAmbientalesRepository:
         raise NotImplementedError
 
     def create_bulk(self, datos_list: List[DatosAmbientalesEntity]) -> List[DatosAmbientalesEntity]:
-         # Método opcional para inserción masiva
         raise NotImplementedError
     
     def get_datos_ambientales(self, lat: float, lon: float, start_date: datetime, end_date: datetime) -> List[DatosAmbientalesEntity]:

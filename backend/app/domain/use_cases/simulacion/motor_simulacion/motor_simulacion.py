@@ -198,9 +198,6 @@ class MotorSimulacion:
             resultados_intervalo_participantes = []
             resultados_intervalo_activos_almacenamiento = []
             
-            estado_almacenamiento = {
-                alm.idActivoAlmacenamiento: {'soc_kwh': 0.0} for alm in activos_alm
-            }
     
             for idx, current_time in enumerate(timestamps):
                 # Mostrar progreso cada 5%
@@ -297,9 +294,6 @@ class MotorSimulacion:
             print(f"    - Intervalos participantes: {len(resultados_persistidos['intervalos_participantes'])}")
             print(f"    - Intervalos generación: {len(resultados_persistidos['intervalos_activos_generacion'])}")
             print(f"    - Intervalos almacenamiento: {len(resultados_persistidos['intervalos_activos_almacenamiento'])}")
-            
-            self.db_session.commit()
-            print(f"  ✓ Transacción de base de datos confirmada")
 
             # Actualizar estado a 'Completada'
             self.simulacion_repo.update_estado(simulacion_id, EstadoSimulacion.COMPLETADA.value)

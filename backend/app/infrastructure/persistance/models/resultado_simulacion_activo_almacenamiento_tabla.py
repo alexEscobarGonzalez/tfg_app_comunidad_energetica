@@ -21,8 +21,6 @@ class ResultadoSimulacionActivoAlmacenamiento(Base):
     # Relaciones
     resultado_simulacion = relationship("ResultadoSimulacion", back_populates="resultados_activos_alm")
     activo_almacenamiento = relationship("ActivoAlmacenamiento", back_populates="resultados_simulacion")
-    
-    # Relación con los datos de intervalo (nueva relación)
     datos_intervalos = relationship("DatosIntervaloActivo", back_populates="resultado_activo_alm", cascade="all, delete-orphan")
     
     # Restricción única para evitar duplicados

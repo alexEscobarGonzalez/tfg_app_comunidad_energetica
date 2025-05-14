@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import datetime
 from .estado_simulacion import EstadoSimulacion
 from .tipo_estrategia_excedentes import TipoEstrategiaExcedentes
 
@@ -7,9 +7,9 @@ from .tipo_estrategia_excedentes import TipoEstrategiaExcedentes
 class SimulacionEntity:
     idSimulacion: int = None
     nombreSimulacion: str = None
-    fechaInicio: date = None
-    fechaFin: date = None
-    tiempo_medicion: int = None  # En minutos
+    fechaInicio: datetime = None
+    fechaFin: datetime = None
+    tiempo_medicion: int = None  
     estado: EstadoSimulacion = EstadoSimulacion.PENDIENTE
     tipoEstrategiaExcedentes: TipoEstrategiaExcedentes = None
     idUsuario_creador: int = None

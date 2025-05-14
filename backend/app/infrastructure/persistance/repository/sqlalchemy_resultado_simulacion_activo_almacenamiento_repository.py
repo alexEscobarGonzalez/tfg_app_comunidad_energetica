@@ -47,17 +47,14 @@ class SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(ResultadoSimul
         return [self._map_to_entity(r) for r in resultados]
     
     def create(self, resultado_activo_alm: ResultadoSimulacionActivoAlmacenamientoEntity) -> ResultadoSimulacionActivoAlmacenamientoEntity:
-        # Verificar si ya existe un resultado para esa combinación de simulación y activo
         existing = self.get_by_resultado_simulacion_and_activo(
             resultado_activo_alm.idResultadoSimulacion,
             resultado_activo_alm.idActivoAlmacenamiento
         )
         
         if existing:
-            # Si ya existe, actualizamos en lugar de crear uno nuevo
             return self.update(existing.idResultadoActivoAlm, resultado_activo_alm)
         
-        # Crear nuevo registro
         db_resultado = ResultadoSimulacionActivoAlmacenamiento(
             energiaTotalCargada_kWh=resultado_activo_alm.energiaTotalCargada_kWh,
             energiaTotalDescargada_kWh=resultado_activo_alm.energiaTotalDescargada_kWh,
@@ -86,7 +83,6 @@ class SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(ResultadoSimul
         if not db_resultado:
             return None
         
-        # Actualizar campos del resultado
         if resultado_activo_alm.energiaTotalCargada_kWh is not None:
             db_resultado.energiaTotalCargada_kWh = resultado_activo_alm.energiaTotalCargada_kWh
         if resultado_activo_alm.energiaTotalDescargada_kWh is not None:
@@ -121,7 +117,6 @@ class SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(ResultadoSimul
             self.db.commit()
     
     def _map_to_entity(self, db_resultado: ResultadoSimulacionActivoAlmacenamiento) -> ResultadoSimulacionActivoAlmacenamientoEntity:
-        """Convierte un modelo de la base de datos a una entidad de dominio"""
         return ResultadoSimulacionActivoAlmacenamientoEntity(
             idResultadoActivoAlm=db_resultado.idResultadoActivoAlm,
             energiaTotalCargada_kWh=db_resultado.energiaTotalCargada_kWh,
@@ -138,15 +133,6 @@ class SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(ResultadoSimul
         )
     
     def create_bulk(self, resultados: List[ResultadoSimulacionActivoAlmacenamientoEntity], resultado_global_id: int) -> List[ResultadoSimulacionActivoAlmacenamientoEntity]:
-        """
-        Crea múltiples registros de resultados de simulación de activos de almacenamiento a la vez.
-        
-        Args:
-            resultados: Lista de entidades ResultadoSimulacionActivoAlmacenamientoEntity a guardar
-            
-        Returns:
-            Lista de entidades ResultadoSimulacionActivoAlmacenamientoEntity creadas con IDs generados
-        """
         if not resultados:
             return []
             

@@ -9,7 +9,6 @@ class SqlAlchemyContratoAutoconsumoRepository(ContratoAutoconsumoRepository):
         self.db = db
         
     def _map_to_entity(self, model: ContratoAutoconsumo) -> ContratoAutoconsumoEntity:
-        """Convierte un modelo de tabla a una entidad de dominio"""
         return ContratoAutoconsumoEntity(
             idContrato=model.idContrato,
             tipoContrato=model.tipoContrato,
@@ -59,7 +58,6 @@ class SqlAlchemyContratoAutoconsumoRepository(ContratoAutoconsumoRepository):
             model.precioCompensacionExcedentes_eur_kWh = contrato.precioCompensacionExcedentes_eur_kWh
             model.potenciaContratada_kW = contrato.potenciaContratada_kW
             model.precioPotenciaContratado_eur_kWh = contrato.precioPotenciaContratado_eur_kWh
-            # No actualizamos el idParticipante ya que es una relación fija (clave única)
             
             self.db.commit()
             self.db.refresh(model)

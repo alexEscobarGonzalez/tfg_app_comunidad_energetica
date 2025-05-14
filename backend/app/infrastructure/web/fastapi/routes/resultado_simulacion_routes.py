@@ -42,9 +42,6 @@ def crear_resultado_simulacion(resultado: ResultadoSimulacionCreate, db: Session
         tasaAutosuficienciaSSR_pct=resultado.tasaAutosuficienciaSSR_pct,
         energiaTotalImportada_kWh=resultado.energiaTotalImportada_kWh,
         energiaTotalExportada_kWh=resultado.energiaTotalExportada_kWh,
-        energiaCompartidaInterna_kWh=resultado.energiaCompartidaInterna_kWh,
-        reduccionPicoDemanda_kW=resultado.reduccionPicoDemanda_kW,
-        reduccionPicoDemanda_pct=resultado.reduccionPicoDemanda_pct,
         reduccionCO2_kg=resultado.reduccionCO2_kg,
         idSimulacion=resultado.idSimulacion
     )
@@ -107,9 +104,6 @@ def actualizar_resultado(id_resultado: int, resultado: ResultadoSimulacionUpdate
         tasaAutosuficienciaSSR_pct=resultado.tasaAutosuficienciaSSR_pct if resultado.tasaAutosuficienciaSSR_pct is not None else resultado_existente.tasaAutosuficienciaSSR_pct,
         energiaTotalImportada_kWh=resultado.energiaTotalImportada_kWh if resultado.energiaTotalImportada_kWh is not None else resultado_existente.energiaTotalImportada_kWh,
         energiaTotalExportada_kWh=resultado.energiaTotalExportada_kWh if resultado.energiaTotalExportada_kWh is not None else resultado_existente.energiaTotalExportada_kWh,
-        energiaCompartidaInterna_kWh=resultado.energiaCompartidaInterna_kWh if resultado.energiaCompartidaInterna_kWh is not None else resultado_existente.energiaCompartidaInterna_kWh,
-        reduccionPicoDemanda_kW=resultado.reduccionPicoDemanda_kW if resultado.reduccionPicoDemanda_kW is not None else resultado_existente.reduccionPicoDemanda_kW,
-        reduccionPicoDemanda_pct=resultado.reduccionPicoDemanda_pct if resultado.reduccionPicoDemanda_pct is not None else resultado_existente.reduccionPicoDemanda_pct,
         reduccionCO2_kg=resultado.reduccionCO2_kg if resultado.reduccionCO2_kg is not None else resultado_existente.reduccionCO2_kg,
         idSimulacion=resultado_existente.idSimulacion
     )

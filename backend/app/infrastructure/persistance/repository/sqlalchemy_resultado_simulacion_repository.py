@@ -36,9 +36,6 @@ class SqlAlchemyResultadoSimulacionRepository(ResultadoSimulacionRepository):
             tasaAutosuficienciaSSR_pct=resultado.tasaAutosuficienciaSSR_pct,
             energiaTotalImportada_kWh=resultado.energiaTotalImportada_kWh,
             energiaTotalExportada_kWh=resultado.energiaTotalExportada_kWh,
-            energiaCompartidaInterna_kWh=resultado.energiaCompartidaInterna_kWh,
-            reduccionPicoDemanda_kW=resultado.reduccionPicoDemanda_kW,
-            reduccionPicoDemanda_pct=resultado.reduccionPicoDemanda_pct,
             reduccionCO2_kg=resultado.reduccionCO2_kg,
             idSimulacion=resultado.idSimulacion
         )
@@ -54,7 +51,6 @@ class SqlAlchemyResultadoSimulacionRepository(ResultadoSimulacionRepository):
         if not db_resultado:
             return None
         
-        # Actualizar campos
         if resultado.fechaCreacion:
             db_resultado.fechaCreacion = resultado.fechaCreacion
         if resultado.costeTotalEnergia_eur is not None:
@@ -75,12 +71,6 @@ class SqlAlchemyResultadoSimulacionRepository(ResultadoSimulacionRepository):
             db_resultado.energiaTotalImportada_kWh = resultado.energiaTotalImportada_kWh
         if resultado.energiaTotalExportada_kWh is not None:
             db_resultado.energiaTotalExportada_kWh = resultado.energiaTotalExportada_kWh
-        if resultado.energiaCompartidaInterna_kWh is not None:
-            db_resultado.energiaCompartidaInterna_kWh = resultado.energiaCompartidaInterna_kWh
-        if resultado.reduccionPicoDemanda_kW is not None:
-            db_resultado.reduccionPicoDemanda_kW = resultado.reduccionPicoDemanda_kW
-        if resultado.reduccionPicoDemanda_pct is not None:
-            db_resultado.reduccionPicoDemanda_pct = resultado.reduccionPicoDemanda_pct
         if resultado.reduccionCO2_kg is not None:
             db_resultado.reduccionCO2_kg = resultado.reduccionCO2_kg
             
@@ -96,7 +86,6 @@ class SqlAlchemyResultadoSimulacionRepository(ResultadoSimulacionRepository):
             self.db.commit()
             
     def _map_to_entity(self, db_resultado: ResultadoSimulacion) -> ResultadoSimulacionEntity:
-        """Mapea un objeto de la base de datos a una entidad de dominio"""
         return ResultadoSimulacionEntity(
             idResultado=db_resultado.idResultado,
             fechaCreacion=db_resultado.fechaCreacion,
@@ -109,9 +98,6 @@ class SqlAlchemyResultadoSimulacionRepository(ResultadoSimulacionRepository):
             tasaAutosuficienciaSSR_pct=db_resultado.tasaAutosuficienciaSSR_pct,
             energiaTotalImportada_kWh=db_resultado.energiaTotalImportada_kWh,
             energiaTotalExportada_kWh=db_resultado.energiaTotalExportada_kWh,
-            energiaCompartidaInterna_kWh=db_resultado.energiaCompartidaInterna_kWh,
-            reduccionPicoDemanda_kW=db_resultado.reduccionPicoDemanda_kW,
-            reduccionPicoDemanda_pct=db_resultado.reduccionPicoDemanda_pct,
             reduccionCO2_kg=db_resultado.reduccionCO2_kg,
             idSimulacion=db_resultado.idSimulacion
         )

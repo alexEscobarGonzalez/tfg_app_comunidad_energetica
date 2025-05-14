@@ -15,8 +15,5 @@ class ResultadoSimulacionEntity:
     tasaAutosuficienciaSSR_pct: Optional[float] = None
     energiaTotalImportada_kWh: Optional[float] = None
     energiaTotalExportada_kWh: Optional[float] = None
-    energiaCompartidaInterna_kWh: Optional[float] = None
-    reduccionPicoDemanda_kW: Optional[float] = None
-    reduccionPicoDemanda_pct: Optional[float] = None
     reduccionCO2_kg: Optional[float] = None
     idSimulacion: Optional[int] = None

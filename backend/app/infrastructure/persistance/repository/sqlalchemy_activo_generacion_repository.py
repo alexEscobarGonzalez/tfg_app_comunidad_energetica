@@ -10,7 +10,6 @@ class SqlAlchemyActivoGeneracionRepository(ActivoGeneracionRepository):
         self.db = db
         
     def _map_to_entity(self, model: ActivoGeneracion) -> ActivoGeneracionEntity:
-        """Convierte un modelo de tabla a una entidad de dominio"""
         return ActivoGeneracionEntity(
             idActivoGeneracion=model.idActivoGeneracion,
             nombreDescriptivo=model.nombreDescriptivo,
@@ -64,7 +63,7 @@ class SqlAlchemyActivoGeneracionRepository(ActivoGeneracionRepository):
             tipo_activo=activo.tipo_activo
         )
         
-        # Configurar campos específicos según el tipo de activo
+
         if activo.tipo_activo == TipoActivoGeneracion.INSTALACION_FOTOVOLTAICA:
             model.inclinacionGrados = activo.inclinacionGrados
             model.azimutGrados = activo.azimutGrados
@@ -82,13 +81,11 @@ class SqlAlchemyActivoGeneracionRepository(ActivoGeneracionRepository):
     def update(self, activo: ActivoGeneracionEntity) -> ActivoGeneracionEntity:
         model = self.db.query(ActivoGeneracion).filter_by(idActivoGeneracion=activo.idActivoGeneracion).first()
         if model:
-            # Actualizar campos comunes
             model.nombreDescriptivo = activo.nombreDescriptivo
             model.costeInstalacion_eur = activo.costeInstalacion_eur
             model.vidaUtil_anios = activo.vidaUtil_anios
             model.potenciaNominal_kWp = activo.potenciaNominal_kWp
             
-            # Actualizar campos específicos según el tipo de activo
             if model.tipo_activo == TipoActivoGeneracion.INSTALACION_FOTOVOLTAICA:
                 model.inclinacionGrados = activo.inclinacionGrados
                 model.azimutGrados = activo.azimutGrados

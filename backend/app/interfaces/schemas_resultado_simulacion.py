@@ -13,9 +13,6 @@ class ResultadoSimulacionBase(BaseModel):
     tasaAutosuficienciaSSR_pct: Optional[float] = Field(None, description="Tasa de autosuficiencia (SSR) en porcentaje")
     energiaTotalImportada_kWh: Optional[float] = Field(None, description="Energía total importada de la red en kWh")
     energiaTotalExportada_kWh: Optional[float] = Field(None, description="Energía total exportada a la red en kWh")
-    energiaCompartidaInterna_kWh: Optional[float] = Field(None, description="Energía compartida internamente en la comunidad en kWh")
-    reduccionPicoDemanda_kW: Optional[float] = Field(None, description="Reducción del pico de demanda en kW")
-    reduccionPicoDemanda_pct: Optional[float] = Field(None, description="Reducción del pico de demanda en porcentaje")
     reduccionCO2_kg: Optional[float] = Field(None, description="Reducción de emisiones de CO2 en kg")
 
 class ResultadoSimulacionCreate(ResultadoSimulacionBase):

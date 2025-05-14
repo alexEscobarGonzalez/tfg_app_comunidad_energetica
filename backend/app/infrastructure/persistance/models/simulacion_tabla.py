@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from app.infrastructure.persistance.database import Base
 
@@ -7,8 +7,8 @@ class Simulacion(Base):
     
     idSimulacion = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nombreSimulacion = Column(String(255))
-    fechaInicio = Column(Date, nullable=False)
-    fechaFin = Column(Date, nullable=False)
+    fechaInicio = Column(DateTime, nullable=False)
+    fechaFin = Column(DateTime, nullable=False)
     tiempo_medicion = Column(Integer)  # En minutos
     estado = Column(String(50))  # ENUM: PENDIENTE, EJECUTANDO, COMPLETADA, FALLIDA
     tipoEstrategiaExcedentes = Column(String(100))  # ENUM: Venta, Compensacion, Almacenamiento, Individual sin excedentes

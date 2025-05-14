@@ -73,7 +73,7 @@ class SqlAlchemyDatosIntervaloActivoRepository(DatosIntervaloActivoRepository):
     
     def create(self, datos_intervalo: DatosIntervaloActivoEntity) -> DatosIntervaloActivoEntity:
         db_datos = self._to_model(datos_intervalo)
-        db_datos.idDatosIntervaloActivo = None  # Asegurar que se autoincrementa
+        db_datos.idDatosIntervaloActivo = None 
         
         self.db.add(db_datos)
         self.db.commit()
@@ -84,13 +84,11 @@ class SqlAlchemyDatosIntervaloActivoRepository(DatosIntervaloActivoRepository):
     def create_bulk(self, datos_intervalos: List[DatosIntervaloActivoEntity]) -> List[DatosIntervaloActivoEntity]:
         db_datos_list = [self._to_model(datos) for datos in datos_intervalos]
         for db_datos in db_datos_list:
-            db_datos.idDatosIntervaloActivo = None  # Asegurar que se autoincrementa
+            db_datos.idDatosIntervaloActivo = None  
         
         self.db.add_all(db_datos_list)
         self.db.commit()
         
-        # No podemos hacer refresh de múltiples objetos fácilmente
-        # Devolvemos las entidades con los IDs generados
         return [self._to_entity(db_datos) for db_datos in db_datos_list]
     
     def update(self, datos_intervalo_id: int, datos_intervalo: DatosIntervaloActivoEntity) -> DatosIntervaloActivoEntity:
@@ -101,7 +99,6 @@ class SqlAlchemyDatosIntervaloActivoRepository(DatosIntervaloActivoRepository):
         if not db_datos:
             raise ValueError(f"Datos de intervalo con id {datos_intervalo_id} no encontrados")
         
-        # Actualizar atributos
         db_datos.timestamp = datos_intervalo.timestamp
         db_datos.energiaGenerada_kWh = datos_intervalo.energiaGenerada_kWh
         db_datos.energiaCargada_kWh = datos_intervalo.energiaCargada_kWh

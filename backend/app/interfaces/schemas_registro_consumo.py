@@ -13,7 +13,6 @@ class RegistroConsumoCreate(RegistroConsumoBase):
 class RegistroConsumoUpdate(BaseModel):
     timestamp: Optional[datetime] = None
     consumoEnergia: Optional[float] = Field(None, gt=0)
-    # No se permite actualizar el idParticipante
 
 class RegistroConsumoRead(RegistroConsumoBase):
     idRegistroConsumo: int

@@ -12,10 +12,8 @@ from app.infrastructure.persistance.repository.sqlalchemy_participante_repositor
 from typing import List
 
 router = APIRouter(prefix="/contratos", tags=["contratos"])
-router_alias = APIRouter(prefix="/contratos-autoconsumo", tags=["contratos"])
 
 @router.post("/", response_model=ContratoAutoconsumoRead)
-@router_alias.post("/", response_model=ContratoAutoconsumoRead)
 def crear_contrato(contrato: ContratoAutoconsumoCreate, db: Session = Depends(get_db)):
     contrato_entity = ContratoAutoconsumoEntity(
         tipoContrato=contrato.tipoContrato,

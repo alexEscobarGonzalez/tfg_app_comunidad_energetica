@@ -24,7 +24,8 @@ class ActivoGeneracion(Base):
     tecnologiaPanel = Column(String(255), nullable=True)
     perdidaSistema = Column(Float, nullable=True)
     posicionMontaje = Column(String(255), nullable=True)
-      # Campos específicos para AEROGENERADOR (pueden ser nulos)
+    
+    # Campos específicos para AEROGENERADOR (pueden ser nulos)
     curvaPotencia = Column(JSON, nullable=True)  # Objeto JSON que describe la curva de potencia
     
     # Relaciones

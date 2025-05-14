@@ -24,7 +24,6 @@ class DatosIntervaloActivoRepository:
     def create_many(self, datos_intervalos: List[DatosIntervaloActivoEntity]) -> List[DatosIntervaloActivoEntity]:
         raise NotImplementedError
     
-    # Alias para mantener compatibilidad con el código existente
     def create_bulk(self, datos_intervalos: List[DatosIntervaloActivoEntity]) -> List[DatosIntervaloActivoEntity]:
         return self.create_many(datos_intervalos)
     

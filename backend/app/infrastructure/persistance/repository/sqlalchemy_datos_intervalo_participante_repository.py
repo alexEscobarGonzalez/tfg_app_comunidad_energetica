@@ -84,8 +84,6 @@ class SqlAlchemyDatosIntervaloParticipanteRepository(DatosIntervaloParticipanteR
         self.db.add_all(db_datos_list)
         self.db.commit()
         
-        # No podemos hacer refresh de múltiples objetos fácilmente
-        # Devolvemos las entidades con los IDs generados
         return [self._to_entity(db_datos) for db_datos in db_datos_list]
     
     def update(self, datos_intervalo_id: int, datos_intervalo: DatosIntervaloParticipanteEntity) -> DatosIntervaloParticipanteEntity:
@@ -96,7 +94,7 @@ class SqlAlchemyDatosIntervaloParticipanteRepository(DatosIntervaloParticipanteR
         if not db_datos:
             raise ValueError(f"Datos de intervalo con id {datos_intervalo_id} no encontrados")
         
-        # Actualizar atributos
+
         db_datos.timestamp = datos_intervalo.timestamp
         db_datos.consumoReal_kWh = datos_intervalo.consumoReal_kWh
         db_datos.autoconsumo_kWh = datos_intervalo.autoconsumo_kWh

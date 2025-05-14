@@ -9,7 +9,6 @@ class SqlAlchemyUsuarioRepository(UsuarioRepository):
         self.db = db
         
     def _map_to_entity(self, model: UsuarioModel) -> UsuarioEntity:
-        """Convierte un modelo de tabla a una entidad de dominio"""
         return UsuarioEntity(
             idUsuario=model.idUsuario, 
             nombre=model.nombre, 

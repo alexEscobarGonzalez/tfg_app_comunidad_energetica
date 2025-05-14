@@ -9,6 +9,7 @@ class ResultadoSimulacionParticipanteBase(BaseModel):
     energiaRecibidaRepartoConsumida_kWh: Optional[float] = Field(None, ge=0.0, description="Energía recibida por reparto y consumida por el participante (kWh)")
     tasaAutoconsumoSCR_pct: Optional[float] = Field(None, ge=0.0, le=100.0, description="Tasa de autoconsumo individual (SCR) (%)")
     tasaAutosuficienciaSSR_pct: Optional[float] = Field(None, ge=0.0, le=100.0, description="Tasa de autosuficiencia individual (SSR) (%)")
+    consumo_kWh: Optional[float] = Field(None, ge=0.0, description="Suma total del consumo durante la simulación (kWh)")
     idResultadoSimulacion: int = Field(..., description="ID del resultado de simulación global asociado")
     idParticipante: int = Field(..., description="ID del participante asociado")
 
@@ -23,6 +24,7 @@ class ResultadoSimulacionParticipanteUpdate(BaseModel):
     energiaRecibidaRepartoConsumida_kWh: Optional[float] = Field(None, ge=0.0)
     tasaAutoconsumoSCR_pct: Optional[float] = Field(None, ge=0.0, le=100.0)
     tasaAutosuficienciaSSR_pct: Optional[float] = Field(None, ge=0.0, le=100.0)
+    consumo_kWh: Optional[float] = Field(None, ge=0.0)
     # Los FKs no se suelen actualizar
 
 class ResultadoSimulacionParticipanteRead(ResultadoSimulacionParticipanteBase):

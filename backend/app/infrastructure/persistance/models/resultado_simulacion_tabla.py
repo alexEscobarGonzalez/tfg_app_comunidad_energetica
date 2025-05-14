@@ -17,9 +17,6 @@ class ResultadoSimulacion(Base):
     tasaAutosuficienciaSSR_pct = Column(Float, nullable=True)
     energiaTotalImportada_kWh = Column(Float, nullable=True)
     energiaTotalExportada_kWh = Column(Float, nullable=True)
-    energiaCompartidaInterna_kWh = Column(Float, nullable=True)
-    reduccionPicoDemanda_kW = Column(Float, nullable=True)
-    reduccionPicoDemanda_pct = Column(Float, nullable=True)
     reduccionCO2_kg = Column(Float, nullable=True)
     idSimulacion = Column(Integer, ForeignKey("SIMULACION.idSimulacion", ondelete="CASCADE"), nullable=False, unique=True)
     

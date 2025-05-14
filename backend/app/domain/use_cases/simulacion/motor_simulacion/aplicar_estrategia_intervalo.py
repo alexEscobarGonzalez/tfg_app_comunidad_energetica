@@ -99,22 +99,64 @@ def aplicar_estrategia_intervalo(comunidad, participantes, gen_activos,
                             'energiaDiferencia_kWh': energia_diferencia,
                             'excedenteVertidoCompensado_kWh': 0,  # Sin excedentes
                             'precioImportacionIntervalo': contrato_p.precioEnergiaImportacion_eur_kWh,
-                            'precioExportacionIntervalo': 0,  # todo
+                            'precioExportacionIntervalo': 0,
+                        }
+                    )
+                    
+            elif estrategia == TipoEstrategiaExcedentes.INDIVIDUAL_EXCEDENTES_COMPENSACION or estrategia == TipoEstrategiaExcedentes.COLECTIVO_EXCEDENTES_COMPENSACION_RED_EXTERNA:
+                print("[DEBUG] Procesando estrategia: INDIVIDUAL_EXCEDENTES_COMPENSACION o COLECTIVO_EXCEDENTES_COMPENSACION_RED_EXTERNA")
+                # Código 41: Individual con excedentes y compensación
+                # Código 43: Colectivo con excedentes y compensación en red externa
+                for p in participantes:
+                    id_p = p.idParticipante
+                    consumo = consumo_int.get(id_p, 0)
+                    energia_asignada_p = energia_asignada.get(id_p, 0)
+                    
+                    # El autoconsumo es el mínimo entre lo que consume y lo que le corresponde de la generación
+                    autoconsumo = min(consumo, energia_asignada_p)
+                    
+                    # La diferencia puede ser positiva (excedente) o negativa (déficit)
+                    energia_diferencia = energia_asignada_p - consumo
+                    
+                    # Gestionar almacenamiento, si hay excedentes intentará cargar baterías
+                    # Si hay déficit intentará descargar las baterías para cubrir parte del consumo
+                    energia_gestionada, estado_alm, resultados_alm = _gestionar_almacenamiento(
+                        comunidad, energia_diferencia, estado_alm, intervalo, activos_alm
+                    )
+                    
+                    intervalo_activos_almacenamiento.extend(resultados_alm)
+                    
+                    # Si la gestión de almacenamiento ha descargado energía (negativo), 
+                    # incrementa el autoconsumo con esa energía
+                    if energia_gestionada < 0:
+                        autoconsumo += -energia_gestionada
+                    
+                    # Determinar excedentes después de la gestión de almacenamiento
+                    # Solo hay excedente si después de almacenar sigue sobrando energía
+                    excedente_compensacion = 0
+                    if energia_diferencia > 0 and energia_gestionada < energia_diferencia:
+                        # El excedente es lo que queda después de usar almacenamiento
+                        excedente_compensacion = energia_diferencia - energia_gestionada
+                        print(f"[DEBUG] Participante {id_p}: Excedente para compensación: {excedente_compensacion:.4f} kWh")
+                    
+                    contrato_p = contratos.get(id_p)
+                    precio_exportacion = contrato_p.precioEnergiaImportacion_eur_kWh 
+                    
+                    intervalo_participantes.append(
+                        {
+                            'idParticipante': id_p,
+                            'timestamp': intervalo,
+                            'consumoReal_kWh': consumo,
+                            'autoconsumo_kWh': autoconsumo,
+                            'energiaAlmacenamiento_kWh': energia_gestionada,
+                            'energiaRecibidaReparto_kWh': energia_asignada_p,
+                            'energiaDiferencia_kWh': energia_diferencia,
+                            'excedenteVertidoCompensado_kWh': excedente_compensacion,
+                            'precioImportacionIntervalo': contrato_p.precioEnergiaImportacion_eur_kWh,
+                            'precioExportacionIntervalo': precio_exportacion,
                         }
                     )
             
-            elif estrategia == TipoEstrategiaExcedentes.COLECTIVO_SIN_EXCEDENTES_COMPENSACION_INTERNA:
-                #todo
-                pass
-            
-            elif estrategia == TipoEstrategiaExcedentes.INDIVIDUAL_EXCEDENTES_COMPENSACION:
-                #todo
-                pass
-            
-            elif estrategia in [TipoEstrategiaExcedentes.COLECTIVO_EXCEDENTES_COMPENSACION_RED_INTERNA, 
-                               TipoEstrategiaExcedentes.COLECTIVO_EXCEDENTES_COMPENSACION_RED_EXTERNA]:
-                #todo
-                pass
                     
                     
             
@@ -197,9 +239,7 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
     if not activos_alm:
         return 0.0, estado_alm, []
 
-    # 2. Calcular eficiencia de ciclo completo y derivar eficiencias de carga/descarga
-    eta_total = (activos_alm[0].eficienciaCicloCompleto_pct or 90) / 100
-    eta_carga = eta_descarga = eta_total ** 0.5
+    
 
     # 3. Modo CARGA (excedentes > 0)
     if excedentes_o_deficit > 0:
@@ -215,6 +255,9 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
             id_alm = activo.idActivoAlmacenamiento
             capacidad = activo.capacidadNominal_kWh
             soc_actual = estado_alm[id_alm]['soc_kwh']
+            # 2. Calcular eficiencia de ciclo completo y derivar eficiencias de carga/descarga
+            eta_total = activo.eficienciaCicloCompleto_pct / 100
+            eta_carga = eta_descarga = eta_total ** 0.5
 
             # 3.1. Calcular suelo (soc_min) y techo (soc_max) de SoC
             soc_min = (1 - activo.profundidadDescargaMax_pct/100) * capacidad
@@ -278,6 +321,8 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
             id_alm = activo.idActivoAlmacenamiento
             capacidad = activo.capacidadNominal_kWh
             soc_actual = estado_alm[id_alm]['soc_kwh']
+            eta_total = activo.eficienciaCicloCompleto_pct / 100
+            eta_carga = eta_descarga = eta_total ** 0.5
 
             # 4.1. Calcular suelo de SoC
             soc_min = (1 - activo.profundidadDescargaMax_pct/100) * capacidad

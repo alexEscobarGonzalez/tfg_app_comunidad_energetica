@@ -14,6 +14,6 @@ class ActivoAlmacenamiento(Base):
     profundidadDescargaMax_pct = Column(Float, nullable=False)
     idComunidadEnergetica = Column(Integer, ForeignKey("COMUNIDAD_ENERGETICA.idComunidadEnergetica"), nullable=False)
     
-    # Relación con la comunidad energética
+    # Relaciónes
     comunidad = relationship("ComunidadEnergetica", back_populates="activos_almacenamiento")
     resultados_simulacion = relationship("ResultadoSimulacionActivoAlmacenamiento", back_populates="activo_almacenamiento")

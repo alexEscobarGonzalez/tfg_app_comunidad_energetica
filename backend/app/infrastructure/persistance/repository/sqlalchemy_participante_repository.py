@@ -44,7 +44,6 @@ class SqlAlchemyParticipanteRepository(ParticipanteRepository):
         model = self.db.query(ParticipanteModel).filter_by(idParticipante=participante_id).first()
         if model:
             model.nombre = participante.nombre
-            # No actualizamos la comunidad energética ya que normalmente no se cambia
             self.db.commit()
             self.db.refresh(model)
             return self._map_to_entity(model)

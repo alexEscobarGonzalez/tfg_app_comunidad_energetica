@@ -21,6 +21,7 @@ class SqlAlchemyResultadoSimulacionParticipanteRepository(ResultadoSimulacionPar
             energiaRecibidaRepartoConsumida_kWh=model.energiaRecibidaRepartoConsumida_kWh,
             tasaAutoconsumoSCR_pct=model.tasaAutoconsumoSCR_pct,
             tasaAutosuficienciaSSR_pct=model.tasaAutosuficienciaSSR_pct,
+            consumo_kWh=model.consumo_kWh,
             idResultadoSimulacion=model.idResultadoSimulacion,
             idParticipante=model.idParticipante
         )
@@ -67,15 +68,13 @@ class SqlAlchemyResultadoSimulacionParticipanteRepository(ResultadoSimulacionPar
             return self._map_to_entity(model)
         except SQLAlchemyError as e:
             self.db.rollback()
-            # Puedes añadir logging aquí
-            raise e # O manejarlo de forma específica
+            raise e 
 
     def update(self, resultado_participante_id: int, resultado: ResultadoSimulacionParticipanteEntity) -> Optional[ResultadoSimulacionParticipanteEntity]:
         model = self.db.query(ResultadoSimulacionParticipante).filter_by(idResultadoParticipante=resultado_participante_id).first()
         if not model:
             return None
 
-        # Actualizar campos (excluyendo FKs usualmente)
         model.costeNetoParticipante_eur = resultado.costeNetoParticipante_eur if resultado.costeNetoParticipante_eur is not None else model.costeNetoParticipante_eur
         model.ahorroParticipante_eur = resultado.ahorroParticipante_eur if resultado.ahorroParticipante_eur is not None else model.ahorroParticipante_eur
         model.ahorroParticipante_pct = resultado.ahorroParticipante_pct if resultado.ahorroParticipante_pct is not None else model.ahorroParticipante_pct
@@ -111,19 +110,9 @@ class SqlAlchemyResultadoSimulacionParticipanteRepository(ResultadoSimulacionPar
             raise e
 
     def create_bulk(self, resultados: List[ResultadoSimulacionParticipanteEntity], resultado_global_id: int) -> List[ResultadoSimulacionParticipanteEntity]:
-        """
-        Crea múltiples registros de resultados de simulación de participantes a la vez.
-        
-        Args:
-            resultados: Lista de entidades ResultadoSimulacionParticipanteEntity a guardar
-            
-        Returns:
-            Lista de entidades ResultadoSimulacionParticipanteEntity creadas con IDs generados
-        """
         models = []
         try:
             for resultado in resultados:
-                # Crear modelo directamente a partir de la entidad
                 model = ResultadoSimulacionParticipante(
                     costeNetoParticipante_eur=resultado.costeNetoParticipante_eur or 0,
                     ahorroParticipante_eur=resultado.ahorroParticipante_eur or 0,
@@ -138,14 +127,11 @@ class SqlAlchemyResultadoSimulacionParticipanteRepository(ResultadoSimulacionPar
                 self.db.add(model)
                 models.append(model)
             
-            # Hacer commit de todos los cambios a la vez
             self.db.commit()
             
-            # Refrescar todos los modelos para obtener sus IDs generados
             for model in models:
                 self.db.refresh(model)
             
-            # Mapear modelos a entidades
             return [self._map_to_entity(model) for model in models]
         
         except SQLAlchemyError as e:
