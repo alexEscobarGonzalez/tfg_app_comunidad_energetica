@@ -1,0 +1,4 @@
+enum TipoActivoGeneracion{
+  INSTALACION_FOTOVOLTAICA,
+  AEROGENERADOR
+}

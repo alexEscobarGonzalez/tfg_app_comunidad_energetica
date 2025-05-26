@@ -9,9 +9,9 @@ class Simulacion(Base):
     nombreSimulacion = Column(String(255))
     fechaInicio = Column(DateTime, nullable=False)
     fechaFin = Column(DateTime, nullable=False)
-    tiempo_medicion = Column(Integer)  # En minutos
-    estado = Column(String(50))  # ENUM: PENDIENTE, EJECUTANDO, COMPLETADA, FALLIDA
-    tipoEstrategiaExcedentes = Column(String(100))  # ENUM: Venta, Compensacion, Almacenamiento, Individual sin excedentes
+    tiempo_medicion = Column(Integer)  
+    estado = Column(String(50))  
+    tipoEstrategiaExcedentes = Column(String(100))  
     idUsuario_creador = Column(Integer, ForeignKey("USUARIO.idUsuario", ondelete="RESTRICT", onupdate="CASCADE"), nullable=False)
     idComunidadEnergetica = Column(Integer, ForeignKey("COMUNIDAD_ENERGETICA.idComunidadEnergetica", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     

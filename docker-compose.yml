@@ -12,6 +12,19 @@ services:
       - db # Asegura que el servicio 'db' inicie antes que el 'backend'
     command: uvicorn app.infrastructure.web.fastapi.main:app --reload --host 0.0.0.0 --port 8000
 
+  # Servicio para el Frontend (Flutter)
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:9000"
+    volumes:
+      - ./frontend:/app
+      - flutter_pub_cache:/root/.pub-cache
+    depends_on:
+      - backend
+    environment:
+      - API_URL=http://backend:8000
+
   # Servicio para la Base de Datos (MariaDB)
   db:
     image: mariadb:lts 
@@ -22,9 +35,9 @@ services:
       - mariadb_data:/var/lib/mysql
       - ./backend/db_init/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      # Opcional: Mapea el puerto si necesitas acceso directo desde tu máquina
       - "3307:3306" # Mapea 3306 del contenedor al 3307 del host (para evitar conflictos si tienes otra db en 3306)
 
 # Define el volumen nombrado para persistencia de datos
 volumes:
   mariadb_data:
+  flutter_pub_cache:

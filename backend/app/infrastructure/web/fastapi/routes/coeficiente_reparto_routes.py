@@ -42,8 +42,6 @@ def crear_coeficiente_reparto(coeficiente_data: CoeficienteRepartoCreate, db: Se
             tipo_reparto = TipoReparto.REPARTO_FIJO
         elif tipo_reparto_upper == "PROGRAMADO":
             tipo_reparto = TipoReparto.REPARTO_PROGRAMADO
-        elif tipo_reparto_upper == "DINAMICO":
-            tipo_reparto = TipoReparto.REPARTO_DINAMICO
     
     # Extraer el valor del enum como string para enviarlo a la entidad
     tipo_reparto_value = tipo_reparto.value if hasattr(tipo_reparto, 'value') else tipo_reparto

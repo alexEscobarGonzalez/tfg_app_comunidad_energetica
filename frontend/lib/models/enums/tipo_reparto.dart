@@ -1,0 +1,4 @@
+enum TipoReparto {
+  REPARTO_FIJO,
+  REPARTO_PROGRAMADO
+}

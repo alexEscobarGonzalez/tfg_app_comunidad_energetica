@@ -6,4 +6,3 @@ class TipoReparto(Enum):
     """
     REPARTO_FIJO = "Reparto Fijo"
     REPARTO_PROGRAMADO = "Reparto Programado"
-    REPARTO_DINAMICO = "Reparto Dinamico"

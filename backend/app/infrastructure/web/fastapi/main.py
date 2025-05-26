@@ -16,12 +16,23 @@ from app.infrastructure.web.fastapi.routes import resultado_simulacion_participa
 from app.infrastructure.web.fastapi.routes import resultado_simulacion_activo_generacion_routes
 from app.infrastructure.web.fastapi.routes import datos_intervalo_participante_routes
 from app.infrastructure.web.fastapi.routes import datos_intervalo_activo_routes
+from fastapi.middleware.cors import CORSMiddleware
+
 
 # Initialize FastAPI app
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description=settings.PROJECT_DESCRIPTION,
     version=settings.PROJECT_VERSION
+)
+
+# -- CORS middleware --
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:8080"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Simple Hello World endpoint

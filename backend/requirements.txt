@@ -8,3 +8,5 @@ python-dotenv
 bcrypt
 pytest
 requests
+python-jose[cryptography]
+passlib[bcrypt]

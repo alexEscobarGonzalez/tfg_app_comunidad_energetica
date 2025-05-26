@@ -13,7 +13,7 @@ from typing import List
 
 router = APIRouter(prefix="/participantes", tags=["participantes"])
 
-@router.post("/", response_model=ParticipanteRead)
+@router.post("", response_model=ParticipanteRead)
 def crear_participante(participante: ParticipanteCreate, db: Session = Depends(get_db)):
     participante_entity = ParticipanteEntity(
         nombre=participante.nombre,

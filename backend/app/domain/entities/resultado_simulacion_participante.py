@@ -11,6 +11,6 @@ class ResultadoSimulacionParticipanteEntity:
     energiaRecibidaRepartoConsumida_kWh: Optional[float] = None
     tasaAutoconsumoSCR_pct: Optional[float] = None
     tasaAutosuficienciaSSR_pct: Optional[float] = None
-    consumo_kWh: Optional[float] = None  
+    consumo_kWh: Optional[float] = None
     idResultadoSimulacion: Optional[int] = None
     idParticipante: Optional[int] = None
