@@ -139,6 +139,9 @@ Este comando:
 
 ### Flujo de Trabajo Completo
 
+**Importar comunidad comunidad_export en el boton del header a la derecha**
+**comunidad_export.zip**
+
 ### 1. Crear una Comunidad Energética
 
 1. Acceder a la sección "Comunidades"
@@ -199,7 +202,7 @@ timestamp,consumoEnergia
 2. Crear nueva simulación:
 3. Iniciar la simulación
 
-### 9. Analizar Resultados
+### 8. Analizar Resultados
 
 Una vez completada la simulación:
 

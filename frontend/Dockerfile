@@ -31,10 +31,11 @@ COPY . /app/
 WORKDIR /app/
 RUN flutter build web
 
+# Change to the web build directory
+WORKDIR /app/build/web/
+
 # Record the exposed port
 EXPOSE 9000
 
-# make server startup script executable and start the web server
-RUN ["chmod", "+x", "/app/server/server.sh"]
-
-ENTRYPOINT [ "/app/server/server.sh"]
+# Start the web server directly
+CMD ["python3", "-m", "http.server", "9000"]
