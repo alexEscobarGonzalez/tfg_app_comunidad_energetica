@@ -17,7 +17,7 @@ import '../models/estadisticas_consumo.dart';
 import '../services/datos_consumo_api_service.dart';
 import '../providers/datos_consumo_provider.dart';
 
-// Formatter para fechas con formato dd/mm/yyyy
+
 class DateInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -26,13 +26,12 @@ class DateInputFormatter extends TextInputFormatter {
   ) {
     final text = newValue.text;
     
-    // Remover caracteres no numéricos
     final numericText = text.replaceAll(RegExp(r'[^0-9]'), '');
     
-    // Limitar a 8 dígitos (ddmmyyyy)
+
     final limitedText = numericText.length > 8 ? numericText.substring(0, 8) : numericText;
     
-    // Formatear con "/"
+
     String formattedText = '';
     for (int i = 0; i < limitedText.length; i++) {
       if (i == 2 || i == 4) {

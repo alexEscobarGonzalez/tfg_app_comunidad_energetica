@@ -143,10 +143,7 @@ Este comando:
 
 1. Acceder a la sección "Comunidades"
 2. Hacer clic en "Nueva Comunidad"
-3. Completar la información requerida:
-   - **Nombre**: Identificación de la comunidad
-   - **Ubicación**: Coordenadas geográficas (latitud, longitud)
-   - **Descripción**: Información adicional
+3. Completar la información requerida
 
 Las coordenadas geográficas son críticas para la obtención de datos meteorológicos.
 
@@ -154,45 +151,22 @@ Las coordenadas geográficas son críticas para la obtención de datos meteorol�
 
 1. Seleccionar la comunidad creada
 2. Navegar a "Participantes"
-3. Añadir participantes especificando:
-   - **Tipo**: Consumidor (solo consume) o Prosumidor (consume y genera)
-   - **Información personal**: Nombre, email, teléfono
-   - **CIF/DNI**: Identificación fiscal
+3. Añadir participantes
+4. Introducir datos de contrato
 
 ### 3. Definir Activos de Generación
 
-Para cada participante prosumidor:
-
 1. Ir a "Activos de Generación"
-2. Crear nuevo activo especificando:
-   - **Tipo**: Fotovoltaica o Eólica
-   - **Potencia nominal**: Potencia instalada en kWp
-   - **Parámetros técnicos**:
-     - Ángulo de inclinación
-     - Orientación (azimut)
-     - Pérdidas del sistema (%)
-     - Tecnología del panel (para fotovoltaica)
+2. Crear nuevo activo
 
 ### 4. Configurar Almacenamiento (Opcional)
 
 Para sistemas con baterías:
 
 1. Acceder a "Activos de Almacenamiento"
-2. Definir características de la batería:
-   - **Capacidad**: Capacidad útil en kWh
-   - **Potencia**: Potencia máxima de carga/descarga en kW
-   - **Eficiencia**: Eficiencia del sistema (%)
-   - **Parámetros de degradación**: Vida útil y degradación anual
+2. Definir características de la batería
 
-### 5. Establecer Contratos de Autoconsumo
-
-1. Navegar a "Contratos"
-2. Configurar para cada participante:
-   - **Tipo de tarifa**: PVPC o Mercado Libre
-   - **Precios**: Término energía y potencia
-   - **Compensación por excedentes**: Precio de venta a red
-
-### 6. Definir Coeficientes de Reparto
+### 5. Definir Coeficientes de Reparto
 
 1. Acceder a "Coeficientes de Reparto"
 2. Establecer cómo se distribuye la energía generada:
@@ -205,42 +179,25 @@ Para sistemas con baterías:
    - Porcentajes variables según hora del día
    - Permite optimizar la distribución por patrones de consumo
 
-### 7. Cargar Datos de Consumo
+### 6. Cargar Datos de Consumo
 
 1. Ir a "Registro de Consumos"
 2. Subir archivos CSV con formato específico:
 
 ```csv
-timestamp,consumo_kWh,id_participante
-2024-01-01 00:00:00,1.5,1
-2024-01-01 01:00:00,1.2,1
-2024-01-01 02:00:00,0.8,1
+timestamp,consumoEnergia
+2024-01-01 00:00:00,1.5
+2024-01-01 01:00:00,1.2
+2024-01-01 02:00:00,0.8
 ```
 
-**Requisitos del archivo CSV**:
-- Formato de fecha: YYYY-MM-DD HH:MM:SS
-- Intervalos horarios completos
-- Datos para todo el período de simulación
-- Un archivo por participante o archivo consolidado
+**Utilizar ejemplo ya creado consumo_familia_lopez.csv**
 
-### 8. Ejecutar Simulación
+### 7. Ejecutar Simulación
 
 1. Navegar a "Simulaciones"
 2. Crear nueva simulación:
-   - **Nombre**: Identificación de la simulación
-   - **Período**: Fechas de inicio y fin
-   - **Estrategia de excedentes**:
-     - **Individual sin excedentes**: Autoconsumo sin vertido a red
-     - **Colectivo sin excedentes**: Reparto sin vertido a red
-     - **Individual con compensación**: Autoconsumo con venta de excedentes
-     - **Colectivo con compensación**: Reparto con venta de excedentes
-
 3. Iniciar la simulación
-4. Monitorear progreso en tiempo real
-
-**Duración típica**: 
-- 1 mes de datos: 2-5 minutos
-- 1 año de datos: 15-30 minutos
 
 ### 9. Analizar Resultados
 
@@ -251,170 +208,14 @@ Una vez completada la simulación:
 3. Explorar las diferentes pestañas:
 
 **Pestaña Económica**:
-- Ahorros totales y por participante
-- Costes evitados por autoconsumo
-- Ingresos por venta de excedentes
-- Retorno de inversión (ROI)
 
 **Pestaña Energética**:
-- Grado de autoconsumo (%)
-- Grado de autosuficiencia (%)
-- Energía vertida a red
-- Balances energéticos
 
 **Pestaña Activos**:
-- Rendimiento de generación por activo
-- Ciclos de batería y degradación
-- Factor de capacidad
 
 **Tablas Comparativas**:
-- Comparación entre simulaciones
-- Análisis de diferentes escenarios
-- Exportación de datos
 
 **Gráficos**:
-- Visualizaciones temporales
-- Distribución de flujos energéticos
-- Evolución de indicadores
 
-### Casos de Uso Comunes
-
-**Análisis de Viabilidad**:
-1. Simular escenario actual sin comunidad
-2. Simular con comunidad energética
-3. Comparar ahorros y beneficios
-
-**Optimización de Almacenamiento**:
-1. Simular sin baterías
-2. Simular con diferentes tamaños de batería
-3. Evaluar rentabilidad de la inversión
-
-**Comparación de Estrategias**:
-1. Ejecutar múltiples simulaciones con diferentes estrategias
-2. Comparar resultados en tablas comparativas
-3. Seleccionar estrategia óptima
-
-## Documentación Técnica
-
-### Endpoints API Principales
-
-**Gestión de Comunidades**:
-- `GET /api/comunidades` - Listar comunidades
-- `POST /api/comunidades` - Crear comunidad
-- `GET /api/comunidades/{id}` - Obtener detalles
-
-**Ejecución de Simulaciones**:
-- `POST /api/simulaciones` - Crear simulación
-- `POST /api/simulaciones/{id}/ejecutar` - Ejecutar simulación
-- `GET /api/simulaciones/{id}/estado` - Consultar estado
-
-**Consulta de Resultados**:
-- `GET /api/resultados/{simulacion_id}` - Resultados globales
-- `GET /api/resultados/{simulacion_id}/participantes` - Por participante
-- `GET /api/resultados/{simulacion_id}/activos` - Por activo
-
-### Base de Datos
-
-La aplicación utiliza MariaDB con las siguientes características:
-- Esquema relacional normalizado
-- Datos temporales optimizados para consultas de rango
-- Índices en campos de timestamp para rendimiento
-- Respaldo automático mediante volúmenes Docker
-
-### Arquitectura del Motor de Simulación
-
-El motor procesa simulaciones en las siguientes fases:
-
-1. **Inicialización**: Carga configuración y valida datos
-2. **Obtención de datos**: Meteorología (PVGIS) y precios (PVPC)
-3. **Cálculo de generación**: Estimación horaria de producción
-4. **Procesamiento temporal**: Simulación intervalo por intervalo
-5. **Agregación de resultados**: Cálculo de indicadores finales
-6. **Persistencia**: Almacenamiento en base de datos
-
-## Resolución de Problemas
-
-### Problemas de Instalación
-
-**Error: Puerto en uso**
-```bash
-# Verificar puertos ocupados
-netstat -tulpn | grep :8000
-# Modificar docker-compose.yml si es necesario
-```
-
-**Error: Memoria insuficiente**
-```bash
-# Aumentar memoria asignada a Docker
-# Docker Desktop > Settings > Resources > Memory
-```
-
-### Problemas de Ejecución
-
-**Backend no responde**
-```bash
-# Verificar logs del contenedor
-docker-compose logs backend
-
-# Reiniciar servicios
-docker-compose restart backend
-```
-
-**Error de conexión a base de datos**
-```bash
-# Verificar estado de MariaDB
-docker-compose logs db
-
-# Verificar conectividad
-docker-compose exec backend ping db
-```
-
-**Simulación falla**
-```bash
-# Verificar datos de consumo cargados
-# Comprobar configuración de coeficientes de reparto
-# Revisar logs detallados en la interfaz de simulación
-```
-
-### Logs del Sistema
-
-**Acceder a logs en tiempo real**:
-```bash
-# Todos los servicios
-docker-compose logs -f
-
-# Servicio específico
-docker-compose logs -f backend
-docker-compose logs -f db
-```
-
-**Ubicación de archivos de log**:
-- Backend: Logs del contenedor Docker
-- Base de datos: `/var/lib/mysql/` dentro del contenedor
-- Frontend: Consola del navegador web
-
-### Reinicio Completo
-
-En caso de problemas persistentes:
-
-```bash
-# Parar todos los servicios
-docker-compose down
-
-# Eliminar volúmenes (CUIDADO: borra todos los datos)
-docker-compose down -v
-
-# Reconstruir e iniciar
-docker-compose up -d --build
-```
-
-### Contacto y Soporte
-
-Para problemas técnicos o consultas sobre el funcionamiento, consultar:
-- Documentación técnica en `/docs`
-- Issues del repositorio de código
-- Logs detallados del sistema
-
----
 
 **Trabajo de Fin de Grado - Desarrollo de una Aplicación Visual para Simular una Comunidad Energética** 
