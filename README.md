@@ -142,11 +142,12 @@ Este comando:
 **Importar comunidad comunidad_export en el boton del header a la derecha**
 **comunidad_export.zip**
 
+### 0. Crear un usuario
+
 ### 1. Crear una Comunidad Energética
 
-1. Acceder a la sección "Comunidades"
-2. Hacer clic en "Nueva Comunidad"
-3. Completar la información requerida
+1. Hacer clic en "Nueva Comunidad" en el desplegable del header
+2. Completar la información requerida
 
 Las coordenadas geográficas son críticas para la obtención de datos meteorológicos.
 
@@ -159,14 +160,14 @@ Las coordenadas geográficas son críticas para la obtención de datos meteorol�
 
 ### 3. Definir Activos de Generación
 
-1. Ir a "Activos de Generación"
+1. Ir a activos energeticos
 2. Crear nuevo activo
 
 ### 4. Configurar Almacenamiento (Opcional)
 
 Para sistemas con baterías:
 
-1. Acceder a "Activos de Almacenamiento"
+1. Ir a activos energeticos
 2. Definir características de la batería
 
 ### 5. Definir Coeficientes de Reparto
@@ -210,15 +211,15 @@ Una vez completada la simulación:
 2. Seleccionar la simulación ejecutada
 3. Explorar las diferentes pestañas:
 
-**Pestaña Económica**:
+**Pestaña Económica**
 
-**Pestaña Energética**:
+**Pestaña Energética**
 
-**Pestaña Activos**:
+**Pestaña Activos**
 
-**Tablas Comparativas**:
+**Tablas Comparativas**
 
-**Gráficos**:
+**Gráficos**
 
 
 **Trabajo de Fin de Grado - Desarrollo de una Aplicación Visual para Simular una Comunidad Energética** 
