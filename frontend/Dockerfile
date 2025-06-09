@@ -29,7 +29,9 @@ RUN flutter config --enable-web
 RUN mkdir /app/
 COPY . /app/
 WORKDIR /app/
-RUN flutter build web
+RUN flutter create .
+RUN flutter pub get
+RUN flutter build web --release
 
 # Change to the web build directory
 WORKDIR /app/build/web/
