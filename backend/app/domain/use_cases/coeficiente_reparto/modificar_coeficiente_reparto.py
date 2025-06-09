@@ -4,20 +4,7 @@ from app.domain.entities.tipo_reparto import TipoReparto
 from app.domain.repositories.coeficiente_reparto_repository import CoeficienteRepartoRepository
 
 def modificar_coeficiente_reparto_use_case(id_coeficiente: int, coeficiente_datos: CoeficienteRepartoEntity, repo: CoeficienteRepartoRepository) -> CoeficienteRepartoEntity:
-    """
-    Modifica los datos de un coeficiente de reparto existente
     
-    Args:
-        id_coeficiente: ID del coeficiente de reparto a modificar
-        coeficiente_datos: Nuevos datos para el coeficiente de reparto
-        repo: Repositorio de coeficientes de reparto
-        
-    Returns:
-        CoeficienteRepartoEntity: Datos actualizados del coeficiente de reparto
-        
-    Raises:
-        HTTPException: Si el coeficiente de reparto no existe o si los datos no son válidos
-    """
     # Verificar que el coeficiente existe
     coeficiente_existente = repo.get_by_id(id_coeficiente)
     if not coeficiente_existente:

@@ -12,17 +12,7 @@ def importar_comunidad_completa_use_case(
     db: Session,
     id_usuario: int
 ) -> Dict[str, Any]:
-    """
-    Importa toda la información de una comunidad desde un archivo ZIP
     
-    Args:
-        archivo_zip_path: Ruta del archivo ZIP a importar
-        db: Sesión de base de datos
-        id_usuario: ID del usuario que realiza la importación
-        
-    Returns:
-        Dict con información del resultado de la importación
-    """
     try:
         print(f"Iniciando importación desde: {archivo_zip_path}")
         
@@ -89,7 +79,6 @@ def importar_comunidad_completa_use_case(
         raise e
 
 def _leer_datos_zip(temp_dir: str) -> Dict[str, Any]:
-    """Lee y parsea todos los datos del ZIP extraído"""
     
     datos = {}
     
@@ -164,7 +153,6 @@ def _crear_entidades_bd(
     registro_consumo_repo,
     contrato_repo
 ) -> Dict[str, Any]:
-    """Crea todas las entidades en la base de datos en el orden correcto"""
     
     from app.domain.entities.comunidad_energetica import ComunidadEnergeticaEntity
     from app.domain.entities.participante import ParticipanteEntity

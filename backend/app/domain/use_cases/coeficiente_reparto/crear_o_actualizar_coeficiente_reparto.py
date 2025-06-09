@@ -9,20 +9,6 @@ def crear_o_actualizar_coeficiente_reparto_use_case(
     participante_repo: ParticipanteRepository, 
     coeficiente_repo: CoeficienteRepartoRepository
 ) -> CoeficienteRepartoEntity:
-    """
-    Crea o actualiza el coeficiente de reparto de un participante (relación 1:1)
-    
-    Args:
-        coeficiente: Entidad con los datos del coeficiente de reparto
-        participante_repo: Repositorio de participantes
-        coeficiente_repo: Repositorio de coeficientes de reparto
-        
-    Returns:
-        CoeficienteRepartoEntity: La entidad del coeficiente de reparto creada o actualizada
-        
-    Raises:
-        HTTPException: Si el participante no existe o si los datos no son válidos
-    """
     # Verificar que el participante existe
     participante = participante_repo.get_by_id(coeficiente.idParticipante)
     if not participante:

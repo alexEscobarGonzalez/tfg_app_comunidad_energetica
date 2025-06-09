@@ -21,7 +21,7 @@ class RegistroConsumoRead(RegistroConsumoBase):
 
 # Esquemas para predicción de consumo (Modelo Socioeconómico v3)
 class PrediccionConsumoRequest(BaseModel):
-    """Esquema para solicitud de predicción de consumo por rango de fechas - Modelo Socioeconómico v3"""
+    
     fecha_inicio: datetime = Field(..., description="Fecha y hora de inicio del rango")
     fecha_fin: datetime = Field(..., description="Fecha y hora de fin del rango")
     intervalo_horas: int = Field(1, ge=1, le=24, description="Intervalo en horas entre predicciones")
@@ -54,19 +54,19 @@ class PrediccionConsumoRequest(BaseModel):
         }
 
 class EstadisticasTarifa(BaseModel):
-    """Estadísticas de consumo por tipo de tarifa eléctrica"""
+    
     periodos: int = Field(..., description="Número de períodos de tiempo")
     consumo_total: float = Field(..., description="Consumo total en kWh")
     consumo_promedio: float = Field(..., description="Consumo promedio en kWh")
 
 class ModeloInfo(BaseModel):
-    """Información del modelo utilizado"""
+    
     version: str = Field(..., description="Versión del modelo")
     algoritmo: str = Field(..., description="Algoritmo utilizado")
     caracteristicas: int = Field(..., description="Número de características")
 
 class ResumenPrediccion(BaseModel):
-    """Resumen estadístico de predicciones por rango"""
+    
     fecha_inicio: str = Field(..., description="Fecha de inicio del rango")
     fecha_fin: str = Field(..., description="Fecha de fin del rango") 
     intervalo_horas: int = Field(..., description="Intervalo usado en horas")
@@ -80,7 +80,7 @@ class ResumenPrediccion(BaseModel):
     modelo_info: ModeloInfo = Field(..., description="Información del modelo")
 
 class PrediccionConsumoResponse(BaseModel):
-    """Esquema para respuesta de predicción por rango de fechas - Modelo Socioeconómico v3"""
+    
     predicciones: List[Dict[str, Any]] = Field(..., description="Lista de predicciones por intervalo")
     resumen: ResumenPrediccion = Field(..., description="Resumen estadístico")
 

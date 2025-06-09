@@ -27,9 +27,6 @@ router = APIRouter(
 
 @router.post("", response_model=ResultadoSimulacionParticipanteRead, status_code=status.HTTP_201_CREATED)
 def crear_resultado_participante(resultado: ResultadoSimulacionParticipanteCreate, db: Session = Depends(get_db)):
-    """
-    Crea un nuevo resultado de simulación para un participante específico dentro de un resultado global.
-    """
     # Inicializar repositorios
     resultado_participante_repo = SqlAlchemyResultadoSimulacionParticipanteRepository(db)
     resultado_global_repo = ResultadoGlobalRepository(db)
@@ -51,9 +48,6 @@ def crear_resultado_participante(resultado: ResultadoSimulacionParticipanteCreat
 
 @router.get("/resultado/{id_resultado_simulacion}", response_model=List[ResultadoSimulacionParticipanteRead])
 def listar_resultados_por_simulacion_global(id_resultado_simulacion: int, db: Session = Depends(get_db)):
-    """
-    Obtiene todos los resultados de participantes asociados a un resultado de simulación global.
-    """
     repo = SqlAlchemyResultadoSimulacionParticipanteRepository(db)
     resultados = repo.get_by_resultado_simulacion(id_resultado_simulacion)
     if not resultados:
@@ -62,9 +56,6 @@ def listar_resultados_por_simulacion_global(id_resultado_simulacion: int, db: Se
 
 @router.get("/participante/{id_participante}", response_model=List[ResultadoSimulacionParticipanteRead])
 def listar_resultados_por_participante(id_participante: int, db: Session = Depends(get_db)):
-    """
-    Obtiene todos los resultados de simulación para un participante específico.
-    """
     repo = SqlAlchemyResultadoSimulacionParticipanteRepository(db)
     resultados = repo.get_by_participante(id_participante)
     if not resultados:
@@ -73,9 +64,6 @@ def listar_resultados_por_participante(id_participante: int, db: Session = Depen
 
 @router.get("/{id_resultado_participante}", response_model=ResultadoSimulacionParticipanteRead)
 def obtener_resultado_participante(id_resultado_participante: int, db: Session = Depends(get_db)):
-    """
-    Obtiene un resultado de simulación de participante por su ID específico.
-    """
     repo = SqlAlchemyResultadoSimulacionParticipanteRepository(db)
     resultado = repo.get_by_id(id_resultado_participante)
     if not resultado:
@@ -84,9 +72,6 @@ def obtener_resultado_participante(id_resultado_participante: int, db: Session =
 
 @router.put("/{id_resultado_participante}", response_model=ResultadoSimulacionParticipanteRead)
 def actualizar_resultado_participante(id_resultado_participante: int, resultado_update: ResultadoSimulacionParticipanteUpdate, db: Session = Depends(get_db)):
-    """
-    Actualiza un resultado de simulación de participante existente.
-    """
     repo = SqlAlchemyResultadoSimulacionParticipanteRepository(db)
     resultado_existente = repo.get_by_id(id_resultado_participante)
     if not resultado_existente:
@@ -116,9 +101,6 @@ def actualizar_resultado_participante(id_resultado_participante: int, resultado_
 
 @router.delete("/{id_resultado_participante}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar_resultado_participante(id_resultado_participante: int, db: Session = Depends(get_db)):
-    """
-    Elimina un resultado de simulación de participante específico.
-    """
     repo = SqlAlchemyResultadoSimulacionParticipanteRepository(db)
     resultado_existente = repo.get_by_id(id_resultado_participante)
     if not resultado_existente:

@@ -2,10 +2,7 @@ from app.infrastructure.persistance.database import Base
 from sqlalchemy import Column, Integer, DateTime, Float, Index
 
 class PvpcPrecios(Base):
-    """
-    Tabla para almacenar los precios PVPC (Precio Voluntario para el Pequeño Consumidor)
-    Incluye precios de importación y exportación de energía
-    """
+    
     __tablename__ = 'PVPC_PRECIOS'
     
     id = Column(Integer, primary_key=True, autoincrement=True)

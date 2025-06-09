@@ -3,20 +3,7 @@ from app.domain.entities.participante import ParticipanteEntity
 from app.domain.repositories.participante_repository import ParticipanteRepository
 
 def modificar_participante_use_case(id_participante: int, participante_datos: ParticipanteEntity, repo: ParticipanteRepository) -> ParticipanteEntity:
-    """
-    Modifica los datos de un participante existente
     
-    Args:
-        id_participante: ID del participante a modificar
-        participante_datos: Nuevos datos para el participante
-        repo: Repositorio de participantes
-        
-    Returns:
-        ParticipanteEntity: Datos actualizados del participante
-        
-    Raises:
-        HTTPException: Si el participante no existe
-    """
     # Verificar que el participante existe
     participante_existente = repo.get_by_id(id_participante)
     if not participante_existente:

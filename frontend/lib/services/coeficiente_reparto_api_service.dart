@@ -1,4 +1,4 @@
-import 'dart:convert';
+  import 'dart:convert';
 import '../models/coeficiente_reparto.dart';
 import '../models/enums/tipo_reparto.dart';
 import 'api_service.dart';
@@ -75,11 +75,28 @@ class CoeficienteRepartoApiService {
     required int idParticipante,
     required Map<String, double> coeficientesProgramados,
   }) async {
+    // Convertir el mapa de coeficientes a la estructura que espera el backend
+    List<Map<String, dynamic>> parametros = [];
+    double valorDefault = 0.0;
+    
+    coeficientesProgramados.forEach((hora, valor) {
+      parametros.add({
+        'franja': hora,
+        'valor': valor,
+      });
+      
+      // Usar el primer valor como valor por defecto, o calcular promedio
+      if (valorDefault == 0.0) {
+        valorDefault = valor;
+      }
+    });
+    
     return createOrUpdateCoeficienteByParticipante(
       idParticipante: idParticipante,
       tipoReparto: TipoReparto.REPARTO_PROGRAMADO,
       parametros: {
-        'coeficientesProgramados': coeficientesProgramados,
+        'parametros': parametros,
+        'valor_default': valorDefault,
       },
     );
   }

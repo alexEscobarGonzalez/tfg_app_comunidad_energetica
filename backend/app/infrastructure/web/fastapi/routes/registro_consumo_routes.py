@@ -40,9 +40,6 @@ router = APIRouter(
 
 @router.post("", response_model=RegistroConsumoRead, status_code=status.HTTP_201_CREATED)
 def crear_registro_consumo(registro_data: RegistroConsumoCreate, db: Session = Depends(get_db)):
-    """
-    Crea un nuevo registro de consumo energético asociado a un participante
-    """
     registro_entity = RegistroConsumoEntity(
         timestamp=registro_data.timestamp,
         consumoEnergia=registro_data.consumoEnergia,
@@ -59,19 +56,6 @@ def importar_registros_consumo(
     archivo_csv: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-    """
-    Importa múltiples registros de consumo para un participante desde un archivo CSV
-    
-    El archivo CSV debe tener las siguientes columnas (con encabezados):
-    - timestamp: Fecha y hora en formato ISO (YYYY-MM-DDTHH:MM:SS) o YYYY-MM-DD HH:MM:SS
-    - consumoEnergia: Valor numérico del consumo energético (flotante)
-    
-    Ejemplo de contenido del CSV:
-    timestamp,consumoEnergia
-    2025-04-23T10:00:00,2.5
-    2025-04-23T11:00:00,3.2
-    2025-04-23 12:00:00,1.8
-    """
     # Validar que el archivo sea CSV
     if not archivo_csv.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="El archivo debe tener extensión .csv")
@@ -121,10 +105,6 @@ def listar_registros_consumo(
     fecha_fin: datetime = None, 
     db: Session = Depends(get_db)
 ):
-    """
-    Obtiene todos los registros de consumo del sistema.
-    Opcionalmente se pueden filtrar por rango de fechas.
-    """
     registro_repo = SqlAlchemyRegistroConsumoRepository(db)
     if fecha_inicio and fecha_fin:
         return listar_registros_consumo_by_periodo_use_case(fecha_inicio, fecha_fin, registro_repo)
@@ -137,10 +117,6 @@ def listar_registros_consumo_por_participante(
     fecha_fin: datetime = None, 
     db: Session = Depends(get_db)
 ):
-    """
-    Obtiene todos los registros de consumo asociados a un participante específico.
-    Opcionalmente se pueden filtrar por rango de fechas.
-    """
     participante_repo = SqlAlchemyParticipanteRepository(db)
     registro_repo = SqlAlchemyRegistroConsumoRepository(db)
     if fecha_inicio and fecha_fin:
@@ -149,9 +125,6 @@ def listar_registros_consumo_por_participante(
 
 @router.get("/{id_registro}", response_model=RegistroConsumoRead)
 def mostrar_registro_consumo(id_registro: int, db: Session = Depends(get_db)):
-    """
-    Obtiene los detalles de un registro de consumo específico por su ID
-    """
     registro_repo = SqlAlchemyRegistroConsumoRepository(db)
     return mostrar_registro_consumo_use_case(id_registro, registro_repo)
 
@@ -161,9 +134,6 @@ def modificar_registro_consumo(
     registro_data: RegistroConsumoUpdate, 
     db: Session = Depends(get_db)
 ):
-    """
-    Modifica los datos de un registro de consumo existente
-    """
     registro_entity = RegistroConsumoEntity(
         timestamp=registro_data.timestamp,
         consumoEnergia=registro_data.consumoEnergia
@@ -173,18 +143,6 @@ def modificar_registro_consumo(
 
 @router.delete("/participante/{id_participante}", response_model=Dict[str, Any])
 def eliminar_todos_registros_participante(id_participante: int, db: Session = Depends(get_db)):
-    """
-    Elimina todos los registros de consumo de un participante específico
-    
-    Esta operación es irreversible y eliminará permanentemente todos los datos
-    de consumo energético asociados al participante especificado.
-    
-    Args:
-        id_participante: ID del participante cuyos registros se eliminarán
-        
-    Returns:
-        Información sobre la operación de eliminación realizada
-    """
     try:
         participante_repo = SqlAlchemyParticipanteRepository(db)
         registro_repo = SqlAlchemyRegistroConsumoRepository(db)
@@ -196,9 +154,6 @@ def eliminar_todos_registros_participante(id_participante: int, db: Session = De
 
 @router.delete("/{id_registro}", response_model=Dict[str, Any])
 def eliminar_registro_consumo(id_registro: int, db: Session = Depends(get_db)):
-    """
-    Elimina un registro de consumo existente
-    """
     registro_repo = SqlAlchemyRegistroConsumoRepository(db)
     return eliminar_registro_consumo_use_case(id_registro, registro_repo)
 
@@ -292,34 +247,7 @@ def predecir_consumo_energetico(request: PrediccionConsumoRequest):
 
 @router.get("/modelo/estado")
 def obtener_estado_modelo():
-    """
-    Obtiene el estado del modelo de predicción de consumo (Modelo Socioeconómico v3)
     
-    Retorna información sobre la disponibilidad del modelo, versión, y características técnicas.
-    
-    ## 📋 Información Retornada
-    
-    - **modelo_disponible**: Si el modelo está cargado y listo
-    - **version**: Versión del modelo cargado
-    - **algoritmo**: Algoritmo utilizado (LightGBM)
-    - **caracteristicas**: Número de características (11)
-    - **ubicacion**: Ruta donde se encontró el modelo
-    - **mensaje**: Estado descriptivo del modelo
-    
-    ## 🔧 Ubicación del Modelo
-    
-    El modelo se busca en: `app/ml/`
-    - `modelo_lightgbm_optimizado.pkl`: Archivo del modelo entrenado
-    - `metadata.pkl`: Metadatos y configuración
-    
-    ## ⚠️ Troubleshooting
-    
-    Si `modelo_disponible: false`, verificar:
-    1. Archivos del modelo en `app/ml/`
-    2. Permisos de lectura
-    3. Integridad de archivos .pkl
-    4. Logs del servidor para errores específicos
-    """
     try:
         predictor = get_predictor()
         

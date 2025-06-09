@@ -7,17 +7,7 @@ def eliminar_todos_registros_participante_use_case(
     participante_repo: ParticipanteRepository,
     registro_repo: RegistroConsumoRepository
 ) -> Dict[str, Any]:
-    """
-    Elimina todos los registros de consumo de un participante específico
     
-    Args:
-        idParticipante: ID del participante
-        participante_repo: Repositorio de participantes
-        registro_repo: Repositorio de registros de consumo
-        
-    Returns:
-        Diccionario con el resultado de la operación
-    """
     # Verificar que el participante existe
     participante = participante_repo.get_by_id(idParticipante)
     if not participante:

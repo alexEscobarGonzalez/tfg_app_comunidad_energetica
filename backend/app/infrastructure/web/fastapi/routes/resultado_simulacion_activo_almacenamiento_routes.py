@@ -28,9 +28,6 @@ router = APIRouter(
 
 @router.post("", response_model=ResultadoSimulacionActivoAlmacenamientoRead, status_code=status.HTTP_201_CREATED)
 def crear_resultado_activo_almacenamiento(resultado: ResultadoSimulacionActivoAlmacenamientoCreate, db: Session = Depends(get_db)):
-    """
-    Crea un nuevo resultado para un activo de almacenamiento en una simulación
-    """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
     
     # Verificar si ya existe un resultado para esta combinación
@@ -64,25 +61,16 @@ def crear_resultado_activo_almacenamiento(resultado: ResultadoSimulacionActivoAl
 
 @router.get("/{id_resultado}", response_model=ResultadoSimulacionActivoAlmacenamientoRead)
 def obtener_resultado_activo_almacenamiento(id_resultado: int, db: Session = Depends(get_db)):
-    """
-    Obtiene un resultado de activo de almacenamiento por su ID
-    """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
     return obtener_resultado_activo_almacenamiento_use_case(id_resultado, repo)
 
 @router.get("/resultado-simulacion/{id_resultado_simulacion}", response_model=List[ResultadoSimulacionActivoAlmacenamientoRead])
 def obtener_resultados_por_simulacion(id_resultado_simulacion: int, db: Session = Depends(get_db)):
-    """
-    Obtiene todos los resultados de activos de almacenamiento para una simulación específica
-    """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
     return obtener_resultados_por_simulacion_use_case(id_resultado_simulacion, repo)
 
 @router.get("/resultado-simulacion/{id_resultado_simulacion}/activo-almacenamiento/{id_activo}", response_model=ResultadoSimulacionActivoAlmacenamientoRead)
 def obtener_resultado_por_simulacion_y_activo(id_resultado_simulacion: int, id_activo: int, db: Session = Depends(get_db)):
-    """
-    Obtiene un resultado específico por su combinación de simulación y activo de almacenamiento
-    """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
     resultado = obtener_resultado_por_simulacion_y_activo_use_case(id_resultado_simulacion, id_activo, repo)
     
@@ -96,17 +84,11 @@ def obtener_resultado_por_simulacion_y_activo(id_resultado_simulacion: int, id_a
 
 @router.get("", response_model=List[ResultadoSimulacionActivoAlmacenamientoRead])
 def listar_resultados(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """
-    Lista todos los resultados de activos de almacenamiento
-    """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
     return listar_resultados_activo_almacenamiento_use_case(repo, skip, limit)
 
 @router.put("/{id_resultado}", response_model=ResultadoSimulacionActivoAlmacenamientoRead)
 def actualizar_resultado(id_resultado: int, resultado: ResultadoSimulacionActivoAlmacenamientoUpdate, db: Session = Depends(get_db)):
-    """
-    Actualiza un resultado de activo de almacenamiento existente
-    """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
     
     # Verificar que el resultado existe
@@ -132,9 +114,6 @@ def actualizar_resultado(id_resultado: int, resultado: ResultadoSimulacionActivo
 
 @router.delete("/{id_resultado}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar_resultado(id_resultado: int, db: Session = Depends(get_db)):
-    """
-    Elimina un resultado de activo de almacenamiento
-    """
     repo = SqlAlchemyResultadoSimulacionActivoAlmacenamientoRepository(db)
     
     # Verificar que el resultado existe

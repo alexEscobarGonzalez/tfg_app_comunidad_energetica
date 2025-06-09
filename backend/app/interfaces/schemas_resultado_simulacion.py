@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 class ResultadoSimulacionBase(BaseModel):
-    """Clase base para los esquemas de resultado de simulación"""
+    
     costeTotalEnergia_eur: Optional[float] = Field(None, description="Coste total de la energía en euros")
     ahorroTotal_eur: Optional[float] = Field(None, description="Ahorro total en euros")
     ingresoTotalExportacion_eur: Optional[float] = Field(None, description="Ingreso total por exportación en euros")
@@ -16,15 +16,15 @@ class ResultadoSimulacionBase(BaseModel):
     reduccionCO2_kg: Optional[float] = Field(None, description="Reducción de emisiones de CO2 en kg")
 
 class ResultadoSimulacionCreate(ResultadoSimulacionBase):
-    """Esquema para crear un nuevo resultado de simulación"""
+    
     idSimulacion: int = Field(..., description="ID de la simulación asociada")
 
 class ResultadoSimulacionUpdate(ResultadoSimulacionBase):
-    """Esquema para actualizar un resultado de simulación existente"""
+    
     pass
 
 class ResultadoSimulacionRead(ResultadoSimulacionBase):
-    """Esquema para la respuesta con un resultado de simulación"""
+    
     idResultado: int
     fechaCreacion: datetime
     idSimulacion: int

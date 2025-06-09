@@ -74,10 +74,7 @@ class SqlAlchemyActivoAlmacenamientoRepository(ActivoAlmacenamientoRepository):
         return None
         
     def delete(self, idActivoAlmacenamiento: int) -> None:
-        """
-        Realiza un soft delete del activo de almacenamiento.
-        Los resultados de simulación relacionados se preservan.
-        """
+        
         from datetime import datetime
         
         model = self.db.query(ActivoAlmacenamiento).filter_by(idActivoAlmacenamiento=idActivoAlmacenamiento).first()
@@ -87,18 +84,13 @@ class SqlAlchemyActivoAlmacenamientoRepository(ActivoAlmacenamientoRepository):
             self.db.commit()
     
     def get_by_id_incluido_eliminados(self, idActivoAlmacenamiento: int) -> Optional[ActivoAlmacenamientoEntity]:
-        """
-        Obtiene un activo por ID, incluyendo los eliminados (soft delete).
-        Útil para consultar resultados históricos.
-        """
+        
         model = self.db.query(ActivoAlmacenamiento).filter_by(idActivoAlmacenamiento=idActivoAlmacenamiento).first()
         if model:
             return self._map_to_entity(model)
         return None
     
     def listar_eliminados(self) -> List[ActivoAlmacenamientoEntity]:
-        """
-        Lista todos los activos que han sido eliminados (soft delete).
-        """
+        
         models = self.db.query(ActivoAlmacenamiento).filter_by(esta_activo=False).all()
         return [self._map_to_entity(model) for model in models]

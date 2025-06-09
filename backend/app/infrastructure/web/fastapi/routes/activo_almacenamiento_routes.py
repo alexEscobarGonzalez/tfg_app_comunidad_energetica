@@ -19,9 +19,6 @@ router = APIRouter(prefix="/activos-almacenamiento", tags=["activos-almacenamien
 
 @router.post("", response_model=ActivoAlmacenamientoRead)
 def crear_activo_almacenamiento(activo: ActivoAlmacenamientoCreate, db: Session = Depends(get_db)):
-    """
-    Crea un nuevo activo de almacenamiento en una comunidad energética
-    """
     activo_entity = ActivoAlmacenamientoEntity(
         nombreDescriptivo=activo.nombreDescriptivo,
         capacidadNominal_kWh=activo.capacidadNominal_kWh,
@@ -37,34 +34,22 @@ def crear_activo_almacenamiento(activo: ActivoAlmacenamientoCreate, db: Session 
 
 @router.get("/{id_activo}", response_model=ActivoAlmacenamientoRead)
 def obtener_activo(id_activo: int, db: Session = Depends(get_db)):
-    """
-    Obtiene los detalles de un activo de almacenamiento por su ID
-    """
     repo = SqlAlchemyActivoAlmacenamientoRepository(db)
     return mostrar_activo_almacenamiento_use_case(id_activo, repo)
 
 @router.get("/comunidad/{id_comunidad}", response_model=List[ActivoAlmacenamientoRead])
 def listar_activos_por_comunidad(id_comunidad: int, db: Session = Depends(get_db)):
-    """
-    Lista todos los activos de almacenamiento de una comunidad energética
-    """
     repo = SqlAlchemyActivoAlmacenamientoRepository(db)
     activos = repo.get_by_comunidad(id_comunidad)
     return activos
 
 @router.get("", response_model=List[ActivoAlmacenamientoRead])
 def listar_activos(db: Session = Depends(get_db)):
-    """
-    Lista todos los activos de almacenamiento registrados
-    """
     repo = SqlAlchemyActivoAlmacenamientoRepository(db)
     return repo.list()
 
 @router.put("/{id_activo}", response_model=ActivoAlmacenamientoRead)
 def actualizar_activo(id_activo: int, activo: ActivoAlmacenamientoUpdate, db: Session = Depends(get_db)):
-    """
-    Actualiza los datos de un activo de almacenamiento existente
-    """
     repo = SqlAlchemyActivoAlmacenamientoRepository(db)
     activo_existente = repo.get_by_id(id_activo)
     if not activo_existente:
@@ -82,9 +67,6 @@ def actualizar_activo(id_activo: int, activo: ActivoAlmacenamientoUpdate, db: Se
 
 @router.delete("/{id_activo}")
 def eliminar_activo(id_activo: int, db: Session = Depends(get_db)):
-    """
-    Elimina un activo de almacenamiento existente
-    """
     repo = SqlAlchemyActivoAlmacenamientoRepository(db)
     eliminar_activo_almacenamiento_use_case(id_activo, repo)
     return {"mensaje": "Activo de almacenamiento eliminado correctamente"}

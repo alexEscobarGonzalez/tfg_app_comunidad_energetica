@@ -12,7 +12,7 @@ class SqlAlchemyRegistroConsumoRepository(RegistroConsumoRepository):
         self.db = db
         
     def _map_to_entity(self, model: RegistroConsumo) -> RegistroConsumoEntity:
-        """Convierte un modelo de tabla a una entidad de dominio"""
+        
         return RegistroConsumoEntity(
             idRegistroConsumo=model.idRegistroConsumo,
             timestamp=model.timestamp,
@@ -44,17 +44,7 @@ class SqlAlchemyRegistroConsumoRepository(RegistroConsumoRepository):
         return [self._map_to_entity(model) for model in models]
     
     def get_range_for_participantes(self, id_participantes: List[int], fecha_inicio: datetime, fecha_fin: datetime) -> List[RegistroConsumoEntity]:
-        """
-        Obtiene registros de consumo para múltiples participantes dentro de un rango de fechas.
         
-        Args:
-            id_participantes: Lista de IDs de participantes
-            fecha_inicio: Fecha de inicio del período
-            fecha_fin: Fecha de fin del período
-            
-        Returns:
-            Lista de registros de consumo que cumplen los criterios
-        """
         # Si no hay participantes, devolver lista vacía
         if not id_participantes:
             return []
@@ -101,15 +91,7 @@ class SqlAlchemyRegistroConsumoRepository(RegistroConsumoRepository):
             self.db.commit()
     
     def delete_all_by_participante(self, idParticipante: int) -> int:
-        """
-        Elimina todos los registros de consumo de un participante específico
         
-        Args:
-            idParticipante: ID del participante
-            
-        Returns:
-            Número de registros eliminados
-        """
         deleted_count = self.db.query(RegistroConsumo).filter_by(idParticipante=idParticipante).delete()
         self.db.commit()
         return deleted_count

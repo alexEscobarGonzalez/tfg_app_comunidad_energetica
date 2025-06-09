@@ -5,19 +5,7 @@ from app.domain.repositories.coeficiente_reparto_repository import CoeficienteRe
 from app.domain.repositories.participante_repository import ParticipanteRepository
 
 def listar_coeficientes_reparto_by_participante_use_case(id_participante: int, participante_repo: ParticipanteRepository, coeficiente_repo: CoeficienteRepartoRepository) -> List[CoeficienteRepartoEntity]:
-    """
-    Obtiene todos los coeficientes de reparto asignados a un participante
     
-    Args:
-        id_participante: ID del participante
-        db: Sesión de base de datos
-        
-    Returns:
-        List[CoeficienteRepartoEntity]: Lista de coeficientes de reparto
-        
-    Raises:
-        HTTPException: Si el participante no existe
-    """
     # Verificar que el participante existe
     participante = participante_repo.get_by_id(id_participante)
     if not participante:
@@ -29,13 +17,5 @@ def listar_coeficientes_reparto_by_participante_use_case(id_participante: int, p
     return coeficientes
 
 def listar_todos_coeficientes_reparto_use_case(coeficiente_repo: CoeficienteRepartoRepository) -> List[CoeficienteRepartoEntity]:
-    """
-    Obtiene todos los coeficientes de reparto del sistema
     
-    Args:
-        db: Sesión de base de datos
-        
-    Returns:
-        List[CoeficienteRepartoEntity]: Lista de todos los coeficientes de reparto
-    """
     return coeficiente_repo.list()

@@ -20,9 +20,6 @@ router = APIRouter(
 
 @router.post("", response_model=ResultadoSimulacionRead, status_code=status.HTTP_201_CREATED)
 def crear_resultado_simulacion(resultado: ResultadoSimulacionCreate, db: Session = Depends(get_db)):
-    """
-    Crea un nuevo resultado de simulación para una simulación específica.
-    """
     # Verificar si ya existe un resultado para esta simulación
     repo = SqlAlchemyResultadoSimulacionRepository(db)
     resultado_existente = mostrar_resultado_por_simulacion_use_case(resultado.idSimulacion, repo)
@@ -50,18 +47,12 @@ def crear_resultado_simulacion(resultado: ResultadoSimulacionCreate, db: Session
 
 @router.get("/{id_resultado}", response_model=ResultadoSimulacionRead)
 def obtener_resultado(id_resultado: int, db: Session = Depends(get_db)):
-    """
-    Obtiene un resultado de simulación por su ID
-    """
     repo = SqlAlchemyResultadoSimulacionRepository(db)
     # La función ya maneja el caso de no encontrar el resultado y lanza una excepción HTTPException
     return mostrar_resultado_simulacion_use_case(id_resultado, repo)
 
 @router.get("/simulacion/{id_simulacion}", response_model=ResultadoSimulacionRead)
 def obtener_resultado_por_simulacion(id_simulacion: int, db: Session = Depends(get_db)):
-    """
-    Obtiene el resultado asociado a una simulación específica
-    """
     repo = SqlAlchemyResultadoSimulacionRepository(db)
     resultado = mostrar_resultado_por_simulacion_use_case(id_simulacion, repo)
     
@@ -75,17 +66,11 @@ def obtener_resultado_por_simulacion(id_simulacion: int, db: Session = Depends(g
 
 @router.get("", response_model=List[ResultadoSimulacionRead])
 def listar_resultados(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """
-    Lista todos los resultados de simulaciones
-    """
     repo = SqlAlchemyResultadoSimulacionRepository(db)
     return listar_resultados_simulacion_use_case(repo, skip, limit)
 
 @router.put("/{id_resultado}", response_model=ResultadoSimulacionRead)
 def actualizar_resultado(id_resultado: int, resultado: ResultadoSimulacionUpdate, db: Session = Depends(get_db)):
-    """
-    Actualiza un resultado de simulación existente
-    """
     repo = SqlAlchemyResultadoSimulacionRepository(db)
     
     # Verificar si el resultado existe - esta verificación la hace la función modificar_resultado_simulacion_use_case
@@ -112,9 +97,6 @@ def actualizar_resultado(id_resultado: int, resultado: ResultadoSimulacionUpdate
 
 @router.delete("/{id_resultado}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar_resultado(id_resultado: int, db: Session = Depends(get_db)):
-    """
-    Elimina un resultado de simulación
-    """
     repo = SqlAlchemyResultadoSimulacionRepository(db)
     
     # Verificar si el resultado existe - ahora esta verificación la hace la función eliminar_resultado_simulacion_use_case

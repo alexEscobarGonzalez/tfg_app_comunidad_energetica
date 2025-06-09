@@ -5,19 +5,6 @@ from app.domain.repositories.coeficiente_reparto_repository import CoeficienteRe
 from app.domain.repositories.participante_repository import ParticipanteRepository
 
 def crear_coeficiente_reparto_use_case(coeficiente: CoeficienteRepartoEntity, participante_repo: ParticipanteRepository, coeficiente_repo: CoeficienteRepartoRepository) -> CoeficienteRepartoEntity:
-    """
-    Crea un nuevo coeficiente de reparto asociado a un participante
-    
-    Args:
-        coeficiente: Entidad con los datos del nuevo coeficiente de reparto
-        db: Sesión de base de datos
-        
-    Returns:
-        CoeficienteRepartoEntity: La entidad del coeficiente de reparto creada con su ID asignado
-        
-    Raises:
-        HTTPException: Si el participante no existe o si los datos no son válidos
-    """
     # Verificar que el participante existe
     participante = participante_repo.get_by_id(coeficiente.idParticipante)
     if not participante:

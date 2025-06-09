@@ -28,9 +28,7 @@ class SqlAlchemyCoeficienteRepartoRepository(CoeficienteRepartoRepository):
         return [self._map_to_entity(model) for model in models]
     
     def get_by_participante_single(self, participante_id: int) -> Optional[CoeficienteRepartoEntity]:
-        """
-        Obtiene el coeficiente de reparto de un participante (relación 1:1)
-        """
+        
         model = self.db.query(CoeficienteRepartoModel).filter_by(idParticipante=participante_id).first()
         if model:
             return self._map_to_entity(model)
@@ -53,9 +51,7 @@ class SqlAlchemyCoeficienteRepartoRepository(CoeficienteRepartoRepository):
         return self._map_to_entity(model)
         
     def create_or_update(self, coeficiente: CoeficienteRepartoEntity) -> CoeficienteRepartoEntity:
-        """
-        Crea o actualiza el coeficiente de reparto para un participante (relación 1:1)
-        """
+        
         # Buscar si ya existe un coeficiente para este participante
         existing_model = self.db.query(CoeficienteRepartoModel).filter_by(idParticipante=coeficiente.idParticipante).first()
         
@@ -96,9 +92,7 @@ class SqlAlchemyCoeficienteRepartoRepository(CoeficienteRepartoRepository):
             self.db.commit()
     
     def delete_by_participante(self, participante_id: int) -> None:
-        """
-        Elimina el coeficiente de reparto de un participante
-        """
+        
         model = self.db.query(CoeficienteRepartoModel).filter_by(idParticipante=participante_id).first()
         if model:
             self.db.delete(model)

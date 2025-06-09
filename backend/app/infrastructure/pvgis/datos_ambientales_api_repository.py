@@ -21,18 +21,7 @@ class DatosAmbientalesApiRepository(DatosAmbientalesRepository):
         start_date: Union[datetime, date],
         end_date: Union[datetime, date]
     ) -> List[DatosAmbientalesEntity]:
-        """
-        Obtiene datos ambientales de PVGIS para un período y ubicación
         
-        Args:
-            lat: Latitud en grados decimales
-            lon: Longitud en grados decimales
-            start_date: Fecha/hora de inicio
-            end_date: Fecha/hora de fin
-            
-        Returns:
-            Lista de entidades DatosAmbientalesEntity
-        """
         # Convertir fechas a UTC-aware y luego a naive UTC para consistencia interna
         start_dt = self._ensure_datetime_utc(start_date, start_of_day=True).replace(tzinfo=None)
         end_dt = self._ensure_datetime_utc(end_date, start_of_day=False).replace(tzinfo=None)
@@ -105,23 +94,7 @@ class DatosAmbientalesApiRepository(DatosAmbientalesRepository):
         loss: float = 14.0,
         tech: str = 'crystSi'
     ) -> Dict[datetime, float]:
-        """
-        Obtiene la generación fotovoltaica horaria estimada (en kWh) de la API de PVGIS.
-
-        Args:
-            lat: Latitud en grados decimales.
-            lon: Longitud en grados decimales.
-            start_date: Fecha/hora de inicio del período deseado.
-            end_date: Fecha/hora de fin del período deseado.
-            peak_power_kwp: Potencia nominal del sistema en kWp.
-            angle: Ángulo de inclinación (grados).
-            aspect: Ángulo de azimut (grados, 0=Sur, -90=Este, 90=Oeste).
-            loss: Pérdidas del sistema (porcentaje).
-            tech: Tecnología del panel ('crystSi', 'CIS', 'CdTe', 'Unknown').
-
-        Returns:
-            Diccionario que mapea timestamp (datetime naive) a generación estimada en kWh para esa hora.
-        """
+        
         # Convertir fechas para consistencia interna
         start_dt = self._ensure_datetime_utc(start_date, start_of_day=True).replace(tzinfo=None)
         end_dt = self._ensure_datetime_utc(end_date, start_of_day=False).replace(tzinfo=None)
@@ -186,10 +159,7 @@ class DatosAmbientalesApiRepository(DatosAmbientalesRepository):
         return resultados
 
     def _ensure_datetime_utc(self, date_obj: Union[datetime, date], start_of_day: bool = True) -> datetime:
-        """
-        Asegura que el objeto sea un datetime con zona horaria UTC.
-        Si es solo date, lo convierte a datetime al inicio o fin del día en UTC.
-        """
+        
         dt: datetime
         if isinstance(date_obj, datetime):
             dt = date_obj
@@ -216,9 +186,7 @@ class DatosAmbientalesApiRepository(DatosAmbientalesRepository):
         return dt
 
     def _parse_pvgis_timestamp(self, ts_str: Optional[str]) -> Optional[datetime]:
-        """
-        Convierte el string de timestamp de PVGIS (formato 'YYYYMMDD:HHMM') a un objeto datetime UTC.
-        """
+        
         if not ts_str:
             return None
 
@@ -258,9 +226,7 @@ class DatosAmbientalesApiRepository(DatosAmbientalesRepository):
         use_horizon_effect: bool = True,
         tracking_type: int = 0
     ) -> Optional[Dict[str, Any]]:
-        """
-        Realiza la petición a la API PVGIS seriescalc y maneja errores/reintentos.
-        """
+        
         if pv_calculation and peak_power is None:
             logging.error("Error interno: Se requiere potencia nominal (peak_power) para cálculo PV.")
             return None

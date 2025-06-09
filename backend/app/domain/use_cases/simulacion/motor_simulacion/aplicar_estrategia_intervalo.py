@@ -4,26 +4,6 @@ from app.domain.use_cases.simulacion.motor_simulacion.obtener_precio_energia imp
 
 def aplicar_estrategia_intervalo(simulacion, comunidad, participantes, gen_activos,
                                       consumo_int, contratos, coefs, intervalo, estado_alm, activos_alm, pvpc_repo=None):
-        """
-        Aplica la estrategia de reparto de energía según la configuración de la simulación.
-        
-        Args:
-            simulacion: Entidad de la simulación (contiene la estrategia a usar)
-            comunidad: Entidad de la comunidad energética
-            participantes: Lista de participantes
-            gen_activos: Diccionario de generación de activos {id_activo: generación_kWh}
-            consumo_int: Diccionario de consumo {id_participante: consumo_kWh}
-            contratos: Diccionario de contratos por participante
-            coefs: Diccionario de coeficientes de reparto por participante
-            intervalo: Timestamp del intervalo actual
-            estado_alm: Estado actual de almacenamiento
-            activos_alm: Lista de activos de almacenamiento
-            pvpc_repo: Repositorio para obtener precios PVPC (opcional)
-            
-        Returns:
-            Tupla con (resultados del intervalo, resultados almacenamiento, estado actualizado de almacenamiento)
-        """
-        
         
         try:
             print(f"\n[DEBUG] Intervalo: {intervalo}")
@@ -186,16 +166,7 @@ def aplicar_estrategia_intervalo(simulacion, comunidad, participantes, gen_activ
         
         
 def _obtener_coeficiente_reparto(coeficientes, timestamp):
-    """
-    Obtiene el coeficiente de reparto adecuado según el timestamp y tipo
     
-    Args:
-        coeficientes: Lista de coeficientes de reparto para un participante
-        timestamp: Momento actual para el que se requiere el coeficiente
-        
-    Returns:
-        float: Valor del coeficiente o None si no se encuentra
-    """
     if not coeficientes:
         return None
         
@@ -229,21 +200,7 @@ def _obtener_coeficiente_reparto(coeficientes, timestamp):
 
 
 def _calcular_degradacion_bateria(activo, ciclos_acumulados, tiempo_transcurrido_anos=0):
-    """
-    Calcula la degradación actual de la batería basada en ciclos y tiempo.
     
-    Args:
-        activo: Entidad del activo de almacenamiento
-        ciclos_acumulados: Número de ciclos equivalentes realizados
-        tiempo_transcurrido_anos: Tiempo transcurrido en años (opcional)
-        
-    Returns:
-        dict: {
-            'factor_capacidad': Factor de reducción de capacidad (0.0-1.0),
-            'factor_eficiencia': Factor de reducción de eficiencia (0.0-1.0),
-            'degradacion_pct': Degradación total en porcentaje
-        }
-    """
     # Degradación por ciclos (simplificado)
     degradacion_por_ciclo = 0.004  # 0.4% por ciclo completo
     degradacion_ciclos = ciclos_acumulados * degradacion_por_ciclo
@@ -266,24 +223,7 @@ def _calcular_degradacion_bateria(activo, ciclos_acumulados, tiempo_transcurrido
 
 
 def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, intervalo, activos_alm, ciclos_acumulados=None):
-    """
-    Gestiona la carga o descarga de los sistemas de almacenamiento según la energía disponible o requerida.
-
-    Args:
-        comunidad: Entidad de la comunidad energética
-        excedentes_o_deficit: Energía disponible (positivo) o déficit (negativo) en kWh
-        estado_alm: Dict con el estado actual de SoC de cada activo de almacenamiento {id: {'soc_kwh': ..., 'ciclos': ...}}
-        intervalo: Timestamp del inicio del intervalo (1 hora de duración)
-        activos_alm: Lista de activos de almacenamiento disponibles
-        ciclos_acumulados: Dict opcional con ciclos acumulados por activo {id_activo: ciclos}
-
-    Returns:
-        tuple: (
-            energia_gestionada: kWh intercambiados con la red (+ carga, - descarga),
-            estado_alm_actualizado: estado_alm modificado con los nuevos SoC,
-            resultados_activos_alm: lista de DatosIntervaloActivoEntity con detalle por activo
-        )
-    """
+    
     energia_gestionada = 0.0
     intervalo_activos_alm = []
 

@@ -31,8 +31,7 @@ from app.domain.use_cases.simulacion.motor_simulacion.calcular_resultados import
 
 
 class MotorSimulacion:
-    """Motor de simulación de comunidades energéticas."""
-
+    
     def __init__(
         self,
         simulacion_repo: SimulacionRepository,
@@ -75,7 +74,7 @@ class MotorSimulacion:
         self._cache_generacion_pv = {}
 
     def ejecutar_simulacion(self, simulacion_id: int):
-        """Ejecuta la simulación completa para el ID especificado."""
+        
         self.simulacion_id = simulacion_id
         
         tiempo_inicio_total = time.time()
@@ -236,27 +235,7 @@ class MotorSimulacion:
             raise
 
     def _gestionar_generacion_activos(self, activos_gen, lat, lon, fecha_inicio, fecha_fin, datos_ambientales=None, timestamp=None):
-        """
-        Función unificada que gestiona tanto el precálculo como el cálculo en tiempo real de la 
-        generación de energía para todos los activos.
         
-        Primero precalcula y almacena en caché los datos de generación para todo el período
-        de la simulación (especialmente para activos fotovoltaicos).
-        Luego proporciona datos de generación para un timestamp específico.
-        
-        Args:
-            activos_gen: Lista de activos de generación
-            lat: Latitud de la comunidad (coordenada base)
-            lon: Longitud de la comunidad (coordenada base)
-            fecha_inicio: Fecha de inicio de la simulación
-            fecha_fin: Fecha de fin de la simulación
-            datos_ambientales: Datos ambientales para un intervalo específico (opcional)
-            timestamp: Momento específico para el que solicita la generación (opcional)
-            
-        Returns:
-            En el modo de precálculo (timestamp=None): No devuelve nada, solo rellena la caché
-            En el modo de cálculo (timestamp especificado): Diccionario {id_activo: energía_generada_kWh}
-        """
         # Detectar modo de operación
         modo_precalculo = timestamp is None
 
@@ -367,7 +346,7 @@ class MotorSimulacion:
             return generacion_intervalo    
         
     def _organize_consumo_by_interval(self, datos_consumo):
-        """Organiza los datos de consumo por timestamp."""
+        
         result = {}
         for registro in datos_consumo:
             if registro.timestamp not in result:
@@ -386,7 +365,7 @@ class MotorSimulacion:
         return result
 
     def _organize_ambiental_by_interval(self, datos_ambientales):
-        """Organiza los datos ambientales por timestamp."""
+        
         result = {}
         for registro in datos_ambientales:
             result[registro.timestamp] = {
@@ -398,7 +377,7 @@ class MotorSimulacion:
         return result
 
     def _verificar_consistencia_timestamps(self, consumo_por_intervalo, ambiental_por_intervalo, cache_generacion_pv):
-        """Verifica la consistencia temporal entre las diferentes fuentes de datos."""
+        
         ts_consumo = set(consumo_por_intervalo.keys())
         ts_ambiental = set(ambiental_por_intervalo.keys())
         

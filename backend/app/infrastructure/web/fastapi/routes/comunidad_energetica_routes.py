@@ -89,14 +89,6 @@ async def exportar_comunidad_completa(
     fecha_fin: Optional[str] = Query(None, description="Fecha fin para filtrar datos (YYYY-MM-DD)"),
     db: Session = Depends(get_db)
 ):
-    """
-    Exporta toda la información de una comunidad en un archivo ZIP.
-    
-    El archivo incluye:
-    - metadatos/: JSONs con información de la comunidad, participantes, activos, contratos, etc.
-    - datos_consumo/: CSVs con datos de consumo de cada participante
-    """
-    
     logger.info(f"Iniciando exportación para comunidad {id_comunidad}")
     logger.info(f"Parámetros: fecha_inicio={fecha_inicio}, fecha_fin={fecha_fin}")
     
@@ -182,16 +174,6 @@ async def importar_comunidad_completa(
     id_usuario: int = Query(..., description="ID del usuario que realiza la importación"),
     db: Session = Depends(get_db)
 ):
-    """
-    Importa toda la información de una comunidad desde un archivo ZIP.
-    
-    El archivo debe contener:
-    - metadatos/: JSONs con información de la comunidad, participantes, activos, contratos, etc.
-    - datos_consumo/: CSVs con datos de consumo de cada participante
-    
-    Se crearán nuevas entidades en la base de datos sin preservar los IDs originales.
-    """
-    
     logger.info(f"Iniciando importación de comunidad para usuario {id_usuario}")
     logger.info(f"Archivo recibido: {file.filename} ({file.content_type})")
     

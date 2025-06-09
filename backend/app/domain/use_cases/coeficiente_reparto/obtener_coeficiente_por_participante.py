@@ -9,20 +9,7 @@ def obtener_coeficiente_por_participante_use_case(
     participante_repo: ParticipanteRepository,
     coeficiente_repo: CoeficienteRepartoRepository
 ) -> Optional[CoeficienteRepartoEntity]:
-    """
-    Obtiene el coeficiente de reparto de un participante específico (relación 1:1)
     
-    Args:
-        id_participante: ID del participante
-        participante_repo: Repositorio de participantes
-        coeficiente_repo: Repositorio de coeficientes de reparto
-        
-    Returns:
-        Optional[CoeficienteRepartoEntity]: El coeficiente del participante o None si no existe
-        
-    Raises:
-        HTTPException: Si el participante no existe
-    """
     # Verificar que el participante existe
     participante = participante_repo.get_by_id(id_participante)
     if not participante:

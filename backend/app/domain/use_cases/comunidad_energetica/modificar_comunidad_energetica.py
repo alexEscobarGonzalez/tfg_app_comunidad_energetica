@@ -3,20 +3,6 @@ from app.domain.entities.comunidad_energetica import ComunidadEnergeticaEntity
 from app.domain.repositories.comunidad_energetica_repository import ComunidadEnergeticaRepository
 
 def modificar_comunidad_energetica_use_case(id_comunidad: int, comunidad_datos: ComunidadEnergeticaEntity, repo: ComunidadEnergeticaRepository) -> ComunidadEnergeticaEntity:
-    """
-    Modifica los datos de una comunidad energética existente
-    
-    Args:
-        id_comunidad: ID de la comunidad energética a modificar
-        comunidad_datos: Nuevos datos para la comunidad energética
-        repo: Repositorio de comunidad energética
-        
-    Returns:
-        ComunidadEnergetica: Datos actualizados de la comunidad energética
-        
-    Raises:
-        HTTPException: Si la comunidad no existe
-    """
     
     # Verificar que la comunidad existe
     comunidad_existente = repo.get_by_id(id_comunidad)

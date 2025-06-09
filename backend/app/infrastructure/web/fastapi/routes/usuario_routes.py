@@ -47,9 +47,6 @@ def login(usuario: UsuarioLogin, db: Session = Depends(get_db)):
 
 @router.get("/{id_usuario}/comunidades", response_model=List[ComunidadEnergeticaRead])
 def listar_comunidades_usuario(id_usuario: int, db: Session = Depends(get_db)):
-    """
-    Obtiene todas las comunidades energéticas asociadas a un usuario específico.
-    """
     comunidades = listar_comunidades_por_usuario_use_case(id_usuario, db)
     return [
         ComunidadEnergeticaRead(
@@ -64,9 +61,6 @@ def listar_comunidades_usuario(id_usuario: int, db: Session = Depends(get_db)):
 
 @router.get("", response_model=List[UsuarioRead])
 def listar_usuarios(db: Session = Depends(get_db)):
-    """
-    Obtiene todos los usuarios.
-    """
     usuario_repo = SqlAlchemyUsuarioRepository(db)
     usuarios = usuario_repo.list()
     return [UsuarioRead(idUsuario=u.idUsuario, nombre=u.nombre, correo=u.correo) for u in usuarios]

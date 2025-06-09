@@ -4,20 +4,7 @@ from app.domain.repositories.contrato_autoconsumo_repository import ContratoAuto
 from app.domain.repositories.participante_repository import ParticipanteRepository
 
 def crear_contrato_autoconsumo_use_case(contrato: ContratoAutoconsumoEntity, participante_repo: ParticipanteRepository, contrato_repo: ContratoAutoconsumoRepository) -> ContratoAutoconsumoEntity:
-    """
-    Crea un nuevo contrato de autoconsumo asociado a un participante
     
-    Args:
-        contrato: Entidad con los datos del nuevo contrato
-        participante_repo: Repositorio de participantes
-        contrato_repo: Repositorio de contratos de autoconsumo
-        
-    Returns:
-        ContratoAutoconsumoEntity: La entidad contrato creada con su ID asignado
-        
-    Raises:
-        HTTPException: Si el participante no existe o ya tiene un contrato
-    """
     # Verificar que el participante existe
     participante = participante_repo.get_by_id(contrato.idParticipante)
     if not participante:

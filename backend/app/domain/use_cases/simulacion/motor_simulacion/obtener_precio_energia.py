@@ -11,7 +11,7 @@ def obtener_precio_energia(
     pvpc_repo: Optional[PvpcPreciosRepository] = None,
     tipo_precio: str = "importacion"
 ) -> float:
-    """Obtiene el precio de la energía según el tipo de contrato y momento específico."""
+    
     if contrato.tipoContrato == TipoContrato.PVPC:
         if pvpc_repo is None:
             raise ValueError("Se requiere pvpc_repo para contratos PVPC")

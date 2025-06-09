@@ -10,7 +10,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 class PredictorConsumo:
-    """Clase para cargar y usar el modelo de predicción de consumo socioeconómico v3"""
     
     def __init__(self):
         self.modelo = None
@@ -18,7 +17,7 @@ class PredictorConsumo:
         self._cargar_modelo()
     
     def _cargar_modelo(self):
-        """Carga el modelo entrenado desde app/ml"""
+        
         try:
             # Ruta fija del modelo
             modelo_dir = Path("app/ml")
@@ -62,17 +61,11 @@ class PredictorConsumo:
             raise Exception(f"No se pudo cargar el modelo: {str(e)}")
     
     def esta_disponible(self) -> bool:
-        """Verifica si el modelo está disponible"""
+        
         return self.modelo is not None
     
     def _clasificar_hora_tarifa(self, hora: int) -> tuple[int, str]:
-        """
-        Clasifica la hora según el tipo de tarifa eléctrica
         
-        Valle: 22:00-8:00 (valor 0) - Tarifa más económica
-        Normal: 8:00-18:00 (valor 1) - Tarifa estándar  
-        Punta: 18:00-22:00 (valor 2) - Tarifa más cara
-        """
         if 22 <= hora or hora < 8:
             return 0, "Valle"
         elif 8 <= hora < 18:
@@ -90,7 +83,6 @@ class PredictorConsumo:
         lag_mes2: float,
         lag_mes3: float
     ) -> pd.DataFrame:
-        """Prepara los datos con las 11 características para el modelo"""
         
         # Extraer características temporales
         hora = fecha_hora.hour
@@ -130,23 +122,7 @@ class PredictorConsumo:
         lag_mes2: float = 0.5,
         lag_mes3: float = 0.5
     ) -> List[Dict[str, Any]]:
-        """
-        Realiza predicciones de consumo para un rango de fechas
         
-        Args:
-            fecha_inicio: Fecha y hora de inicio
-            fecha_fin: Fecha y hora de fin
-            intervalo_horas: Intervalo en horas entre predicciones (1-24)
-            tipo_vivienda: Tipo de vivienda (1-4)
-            num_personas: Número de personas (1-8)
-            temperatura: Temperatura promedio en °C (-10 a 40)
-            lag_mes1: Consumo promedio mes anterior (0.01-5.0 kWh)
-            lag_mes2: Consumo promedio hace 2 meses (0.01-5.0 kWh)
-            lag_mes3: Consumo promedio hace 3 meses (0.01-5.0 kWh)
-            
-        Returns:
-            Lista de predicciones para cada intervalo de tiempo
-        """
         if not self.esta_disponible():
             raise Exception("El modelo no está disponible")
             
@@ -195,7 +171,7 @@ class PredictorConsumo:
 _predictor_global = None
 
 def get_predictor() -> PredictorConsumo:
-    """Obtiene la instancia global del predictor"""
+    
     global _predictor_global
     if _predictor_global is None:
         _predictor_global = PredictorConsumo()
@@ -212,33 +188,7 @@ def predecir_consumo_rango_use_case(
     lag_mes2: float = 0.5,
     lag_mes3: float = 0.5
 ) -> Dict[str, Any]:
-    """
-    Caso de uso para predecir el consumo energético en un rango de fechas
     
-    Utiliza el modelo socioeconómico v3 con 11 características:
-    - 2 socioeconómicas (tipo_vivienda, num_personas)
-    - 5 temporales (hora, dia_semana, es_finde, mes, tipo_tarifa)
-    - 3 lags mensuales (lag_mes1, lag_mes2, lag_mes3)
-    - 1 climática (temp_hora)
-    
-    Args:
-        fecha_inicio: Fecha y hora de inicio
-        fecha_fin: Fecha y hora de fin
-        intervalo_horas: Intervalo en horas entre predicciones (1-24)
-        tipo_vivienda: Tipo de vivienda (1-4)
-        num_personas: Número de personas (1-8)
-        temperatura: Temperatura promedio en °C (-10 a 40)
-        lag_mes1: Consumo promedio mes anterior (0.01-5.0 kWh)
-        lag_mes2: Consumo promedio hace 2 meses (0.01-5.0 kWh)
-        lag_mes3: Consumo promedio hace 3 meses (0.01-5.0 kWh)
-        
-    Returns:
-        Dict con las predicciones y resumen estadístico
-        
-    Raises:
-        Exception: Si el modelo no está disponible o hay error en la predicción
-        ValueError: Si los parámetros están fuera de rango
-    """
     # Validaciones según la documentación del modelo
     if tipo_vivienda < 1 or tipo_vivienda > 4:
         raise ValueError("tipo_vivienda debe estar entre 1 y 4")

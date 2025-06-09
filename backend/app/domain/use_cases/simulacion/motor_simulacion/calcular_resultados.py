@@ -1,9 +1,3 @@
-"""
-Módulo para cálculo de resultados de simulación.
-
-Este módulo contiene las funciones necesarias para calcular los 
-resultados globales y agregados de una simulación de comunidad energética.
-"""
 from typing import List, Dict, Any
 from datetime import datetime
 
@@ -17,7 +11,7 @@ from app.domain.entities.activo_almacenamiento import ActivoAlmacenamientoEntity
 
 
 def calcular_termino_potencia(contrato, fecha_inicio, fecha_fin):
-    """Calcula el término de potencia según la fórmula española."""
+    
     if not contrato or not hasattr(contrato, 'potenciaContratada_kW') or not hasattr(contrato, 'precioPotenciaContratado_eur_kWh'):
         return 0.0
     
@@ -30,7 +24,7 @@ def calcular_termino_potencia(contrato, fecha_inicio, fecha_fin):
 
 
 def calcular_factura_completa_espanola(coste_energia_bruto, termino_potencia):
-    """Calcula la factura eléctrica completa según la estructura fiscal española."""
+    
     # Constantes fiscales españolas
     IMPUESTO_ELECTRICO_PCT = 5.1127
     IVA_PCT = 21.0
@@ -57,7 +51,6 @@ def calcular_factura_completa_espanola(coste_energia_bruto, termino_potencia):
 
 
 def calcular_resultados_participantes(resultados_intervalo_participantes, contratos=None, simulacion=None):
-    """Calcula resultados agregados por participante."""
     
     participantes_dict = _agregar_datos_energeticos_participantes(resultados_intervalo_participantes)
     
@@ -93,7 +86,7 @@ def calcular_resultados_participantes(resultados_intervalo_participantes, contra
 
 
 def _agregar_datos_energeticos_participantes(resultados_intervalo_participantes):
-    """Agrupa y suma los datos energéticos por participante."""
+    
     participantes_dict = {}
     
     for resultado in resultados_intervalo_participantes:
@@ -189,24 +182,6 @@ def _agregar_datos_energeticos_participantes(resultados_intervalo_participantes)
 
 
 def _calcular_costes_economicos_mensuales(datos_agregados, contrato, simulacion, participante_id):
-    """
-    Calcula los costes económicos procesando cada mes por separado como una factura independiente.
-    Los resultados se agregan para devolver totales globales.
-    
-    Args:
-        datos_agregados: Diccionario con datos energéticos agregados (incluye datos_mensuales)
-        contrato: Contrato del participante para calcular término de potencia
-        simulacion: Entidad de simulación con fechas
-        participante_id: ID del participante para logs
-        
-    Returns:
-        dict: Diccionario con costes económicos agregados
-        {
-            'coste_total_eur': float,      # Suma de todas las facturas mensuales
-            'ahorro_total_eur': float,     # Suma de ahorros mensuales
-            'ahorro_porcentual_pct': float # Porcentaje sobre el coste base total
-        }
-    """
     
     if 'datos_mensuales' not in datos_agregados or not datos_agregados['datos_mensuales']:
         return _calcular_costes_economicos_fallback(datos_agregados, contrato, simulacion)
@@ -249,16 +224,7 @@ def _calcular_costes_economicos_mensuales(datos_agregados, contrato, simulacion,
 
 
 def _calcular_termino_potencia_mes(contrato, mes_key):
-    """
-    Calcula el término de potencia para un mes específico.
     
-    Args:
-        contrato: Contrato del participante
-        mes_key: Clave del mes en formato 'YYYY-MM'
-        
-    Returns:
-        float: Término de potencia del mes en euros
-    """
     if not contrato or not hasattr(contrato, 'potenciaContratada_kW'):
         return 0.0
     
@@ -284,9 +250,6 @@ def _calcular_termino_potencia_mes(contrato, mes_key):
 
 
 def _calcular_costes_economicos_fallback(datos_agregados, contrato, simulacion):
-    """
-    Método de fallback para cuando no hay datos mensuales disponibles.
-    """
     
     coste_energia_bruto = datos_agregados['costeImportacion_eur'] - datos_agregados['ingresoExportacion_eur']
     coste_energia_neto = max(0.0, coste_energia_bruto)
@@ -320,15 +283,7 @@ def _calcular_costes_economicos_fallback(datos_agregados, contrato, simulacion):
 
 
 def _obtener_clave_mes(timestamp):
-    """
-    Obtiene la clave del mes en formato 'YYYY-MM' a partir de un timestamp.
     
-    Args:
-        timestamp: Timestamp del intervalo (puede ser string o datetime)
-        
-    Returns:
-        str: Clave del mes en formato 'YYYY-MM'
-    """
     try:
         if isinstance(timestamp, str):
             from datetime import datetime
@@ -348,18 +303,7 @@ def _obtener_clave_mes(timestamp):
 
 
 def _calcular_metricas_energeticas_globales(datos_agregados):
-    """
-    Calcula las métricas energéticas (SCR, SSR) a nivel global de toda la simulación.
     
-    SCR: % de generación renovable utilizada localmente (no exportada)
-    SSR: % del consumo cubierto por energía renovable local
-    
-    Args:
-        datos_agregados: Diccionario con datos energéticos agregados globales
-        
-    Returns:
-        dict: Diccionario con métricas energéticas globales
-    """
     consumo_total = datos_agregados['consumoTotal_kWh']
     autoconsumo_directo = datos_agregados['energiaAutoconsumidaDirecta_kWh']
     energia_reparto = datos_agregados['energiaRecibidaRepartoConsumida_kWh']
@@ -414,14 +358,6 @@ def _calcular_metricas_energeticas_globales(datos_agregados):
 
 
 def _mostrar_desglose_calculo(participante_id, costes_economicos, datos_agregados):
-    """
-    Muestra el desglose detallado de los cálculos para debugging.
-    
-    Args:
-        participante_id: ID del participante
-        costes_economicos: Diccionario con costes económicos calculados
-        datos_agregados: Datos energéticos agregados
-    """
     
     print(f"  📊 Desglose cálculo participante {participante_id}:")
     
@@ -439,16 +375,7 @@ def _mostrar_desglose_calculo(participante_id, costes_economicos, datos_agregado
 
 
 def calcular_resultados_activos_gen(resultados_intervalo_activos, activos_gen):
-    """
-    Calcula resultados agregados por activo de generación a partir de los datos de intervalo.
     
-    Args:
-        resultados_intervalo_activos: Lista de resultados por intervalo para cada activo
-        activos_gen: Lista de entidades de activos de generación, con información técnica
-        
-    Returns:
-        List[ResultadoSimulacionActivoGeneracionEntity]: Lista de entidades de resultado por activo
-    """
     activos_gen_dict = {}
     
     mapa_activos = {activo.idActivoGeneracion: activo for activo in activos_gen}
@@ -534,16 +461,7 @@ def calcular_resultados_activos_gen(resultados_intervalo_activos, activos_gen):
 
 
 def calcular_resultados_activos_alm(resultados_intervalo_activos, activos_alm):
-    """
-    Calcula resultados agregados por activo de almacenamiento a partir de los datos de intervalo.
     
-    Args:
-        resultados_intervalo_activos: Lista de resultados por intervalo para cada activo
-        activos_alm: Lista de entidades de activos de almacenamiento, con información técnica
-        
-    Returns:
-        List[ResultadoSimulacionActivoAlmacenamientoEntity]: Lista de entidades de resultado por activo
-    """
     activos_alm_dict = {}
     
     mapa_activos = {activo.idActivoAlmacenamiento: activo for activo in activos_alm}

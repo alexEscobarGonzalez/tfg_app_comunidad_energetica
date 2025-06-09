@@ -13,18 +13,7 @@ def exportar_comunidad_completa_use_case(
     fecha_inicio: Optional[datetime] = None,
     fecha_fin: Optional[datetime] = None
 ) -> tuple[str, Dict[str, Any]]:
-    """
-    Exporta toda la información de una comunidad en un archivo ZIP
     
-    Args:
-        comunidad_id: ID de la comunidad a exportar
-        db: Sesión de base de datos
-        fecha_inicio: Fecha inicio para filtrar datos de consumo (opcional)
-        fecha_fin: Fecha fin para filtrar datos de consumo (opcional)
-        
-    Returns:
-        tuple: (ruta_archivo_zip, metadatos_exportacion)
-    """
     try:
         print(f"Iniciando exportación para comunidad {comunidad_id}")
         
@@ -122,7 +111,6 @@ def _recopilar_datos_comunidad(
     coeficiente_repo,
     contrato_repo
 ) -> Dict[str, Any]:
-    """Recopila todos los datos de la comunidad"""
     
     try:
         print("Obteniendo datos básicos de la comunidad")
@@ -191,7 +179,6 @@ def _recopilar_datos_comunidad(
         raise e
 
 def _generar_archivos_json(metadatos_dir: str, datos: Dict[str, Any]):
-    """Genera archivos JSON con los metadatos"""
     
     try:
         # Comunidad
@@ -294,7 +281,6 @@ def _generar_archivos_json(metadatos_dir: str, datos: Dict[str, Any]):
         raise e
 
 def _generar_archivos_csv_consumo(consumo_dir: str, participantes: list, registro_consumo_repo, fecha_inicio: Optional[datetime] = None, fecha_fin: Optional[datetime] = None):
-    """Genera archivos CSV con los datos de consumo de cada participante"""
     
     for participante in participantes:
         try:
@@ -333,7 +319,6 @@ def _generar_archivos_csv_consumo(consumo_dir: str, participantes: list, registr
             continue
 
 def _crear_archivo_zip(temp_dir: str, ruta_zip: str, directorios: list):
-    """Crea el archivo ZIP con todos los datos"""
     
     try:
         with zipfile.ZipFile(ruta_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -350,7 +335,6 @@ def _crear_archivo_zip(temp_dir: str, ruta_zip: str, directorios: list):
         raise e
 
 def _crear_metadatos_exportacion(datos: Dict[str, Any], fecha_inicio: Optional[datetime] = None, fecha_fin: Optional[datetime] = None) -> Dict[str, Any]:
-    """Crea los metadatos de la exportación"""
     
     periodo_str = None
     if fecha_inicio and fecha_fin:

@@ -9,7 +9,7 @@ class SqlAlchemyParticipanteRepository(ParticipanteRepository):
         self.db = db
         
     def _map_to_entity(self, model: ParticipanteModel) -> ParticipanteEntity:
-        """Convierte un modelo de tabla a una entidad de dominio"""
+        
         return ParticipanteEntity(
             idParticipante=model.idParticipante,
             nombre=model.nombre,

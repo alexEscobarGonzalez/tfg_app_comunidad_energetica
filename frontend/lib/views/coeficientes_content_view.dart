@@ -7,6 +7,7 @@ import '../models/coeficiente_reparto.dart';
 import '../models/participante.dart';
 import '../models/activo_generacion.dart';
 import '../models/activo_almacenamiento.dart';
+import '../models/enums/tipo_reparto.dart';
 import '../providers/participante_provider.dart';
 import '../providers/activo_generacion_provider.dart';
 import '../services/coeficiente_reparto_api_service.dart';
@@ -392,15 +393,36 @@ class _CoeficientesContentViewState extends ConsumerState<CoeficientesContentVie
   }
 
   Widget _buildParticipanteCard(Participante participante) {
-    // Calcular porcentaje y energía asignada para este participante
-    final coeficientesParticipante = _coeficientes.where(
-      (c) => c.idParticipante == participante.idParticipante
-    ).toList();
+    // Obtener coeficiente para este participante
+    final coeficienteParticipante = _coeficientes.firstWhere(
+      (c) => c.idParticipante == participante.idParticipante,
+      orElse: () => CoeficienteReparto(
+        idCoeficienteReparto: 0,
+        tipoReparto: TipoReparto.REPARTO_FIJO,
+        parametros: {'valor': 0.0},
+        idParticipante: participante.idParticipante,
+      ),
+    );
     
     double porcentajeTotal = 0.0;
-    for (final coef in coeficientesParticipante) {
-      final valor = coef.parametros['valor'] as double? ?? 0.0;
-      porcentajeTotal += valor;
+    String tipoDisplay = 'Fijo';
+    
+    if (coeficienteParticipante.tipoReparto == TipoReparto.REPARTO_FIJO) {
+      porcentajeTotal = coeficienteParticipante.parametros['valor'] as double? ?? 0.0;
+      tipoDisplay = 'Fijo';
+    } else if (coeficienteParticipante.tipoReparto == TipoReparto.REPARTO_PROGRAMADO) {
+      // Para programados, calcular promedio de todas las horas
+      final parametros = coeficienteParticipante.parametros['parametros'] as List<dynamic>? ?? [];
+      if (parametros.isNotEmpty) {
+        double suma = 0.0;
+        for (final param in parametros) {
+          suma += (param['valor'] as double? ?? 0.0);
+        }
+        porcentajeTotal = suma / parametros.length;
+      } else {
+        porcentajeTotal = coeficienteParticipante.parametros['valor_default'] as double? ?? 0.0;
+      }
+      tipoDisplay = 'Programado';
     }
     
     final energiaAsignada = (_energiaTotalDisponible * porcentajeTotal / 100.0);
@@ -452,7 +474,28 @@ class _CoeficientesContentViewState extends ConsumerState<CoeficientesContentVie
           ),
           SizedBox(height: 4.h),
           
-    
+          // Tipo de reparto
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+            decoration: BoxDecoration(
+              color: tipoDisplay == 'Programado' 
+                  ? AppColors.info.withValues(alpha: 0.1)
+                  : AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(4.r),
+              border: Border.all(
+                color: tipoDisplay == 'Programado' 
+                    ? AppColors.info.withValues(alpha: 0.3)
+                    : AppColors.primary.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Text(
+              tipoDisplay,
+              style: AppTextStyles.caption.copyWith(
+                color: tipoDisplay == 'Programado' ? AppColors.info : AppColors.primary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
           SizedBox(height: 8.h),
           
           // Porcentaje asignado
@@ -470,7 +513,9 @@ class _CoeficientesContentViewState extends ConsumerState<CoeficientesContentVie
               ),
             ),
             child: Text(
-              '${porcentajeTotal.toStringAsFixed(1)}%',
+              tipoDisplay == 'Programado' 
+                  ? '${porcentajeTotal.toStringAsFixed(1)}% (avg)'
+                  : '${porcentajeTotal.toStringAsFixed(1)}%',
               style: AppTextStyles.cardSubtitle.copyWith(
                 color: porcentajeTotal > 0 ? AppColors.success : AppColors.textSecondary,
                 fontWeight: FontWeight.bold,

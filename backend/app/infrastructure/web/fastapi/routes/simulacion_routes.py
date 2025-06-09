@@ -84,9 +84,6 @@ def eliminar_simulacion(id_simulacion: int, db: Session = Depends(get_db)):
 
 @router.post("/{id_simulacion}/ejecutar", status_code=202)
 def ejecutar_simulacion(id_simulacion: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    """
-    Ejecuta el motor de simulación avanzado para una simulación existente
-    """
     # Verificar que la simulación existe
     repo = SqlAlchemySimulacionRepository(db)
     simulacion = mostrar_simulacion_use_case(id_simulacion, repo)

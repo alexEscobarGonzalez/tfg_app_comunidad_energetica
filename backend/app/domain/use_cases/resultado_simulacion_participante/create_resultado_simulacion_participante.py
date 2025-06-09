@@ -30,8 +30,3 @@ class CreateResultadoSimulacionParticipante:
 
         return self.resultado_participante_repo.create(resultado)
 
-# --- Crear archivos similares para otros casos de uso (get, list, update, delete) ---
-# backend/app/domain/use_cases/resultado_simulacion_participante/get_resultado_simulacion_participante.py
-# backend/app/domain/use_cases/resultado_simulacion_participante/list_resultados_simulacion_participante.py
-# backend/app/domain/use_cases/resultado_simulacion_participante/update_resultado_simulacion_participante.py
-# backend/app/domain/use_cases/resultado_simulacion_participante/delete_resultado_simulacion_participante.py

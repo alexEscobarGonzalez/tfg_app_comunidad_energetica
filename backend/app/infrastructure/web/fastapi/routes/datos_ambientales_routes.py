@@ -20,9 +20,6 @@ router = APIRouter(
 
 @router.post("", response_model=DatosAmbientalesRead, status_code=status.HTTP_201_CREATED)
 def crear_dato_ambiental(dato: DatosAmbientalesCreate, db: Session = Depends(get_db)):
-    """
-    Crea un nuevo registro de datos ambientales para una simulación.
-    """
     dato_entity = DatosAmbientalesEntity(
         timestamp=dato.timestamp,
         fuenteDatos=dato.fuenteDatos,

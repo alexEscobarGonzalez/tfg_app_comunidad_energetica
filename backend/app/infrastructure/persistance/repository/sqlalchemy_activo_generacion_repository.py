@@ -110,10 +110,7 @@ class SqlAlchemyActivoGeneracionRepository(ActivoGeneracionRepository):
         return None
         
     def delete(self, idActivoGeneracion: int) -> None:
-        """
-        Realiza un soft delete del activo de generación.
-        Los resultados de simulación relacionados se preservan.
-        """
+        
         from datetime import datetime
         
         model = self.db.query(ActivoGeneracion).filter_by(idActivoGeneracion=idActivoGeneracion).first()
@@ -123,18 +120,13 @@ class SqlAlchemyActivoGeneracionRepository(ActivoGeneracionRepository):
             self.db.commit()
     
     def get_by_id_incluido_eliminados(self, idActivoGeneracion: int) -> Optional[ActivoGeneracionEntity]:
-        """
-        Obtiene un activo por ID, incluyendo los eliminados (soft delete).
-        Útil para consultar resultados históricos.
-        """
+        
         model = self.db.query(ActivoGeneracion).filter_by(idActivoGeneracion=idActivoGeneracion).first()
         if model:
             return self._map_to_entity(model)
         return None
     
     def listar_eliminados(self) -> List[ActivoGeneracionEntity]:
-        """
-        Lista todos los activos que han sido eliminados (soft delete).
-        """
+        
         models = self.db.query(ActivoGeneracion).filter_by(esta_activo=False).all()
         return [self._map_to_entity(model) for model in models]

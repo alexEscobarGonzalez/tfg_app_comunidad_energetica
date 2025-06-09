@@ -12,27 +12,6 @@ def importar_registros_consumo_use_case(
     participante_repo: ParticipanteRepository,
     registro_repo: RegistroConsumoRepository
 ) -> Dict[str, Any]:
-    """
-    Importa múltiples registros de consumo desde un JSON para un participante específico.
-    
-    El formato esperado del JSON es:
-    [
-        {"timestamp": "2025-04-23T10:00:00", "consumoEnergia": 2.5},
-        {"timestamp": "2025-04-23T11:00:00", "consumoEnergia": 3.2},
-        ...
-    ]
-    
-    Args:
-        datos_json: String con el JSON que contiene los datos de consumo
-        id_participante: ID del participante al que pertenecen los registros
-        db: Sesión de base de datos
-        
-    Returns:
-        Dict: Resumen de la importación (registros_creados, registros_fallidos)
-        
-    Raises:
-        HTTPException: Si el participante no existe o si los datos no son válidos
-    """
     # Verificar que el participante existe
     participante = participante_repo.get_by_id(id_participante)
     if not participante:
