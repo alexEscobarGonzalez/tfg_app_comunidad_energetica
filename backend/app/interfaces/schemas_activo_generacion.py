@@ -3,6 +3,9 @@ from typing import Optional, Dict, Any
 from datetime import date
 from app.domain.entities.tipo_activo_generacion import TipoActivoGeneracion
 
+# Valores permitidos por PVGIS para tecnología de paneles
+PVGIS_TECH_CHOICES = ['Unknown', 'crystSi', 'CIS', 'CdTe']
+
 
 class ActivoGeneracionBase(BaseModel):
     nombreDescriptivo: str
@@ -27,6 +30,12 @@ class InstalacionFotovoltaicaCreate(ActivoGeneracionBase):
     def validar_tipo_activo(cls, v):
         if v != TipoActivoGeneracion.INSTALACION_FOTOVOLTAICA:
             raise ValueError('El tipo de activo debe ser Instalación Fotovoltaica')
+        return v
+    
+    @field_validator('tecnologiaPanel')
+    def validar_tecnologia_panel(cls, v):
+        if v not in PVGIS_TECH_CHOICES:
+            raise ValueError(f'La tecnología del panel debe ser uno de: {PVGIS_TECH_CHOICES}')
         return v
 
 
@@ -77,6 +86,12 @@ class InstalacionFotovoltaicaUpdate(BaseModel):
     tecnologiaPanel: Optional[str] = None
     perdidaSistema: Optional[float] = None
     posicionMontaje: Optional[str] = None
+    
+    @field_validator('tecnologiaPanel')
+    def validar_tecnologia_panel(cls, v):
+        if v is not None and v not in PVGIS_TECH_CHOICES:
+            raise ValueError(f'La tecnología del panel debe ser uno de: {PVGIS_TECH_CHOICES}')
+        return v
 
 
 class AerogeneradorUpdate(BaseModel):

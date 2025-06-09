@@ -1,4 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+import logging
 from app.infrastructure.persistance.config import settings
 from app.infrastructure.web.fastapi.routes import comunidad_energetica_routes
 from app.infrastructure.web.fastapi.routes import usuario_routes
@@ -18,6 +21,9 @@ from app.infrastructure.web.fastapi.routes import datos_intervalo_participante_r
 from app.infrastructure.web.fastapi.routes import datos_intervalo_activo_routes
 from fastapi.middleware.cors import CORSMiddleware
 
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -25,6 +31,24 @@ app = FastAPI(
     description=settings.PROJECT_DESCRIPTION,
     version=settings.PROJECT_VERSION
 )
+
+# Manejador de errores de validación personalizado
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # Log detallado del error
+    logger.error(f"Error de validación en {request.method} {request.url.path}")
+    logger.error(f"Detalles del error: {exc.errors()}")
+    logger.error(f"Cuerpo de la solicitud: {await request.body()}")
+    
+    # Respuesta detallada para el cliente
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": exc.errors(),
+            "body": exc.body if hasattr(exc, 'body') else None,
+            "message": "Error de validación en los datos enviados"
+        }
+    )
 
 # -- CORS middleware --
 app.add_middleware(

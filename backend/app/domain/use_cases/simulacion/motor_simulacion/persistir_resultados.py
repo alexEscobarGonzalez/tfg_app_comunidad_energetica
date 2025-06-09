@@ -76,8 +76,8 @@ def convertir_y_persistir_intervalos_participantes(datos_intervalo_participante_
             entidad = DatosIntervaloParticipanteEntity(
                 idDatosIntervaloParticipante=None,  # Será asignado por la base de datos
                 timestamp=resultado.get('timestamp'),
-                consumoReal_kWh=resultado.get('consumoReal_kWh') or resultado.get('consumoEnergia_kWh'),
-                autoconsumo_kWh=resultado.get('autoconsumo_kWh') or resultado.get('energiaAutoconsumida_kWh'),
+                consumoReal_kWh=resultado.get('consumoReal_kWh'),
+                autoconsumo_kWh=resultado.get('autoconsumo_kWh'),
                 energiaRecibidaReparto_kWh=resultado.get('energiaRecibidaReparto_kWh'),
                 energiaAlmacenamiento_kWh=resultado.get('energiaAlmacenamiento_kWh'),
                 energiaDiferencia_kWh=resultado.get('energiaDiferencia_kWh'),

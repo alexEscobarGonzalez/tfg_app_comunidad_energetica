@@ -8,20 +8,7 @@ def modificar_instalacion_fotovoltaica_use_case(
     activo_datos: ActivoGeneracionEntity,
     repo: ActivoGeneracionRepository
 ) -> ActivoGeneracionEntity:
-    """
-    Modifica los datos de una instalación fotovoltaica existente
-    
-    Args:
-        id_activo: ID de la instalación fotovoltaica a modificar
-        activo_datos: Nuevos datos para la instalación fotovoltaica
-        repo: Repositorio de instalaciones fotovoltaicas
-        
-    Returns:
-        ActivoGeneracionEntity: Datos actualizados de la instalación fotovoltaica
-        
-    Raises:
-        HTTPException: Si la instalación fotovoltaica no existe o si no es del tipo correcto
-    """
+
     # Verificar que el activo existe
     activo_existente = repo.get_by_id(id_activo)
     if not activo_existente:
@@ -59,8 +46,6 @@ def modificar_instalacion_fotovoltaica_use_case(
     if activo_datos.posicionMontaje is None:
         activo_datos.posicionMontaje = activo_existente.posicionMontaje
     
-    # No copiar campos específicos de aerogeneradores
     activo_datos.curvaPotencia = None
-      # Actualizar en la base de datos
     activo_actualizado = repo.update(activo_datos)
     return activo_actualizado

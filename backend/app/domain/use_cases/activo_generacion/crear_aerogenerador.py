@@ -9,19 +9,6 @@ def crear_aerogenerador_use_case(
     comunidad_repo: ComunidadEnergeticaRepository,
     activo_repo: ActivoGeneracionRepository
 ) -> ActivoGeneracionEntity:
-    """
-    Crea un nuevo aerogenerador asociado a una comunidad energética
-    
-    Args:
-        activo: Entidad con los datos del nuevo aerogenerador
-        db: Sesión de base de datos
-        
-    Returns:
-        ActivoGeneracionEntity: La entidad del aerogenerador creado con su ID asignado
-        
-    Raises:
-        HTTPException: Si la comunidad energética no existe o si faltan datos específicos del aerogenerador
-    """
     # Verificar que la comunidad energética existe
     comunidad = comunidad_repo.get_by_id(activo.idComunidadEnergetica)
     if not comunidad:

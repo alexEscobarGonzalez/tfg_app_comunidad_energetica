@@ -99,3 +99,17 @@ class SqlAlchemyRegistroConsumoRepository(RegistroConsumoRepository):
         if model:
             self.db.delete(model)
             self.db.commit()
+    
+    def delete_all_by_participante(self, idParticipante: int) -> int:
+        """
+        Elimina todos los registros de consumo de un participante específico
+        
+        Args:
+            idParticipante: ID del participante
+            
+        Returns:
+            Número de registros eliminados
+        """
+        deleted_count = self.db.query(RegistroConsumo).filter_by(idParticipante=idParticipante).delete()
+        self.db.commit()
+        return deleted_count

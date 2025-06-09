@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
+import time
 from fastapi import HTTPException
 from app.domain.repositories.simulacion_repository import SimulacionRepository
 from app.domain.repositories.comunidad_energetica_repository import ComunidadEnergeticaRepository
@@ -17,6 +18,7 @@ from app.domain.repositories.resultado_simulacion_activo_generacion_repository i
 from app.domain.repositories.resultado_simulacion_activo_almacenamiento_repository import ResultadoSimulacionActivoAlmacenamientoRepository
 from app.domain.repositories.datos_intervalo_participante_repository import DatosIntervaloParticipanteRepository
 from app.domain.repositories.datos_intervalo_activo_repository import DatosIntervaloActivoRepository
+from app.domain.repositories.pvpc_precios_repository import PvpcPreciosRepository
 from app.domain.entities.estado_simulacion import EstadoSimulacion
 from app.domain.entities.datos_intervalo_participante import DatosIntervaloParticipanteEntity
 from app.domain.entities.datos_intervalo_activo import DatosIntervaloActivoEntity
@@ -29,9 +31,7 @@ from app.domain.use_cases.simulacion.motor_simulacion.calcular_resultados import
 
 
 class MotorSimulacion:
-    """
-    Handles the core logic for running an energy community simulation.
-    """
+    """Motor de simulación de comunidades energéticas."""
 
     def __init__(
         self,
@@ -50,14 +50,10 @@ class MotorSimulacion:
         resultado_activo_alm_repo: ResultadoSimulacionActivoAlmacenamientoRepository,
         datos_intervalo_participante_repo: DatosIntervaloParticipanteRepository,
         datos_intervalo_activo_repo: DatosIntervaloActivoRepository,
+        pvpc_precios_repo: PvpcPreciosRepository,
         datos_ambientales_api_repo,
         db_session
     ):
-        """
-        Initializes the simulation engine with necessary repositories.
-        Args:
-            db_session: The database session for data access.
-        """
         self.simulacion_repo = simulacion_repo
         self.comunidad_repo = comunidad_repo
         self.participante_repo = participante_repo
@@ -74,122 +70,69 @@ class MotorSimulacion:
         self.resultado_activo_alm_repo = resultado_activo_alm_repo
         self.datos_intervalo_participante_repo = datos_intervalo_participante_repo
         self.datos_intervalo_activo_repo = datos_intervalo_activo_repo
+        self.pvpc_precios_repo = pvpc_precios_repo
         self.db_session = db_session
-        # Atributos para cachear datos fotovoltaicos
         self._cache_generacion_pv = {}
 
     def ejecutar_simulacion(self, simulacion_id: int):
-        """
-        Runs the simulation for the given simulation ID.
-        Args:
-            simulacion_id: The ID of the simulation to run.
-        """
-        # Almacenar ID de simulación para uso en otras funciones
+        """Ejecuta la simulación completa para el ID especificado."""
         self.simulacion_id = simulacion_id
         
-        print(f"\n{'='*80}")
-        print(f"INICIANDO SIMULACIÓN ID: {simulacion_id}".center(80))
-        print(f"{'='*80}")
+        tiempo_inicio_total = time.time()
+        print(f"\n{'='*60}")
+        print(f"INICIANDO SIMULACIÓN ID: {simulacion_id}".center(60))
+        print(f"{'='*60}")
 
         try:
-
-            # Paso 1: actualizar estado a 'Ejecutando'
-            print("\n[1/8] Actualizando estado de la simulación...")
+            tiempo_fase = time.time()
             self.simulacion_repo.update_estado(simulacion_id, EstadoSimulacion.EJECUTANDO.value)
             self.db_session.commit()
-            print(f"  ✓ Estado actualizado a: {EstadoSimulacion.EJECUTANDO.value}")
+            print(f"[1/7] Estado actualizado ({time.time() - tiempo_fase:.2f}s)")
 
-            # Paso 2: cargar simulación y configuración
-            print("\n[2/8] Cargando datos de configuración...")
-            
+            tiempo_fase = time.time()
             simulacion = self.simulacion_repo.get_by_id(simulacion_id)
-            print(f"  ✓ Simulación: {simulacion.nombreSimulacion} ({simulacion.fechaInicio} a {simulacion.fechaFin})")
-            
             comunidad = self.comunidad_repo.get_by_id(simulacion.idComunidadEnergetica)
-            print(f"  ✓ Comunidad: {comunidad.nombre}")
-            
             participantes = self.participante_repo.get_by_comunidad(comunidad.idComunidadEnergetica)
-            print(f"  ✓ Participantes: {len(participantes)} encontrados")
-            
             activos_gen = self.activo_gen_repo.get_by_comunidad(comunidad.idComunidadEnergetica)
-            print(f"  ✓ Activos de generación: {len(activos_gen)} encontrados")
-            
             activos_alm = self.activo_alm_repo.get_by_comunidad(comunidad.idComunidadEnergetica)
-            print(f"  ✓ Activos de almacenamiento: {len(activos_alm)} encontrados")
-            
             contratos = {p.idParticipante: self.contrato_repo.get_by_participante(p.idParticipante) for p in participantes}
             coeficientes = {p.idParticipante: self.coeficiente_repo.get_by_participante(p.idParticipante) for p in participantes}
-            print(f"  ✓ Contratos y coeficientes de reparto cargados")
-
             
+            contratos_pvpc = [c for c in contratos.values() if c and c.tipoContrato.value == "PVPC"]
+            print(f"[2/7] Configuración cargada ({time.time() - tiempo_fase:.2f}s)")
+            print(f"      • {len(participantes)} participantes, {len(activos_gen)} gen., {len(activos_alm)} alm.")
+            print(f"      • {len(contratos_pvpc)} contratos PVPC, {len(contratos) - len(contratos_pvpc)} fijos")
 
-            # Paso 3: obtener todos los datos necesarios (consumo, ambientales y generación)
-            print("\n[3/6] Obteniendo datos de consumo, ambientales y generación...")
-            print(f"  • Periodo de simulación: {simulacion.fechaInicio} a {simulacion.fechaFin}")
+            tiempo_fase = time.time()
             
-            # 3.1 Cargar datos de consumo
-            print(f"  • Cargando datos de consumo para {len(participantes)} participantes...")
             datos_consumo = self.registro_consumo_repo.get_range_for_participantes(
                 [p.idParticipante for p in participantes],
                 simulacion.fechaInicio, simulacion.fechaFin
             )
-            print(f"  ✓ Datos de consumo: {len(datos_consumo)} registros cargados")
-            
-            # 3.2 Organizar datos de consumo por timestamp
             consumo_por_intervalo = self._organize_consumo_by_interval(datos_consumo)
-            print(f"  ✓ Consumo organizado en {len(consumo_por_intervalo)} intervalos")
             
-            # 3.3 Obtener datos ambientales utilizando PVGIS
-            print(f"  • Solicitando datos ambientales en ubicación: {comunidad.latitud}, {comunidad.longitud}...")
             datos_ambientales = self.datos_ambientales_api_repo.get_datos_ambientales(
                 comunidad.latitud, comunidad.longitud, simulacion.fechaInicio, simulacion.fechaFin
             )
-            print(f"  ✓ Datos ambientales: {len(datos_ambientales)} registros obtenidos")
-            
-            # 3.4 Asignar ID de simulación a los datos ambientales
             for dato in datos_ambientales:
                 dato.idSimulacion = simulacion_id
-            
-            # 3.5 Organizar datos ambientales por timestamp
             ambiental_por_intervalo = self._organize_ambiental_by_interval(datos_ambientales)
-            print(f"  ✓ Datos ambientales organizados en {len(ambiental_por_intervalo)} intervalos")
             
-            # 3.6 Precalcular y organizar datos de generación para activos fotovoltaicos
-            activos_pv = [a for a in activos_gen if a.tipo_activo == TipoActivoGeneracion.INSTALACION_FOTOVOLTAICA]
-            print(f"  • Precalculando generación para {len(activos_pv)} activos fotovoltaicos...")
-            
-            # Ejecutar precálculo de generación (modo sin timestamp)
             self._gestionar_generacion_activos(
                 activos_gen, 
                 comunidad.latitud, comunidad.longitud,
                 simulacion.fechaInicio, simulacion.fechaFin
             )
             
-            # Mostrar resumen de datos precalculados de generación
-            for activo_id, generacion in self._cache_generacion_pv.items():
-                activo_nombre = next((a.nombreDescriptivo for a in activos_gen if a.idActivoGeneracion == activo_id), 'Desconocido')
-                print(f"  ✓ Activo {activo_nombre}: {len(generacion)} intervalos de generación precalculados")
-            
-            
-            # 3.8 Validar que los timestamps sean consistentes entre todos los tipos de datos
-            print(f"  • Verificando consistencia de los timestamps en los datos de entrada...")
             self._verificar_consistencia_timestamps(consumo_por_intervalo, ambiental_por_intervalo, self._cache_generacion_pv)
             
-            print(f"  ✓ Todos los datos de entrada organizados por intervalos de tiempo")
-                
-    
-            # Paso 5: bucle principal de simulación 
-            print(f"\n[5/6] Iniciando bucle de simulación...")
-            # Preparamos la lista de timestamps ordenados
+            print(f"[3/7] Datos obtenidos ({time.time() - tiempo_fase:.2f}s)")
+            print(f"      • {len(datos_consumo)} reg. consumo, {len(datos_ambientales)} amb., {len(consumo_por_intervalo)} intervalos")
+
+            tiempo_fase = time.time()
             timestamps = sorted(consumo_por_intervalo.keys())
             total_intervalos = len(timestamps)
-            print(f"  • Total intervalos a procesar: {total_intervalos}")
-            print(f"  • Intervalo de tiempo: {simulacion.tiempo_medicion} minutos")
-    
-            intervalos_procesados = 0
-            ultimo_porcentaje = -1
             
-            # Paso 5.1: Inicializar resultados
             estado_almacenamiento = {
                 alm.idActivoAlmacenamiento: {'soc_kwh': 0.0} for alm in activos_alm
             }
@@ -198,19 +141,16 @@ class MotorSimulacion:
             resultados_intervalo_participantes = []
             resultados_intervalo_activos_almacenamiento = []
             
-    
+            ultimo_porcentaje = -1
             for idx, current_time in enumerate(timestamps):
-                # Mostrar progreso cada 5%
                 porcentaje_actual = int(((idx + 1) / total_intervalos) * 100)
-                if porcentaje_actual % 5 == 0 and porcentaje_actual != ultimo_porcentaje:
-                    print(f"  • Progreso: {porcentaje_actual}% ({idx + 1}/{total_intervalos})")
+                if porcentaje_actual % 10 == 0 and porcentaje_actual != ultimo_porcentaje:
+                    print(f"      • Progreso: {porcentaje_actual}% ({idx + 1}/{total_intervalos})")
                     ultimo_porcentaje = porcentaje_actual
-    
-                # Extraer datos de este intervalo
+
                 datos_amb = ambiental_por_intervalo.get(current_time, {})
                 consumo_int = consumo_por_intervalo.get(current_time, {})
-    
-                # Generación y consumo - Utilizando nuestra nueva función unificada
+
                 gen_activos = self._gestionar_generacion_activos(
                     activos_gen, 
                     comunidad.latitud, comunidad.longitud,
@@ -218,38 +158,24 @@ class MotorSimulacion:
                     datos_amb, current_time
                 )
                 
-                # Añadir valores a la lista de resultados generacion
                 for activo_id, energia in gen_activos.items():
-
                     resultados_intervalo_activos_generacion.append({
                         'idActivoGeneracion': activo_id,
                         'timestamp': current_time,
                         'energiaGenerada_kWh': energia
                     })
 
-    
-                print(f"  • Generación calculada para {len(gen_activos)} activos de generación")
-                
-                # Almacenamiento y reparto según estrategia
                 resultados_intervalo_participantes_aux, resultados_intervalo_activos_almacenamiento_aux, estado_almacenamiento = aplicar_estrategia_intervalo(
-                    comunidad, participantes, gen_activos, consumo_int, contratos, coeficientes, current_time, estado_almacenamiento, activos_alm
+                    simulacion, comunidad, participantes, gen_activos, consumo_int, contratos, coeficientes, current_time, estado_almacenamiento, activos_alm, self.pvpc_precios_repo
                 )
                 
-                # Añadir valores a la lista de resultados participantes y almacenamiento
                 resultados_intervalo_participantes.extend(resultados_intervalo_participantes_aux)
                 resultados_intervalo_activos_almacenamiento.extend(resultados_intervalo_activos_almacenamiento_aux)
-                
-                
 
-                intervalos_procesados += 1
+            print(f"[4/7] Simulación ejecutada ({time.time() - tiempo_fase:.2f}s)")
+            print(f"      • {total_intervalos} intervalos procesados")
 
-            print(f"  ✓ Bucle completado: {intervalos_procesados} intervalos procesados")
-            print(f"  ✓ Resultados generados: {len(resultados_intervalo_participantes)} registros de participantes")
-            print(f"  ✓ Resultados generados: {len(resultados_intervalo_activos_generacion)} registros de activos de generación")
-            print(f"  ✓ Resultados generados: {len(resultados_intervalo_activos_almacenamiento)} registros de activos de almacenamiento")
-
-            # Paso 6: calcular resultados globales
-            print(f"\n[6/8] Calculando resultados globales...")
+            tiempo_fase = time.time()
             resultados_globales, resultados_part, resultados_activos_gen, resultados_activos_alm = calcular_todos_resultados(
                 simulacion,
                 resultados_intervalo_participantes,
@@ -257,12 +183,11 @@ class MotorSimulacion:
                 resultados_intervalo_activos_almacenamiento,
                 activos_gen,
                 activos_alm,
+                contratos,
             )
+            print(f"[5/7] Resultados calculados ({time.time() - tiempo_fase:.2f}s)")
 
-            # Paso 7: persistir resultados
-            print(f"\n[7/8] Guardando resultados en base de datos...")
-            
-            # Usar las nuevas funciones de persistencia
+            tiempo_fase = time.time()
             repos = {
                 'resultado_simulacion_repo': self.resultado_simulacion_repo,
                 'resultado_participante_repo': self.resultado_participante_repo,
@@ -284,44 +209,32 @@ class MotorSimulacion:
                 resultados_intervalo_activos_generacion,
                 resultados_intervalo_activos_almacenamiento
             )
-            
-            # Mostrar resumen de resultados
-            print(f"  ✓ Resultados guardados exitosamente")
-            print(f"    - Resultados globales: ID {resultados_persistidos['resultado_global'].idResultado}")
-            print(f"    - Participantes: {len(resultados_persistidos['resultados_participantes'])}")
-            print(f"    - Activos generación: {len(resultados_persistidos['resultados_activos_generacion'])}")
-            print(f"    - Activos almacenamiento: {len(resultados_persistidos['resultados_activos_almacenamiento'])}")
-            print(f"    - Intervalos participantes: {len(resultados_persistidos['intervalos_participantes'])}")
-            print(f"    - Intervalos generación: {len(resultados_persistidos['intervalos_activos_generacion'])}")
-            print(f"    - Intervalos almacenamiento: {len(resultados_persistidos['intervalos_activos_almacenamiento'])}")
+            print(f"[6/7] Resultados persistidos ({time.time() - tiempo_fase:.2f}s)")
 
-            # Actualizar estado a 'Completada'
+            tiempo_fase = time.time()
             self.simulacion_repo.update_estado(simulacion_id, EstadoSimulacion.COMPLETADA.value)
             self.db_session.commit()
-            print(f"  ✓ Estado actualizado a: {EstadoSimulacion.COMPLETADA.value}")
+            print(f"[7/7] Estado finalizado ({time.time() - tiempo_fase:.2f}s)")
             
-            print(f"\n{'='*80}")
-            print(f"SIMULACIÓN ID: {simulacion_id} COMPLETADA CON ÉXITO".center(80))
-            print(f"{'='*80}\n")
+            tiempo_total = time.time() - tiempo_inicio_total
+            print(f"\n{'='*60}")
+            print(f"SIMULACIÓN COMPLETADA - TIEMPO TOTAL: {tiempo_total:.2f}s".center(60))
+            print(f"{'='*60}\n")
 
         except Exception as e:
-            print(f"\n{'!'*80}")
-            print(f"ERROR EN LA SIMULACIÓN".center(80))
-            print(f"{'!'*80}")
-            print(f"Detalles del error: {str(e)}")
+            print(f"\n{'!'*60}")
+            print(f"ERROR EN LA SIMULACIÓN".center(60))
+            print(f"{'!'*60}")
+            print(f"Detalles: {str(e)}")
             
             logging.error(f"Error en la simulación: {str(e)}")
             self.db_session.rollback()
-            print("  • Transacción revertida")
             
             self.simulacion_repo.update_estado(simulacion_id, EstadoSimulacion.FALLIDA.value)
             self.db_session.commit()
-            print(f"  • Estado actualizado a: {EstadoSimulacion.FALLIDA.value}")
             
             raise
 
-    
-        
     def _gestionar_generacion_activos(self, activos_gen, lat, lon, fecha_inicio, fecha_fin, datos_ambientales=None, timestamp=None):
         """
         Función unificada que gestiona tanto el precálculo como el cálculo en tiempo real de la 
@@ -349,7 +262,6 @@ class MotorSimulacion:
 
         # Parte 1: Precálculo de generación (si estamos en ese modo)
         if modo_precalculo:
-            logging.info(f"Iniciando precálculo de generación para {len(activos_gen)} activos")
             self._cache_generacion_pv = {}  # Reiniciar la caché
             
             # Identificar activos fotovoltaicos para precálculo
@@ -361,9 +273,6 @@ class MotorSimulacion:
                     activo.azimutGrados is None or 
                     activo.potenciaNominal_kWp is None or
                     activo.perdidaSistema is None):
-                    logging.warning(f"Activo PV {activo.idActivoGeneracion} - {activo.nombreDescriptivo} "
-                                   f"no tiene todos los datos necesarios para cálculo preciso. "
-                                   "Se usarán valores predeterminados.")
                     # Asignar valores por defecto donde falten
                     inclinacion = activo.inclinacionGrados or 35.0  # Valor típico en España
                     azimut = activo.azimutGrados or 0.0  # 0 = orientación sur
@@ -391,7 +300,6 @@ class MotorSimulacion:
                     
                     # Almacenar en caché
                     self._cache_generacion_pv[activo.idActivoGeneracion] = generacion
-                    print(f"  • Generación precalculada para activo {activo.nombreDescriptivo}: {len(generacion)} intervalos")
                     logging.info(f"Precalculada generación PV para activo {activo.idActivoGeneracion} - "
                                 f"{activo.nombreDescriptivo}: {len(generacion)} intervalos")
                 except Exception as e:
@@ -459,28 +367,13 @@ class MotorSimulacion:
             return generacion_intervalo    
         
     def _organize_consumo_by_interval(self, datos_consumo):
-        """
-        Organiza los datos de consumo por intervalo de tiempo.
-        
-        Args:
-            datos_consumo: Lista de registros de consumo obtenidos de la base de datos
-            
-        Returns:
-            Diccionario con estructura {timestamp: {id_participante: consumo_kWh, ...}, ...}
-            
-        Raises:
-            ValueError: Si no hay datos de consumo para el periodo de simulación
-        """
+        """Organiza los datos de consumo por timestamp."""
         result = {}
         for registro in datos_consumo:
-            # Initialize the dictionary for this timestamp if it doesn't exist yet
             if registro.timestamp not in result:
                 result[registro.timestamp] = {}
-                
-            # Add the consumption for this participant at this timestamp
             result[registro.timestamp][registro.idParticipante] = registro.consumoEnergia
             
-        # Verificar que existan datos de consumo
         if not result and hasattr(self, 'simulacion_id'):
             simulacion = self.simulacion_repo.get_by_id(self.simulacion_id)
             mensaje_error = (f"Error: No se encontraron datos de consumo para el periodo "
@@ -493,9 +386,9 @@ class MotorSimulacion:
         return result
 
     def _organize_ambiental_by_interval(self, datos_ambientales):
+        """Organiza los datos ambientales por timestamp."""
         result = {}
         for registro in datos_ambientales:
-            # Create a dictionary with environmental data for each timestamp
             result[registro.timestamp] = {
                 'radiacionGlobalHoriz_Wh_m2': registro.radiacionGlobalHoriz_Wh_m2,
                 'temperaturaAmbiente_C': registro.temperaturaAmbiente_C,
@@ -504,98 +397,22 @@ class MotorSimulacion:
             
         return result
 
-
-
-    
     def _verificar_consistencia_timestamps(self, consumo_por_intervalo, ambiental_por_intervalo, cache_generacion_pv):
-        """
-        Comprueba que los timestamps de los datos de consumo, ambientales y generación coinciden.
-        Muestra información detallada para depuración.
-        
-        Args:
-            consumo_por_intervalo: dict {timestamp: {id_participante: consumo_kWh}}
-            ambiental_por_intervalo: dict {timestamp: {datos_ambientales}}
-            cache_generacion_pv: dict {id_activo: {timestamp: generacion_kWh}}
-        """
-        print("\n[DEBUG] Verificando consistencia de timestamps entre los datos de entrada...")
-        
-        # Extraer conjuntos de timestamps de cada fuente
+        """Verifica la consistencia temporal entre las diferentes fuentes de datos."""
         ts_consumo = set(consumo_por_intervalo.keys())
         ts_ambiental = set(ambiental_por_intervalo.keys())
         
-        # Para generación, necesitamos combinar timestamps de todos los activos
         ts_generacion = set()
         for id_activo, datos_activo in cache_generacion_pv.items():
             ts_generacion.update(datos_activo.keys())
         
-        print(f"  • Total timestamps en consumo:     {len(ts_consumo)} muestras")
-        print(f"  • Total timestamps en ambiental:   {len(ts_ambiental)} muestras")
-        print(f"  • Total timestamps en generación:  {len(ts_generacion)} muestras")
-        
-        # Mostrar ejemplos del inicio y fin de cada conjunto
-        if ts_consumo:
-            ts_list = sorted(list(ts_consumo))
-            print(f"    Ejemplo consumo:    {ts_list[:3]} ... {ts_list[-3:]}")
-        
-        if ts_ambiental:  
-            ts_list = sorted(list(ts_ambiental))
-            print(f"    Ejemplo ambiental:  {ts_list[:3]} ... {ts_list[-3:]}")
-        
-        if ts_generacion:
-            ts_list = sorted(list(ts_generacion))
-            print(f"    Ejemplo generación: {ts_list[:3]} ... {ts_list[-3:]}")
-        
-        # Identificar timestamps que solo existen en uno de los conjuntos
-        only_in_consumo = ts_consumo - ts_ambiental - ts_generacion
-        only_in_ambiental = ts_ambiental - ts_consumo - ts_generacion
-        only_in_generacion = ts_generacion - ts_consumo - ts_ambiental
-        
-        # Identificar timestamps comunes a todos los conjuntos
         common_timestamps = ts_consumo & ts_ambiental & ts_generacion
+        total_unique = len(ts_consumo | ts_ambiental | ts_generacion)
         
-        # Reportar discrepancias si existen
-        if only_in_consumo:
-            print(f"  [WARN] {len(only_in_consumo)} timestamps solo existen en datos de consumo")
-            print(f"    Primeros ejemplos: {sorted(list(only_in_consumo))[:5]}")
-        
-        if only_in_ambiental:
-            print(f"  [WARN] {len(only_in_ambiental)} timestamps solo existen en datos ambientales")
-            print(f"    Primeros ejemplos: {sorted(list(only_in_ambiental))[:5]}")
-        
-        if only_in_generacion:
-            print(f"  [WARN] {len(only_in_generacion)} timestamps solo existen en datos de generación")
-            print(f"    Primeros ejemplos: {sorted(list(only_in_generacion))[:5]}")
-        
-        # Verificar timestamps faltantes entre conjuntos
-        missing_in_consumo = (ts_ambiental | ts_generacion) - ts_consumo
-        missing_in_ambiental = (ts_consumo | ts_generacion) - ts_ambiental
-        missing_in_generacion = (ts_consumo | ts_ambiental) - ts_generacion
-        
-        if missing_in_consumo:
-            print(f"  [WARN] Faltan {len(missing_in_consumo)} timestamps en datos de consumo")
-            print(f"    Primeros ejemplos: {sorted(list(missing_in_consumo))[:5]}")
-        
-        if missing_in_ambiental:
-            print(f"  [WARN] Faltan {len(missing_in_ambiental)} timestamps en datos ambientales")
-            print(f"    Primeros ejemplos: {sorted(list(missing_in_ambiental))[:5]}")
-        
-        if missing_in_generacion:
-            print(f"  [WARN] Faltan {len(missing_in_generacion)} timestamps en datos de generación")
-            print(f"    Primeros ejemplos: {sorted(list(missing_in_generacion))[:5]}")
-        
-        # Resultado final
-        if len(common_timestamps) == 0:
-            print("  [ERROR] ¡No hay ningún timestamp común entre las tres fuentes de datos!")
-            print("          La simulación puede fallar o producir resultados inconsistentes.")
-        elif len(common_timestamps) == len(ts_consumo) == len(ts_ambiental) == len(ts_generacion):
-            print(f"  ✓ Perfecta coincidencia: {len(common_timestamps)} timestamps comunes en todas las fuentes")
+        if len(common_timestamps) == len(ts_consumo) == len(ts_ambiental) == len(ts_generacion):
+            print(f"      • Timestamps: {len(common_timestamps)} coincidencias perfectas")
         else:
-            print(f"  [ATENCIÓN] Hay {len(common_timestamps)} timestamps comunes entre todas las fuentes")
-            print(f"  [ATENCIÓN] {len(ts_consumo | ts_ambiental | ts_generacion) - len(common_timestamps)} timestamps presentan discrepancias")
-            
-            # Calcular porcentaje de coincidencia
-            total_unique = len(ts_consumo | ts_ambiental | ts_generacion)
             coincidencia = (len(common_timestamps) / total_unique) * 100 if total_unique > 0 else 0
-            print(f"  • Porcentaje de coincidencia: {coincidencia:.2f}%")
+            print(f"      • Timestamps: {len(common_timestamps)} comunes ({coincidencia:.1f}% coincidencia)")
             
         return len(common_timestamps) > 0

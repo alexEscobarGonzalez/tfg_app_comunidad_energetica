@@ -1,15 +1,18 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from app.infrastructure.persistance.database import get_db
 from app.interfaces.schemas_coeficiente_reparto import (
     CoeficienteRepartoCreate, 
+    CoeficienteRepartoCreateByParticipante,
     CoeficienteRepartoUpdate, 
     CoeficienteRepartoRead
 )
 from app.domain.entities.coeficiente_reparto import CoeficienteRepartoEntity
 from app.domain.use_cases.coeficiente_reparto.crear_coeficiente_reparto import crear_coeficiente_reparto_use_case
+from app.domain.use_cases.coeficiente_reparto.crear_o_actualizar_coeficiente_reparto import crear_o_actualizar_coeficiente_reparto_use_case
+from app.domain.use_cases.coeficiente_reparto.obtener_coeficiente_por_participante import obtener_coeficiente_por_participante_use_case
 from app.domain.use_cases.coeficiente_reparto.mostrar_coeficiente_reparto import mostrar_coeficiente_reparto_use_case
 from app.domain.use_cases.coeficiente_reparto.modificar_coeficiente_reparto import modificar_coeficiente_reparto_use_case
 from app.domain.use_cases.coeficiente_reparto.eliminar_coeficiente_reparto import eliminar_coeficiente_reparto_use_case
@@ -27,10 +30,53 @@ router = APIRouter(
     responses={404: {"description": "Coeficiente de reparto no encontrado"}}
 )
 
+@router.put("/participante/{id_participante}", response_model=CoeficienteRepartoRead, status_code=status.HTTP_200_OK)
+def crear_o_actualizar_coeficiente_por_participante(
+    id_participante: int, 
+    coeficiente_data: CoeficienteRepartoCreateByParticipante, 
+    db: Session = Depends(get_db)
+):
+    """
+    Crea o actualiza el coeficiente de reparto de un participante (relación 1:1)
+    """
+    # Manejar tipo de reparto simplificado
+    tipo_reparto = coeficiente_data.tipoReparto
+    
+    # Si es un string y no coincide con los valores del enum, intentar matchear
+    if isinstance(tipo_reparto, str):
+        tipo_reparto_upper = tipo_reparto.upper()
+        if tipo_reparto_upper == "FIJO":
+            tipo_reparto = TipoReparto.REPARTO_FIJO
+        elif tipo_reparto_upper == "PROGRAMADO":
+            tipo_reparto = TipoReparto.REPARTO_PROGRAMADO
+    
+    # Extraer el valor del enum como string para enviarlo a la entidad
+    tipo_reparto_value = tipo_reparto.value if hasattr(tipo_reparto, 'value') else tipo_reparto
+    
+    coeficiente_entity = CoeficienteRepartoEntity(
+        tipoReparto=tipo_reparto_value,
+        parametros=coeficiente_data.parametros,
+        idParticipante=id_participante  # Usar el ID del parámetro de la URL
+    )
+    participante_repo = SqlAlchemyParticipanteRepository(db)
+    coeficiente_repo = SqlAlchemyCoeficienteRepartoRepository(db)
+    return crear_o_actualizar_coeficiente_reparto_use_case(coeficiente_entity, participante_repo, coeficiente_repo)
+
+@router.get("/participante/{id_participante}/single", response_model=Optional[CoeficienteRepartoRead])
+def obtener_coeficiente_por_participante(id_participante: int, db: Session = Depends(get_db)):
+    """
+    Obtiene el coeficiente de reparto de un participante específico (relación 1:1)
+    """
+    participante_repo = SqlAlchemyParticipanteRepository(db)
+    coeficiente_repo = SqlAlchemyCoeficienteRepartoRepository(db)
+    return obtener_coeficiente_por_participante_use_case(id_participante, participante_repo, coeficiente_repo)
+
 @router.post("", response_model=CoeficienteRepartoRead, status_code=status.HTTP_201_CREATED)
 def crear_coeficiente_reparto(coeficiente_data: CoeficienteRepartoCreate, db: Session = Depends(get_db)):
     """
     Crea un nuevo coeficiente de reparto asociado a un participante
+    NOTA: Este endpoint puede fallar si ya existe un coeficiente para el participante.
+    Se recomienda usar PUT /participante/{id} en su lugar.
     """
     # Manejar tipo de reparto simplificado
     tipo_reparto = coeficiente_data.tipoReparto
@@ -67,6 +113,8 @@ def listar_coeficientes_reparto(db: Session = Depends(get_db)):
 def listar_coeficientes_reparto_por_participante(id_participante: int, db: Session = Depends(get_db)):
     """
     Obtiene todos los coeficientes de reparto asociados a un participante específico
+    NOTA: Con la relación 1:1, esto devolverá como máximo 1 elemento.
+    Se recomienda usar GET /participante/{id}/single en su lugar.
     """
     participante_repo = SqlAlchemyParticipanteRepository(db)
     coeficiente_repo = SqlAlchemyCoeficienteRepartoRepository(db)

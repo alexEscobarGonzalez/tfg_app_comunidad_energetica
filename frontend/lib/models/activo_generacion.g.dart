@@ -10,46 +10,38 @@ ActivoGeneracion _$ActivoGeneracionFromJson(Map<String, dynamic> json) =>
     ActivoGeneracion(
       idActivoGeneracion: (json['idActivoGeneracion'] as num).toInt(),
       nombreDescriptivo: json['nombreDescriptivo'] as String,
-      fechaInstalacion: DateTime.parse(json['fechaInstalacion'] as String),
+      fechaInstalacion: _dateFromJson(json['fechaInstalacion'] as String),
       costeInstalacion_eur: (json['costeInstalacion_eur'] as num).toDouble(),
       vidaUtil_anios: (json['vidaUtil_anios'] as num).toInt(),
       latitud: (json['latitud'] as num).toDouble(),
       longitud: (json['longitud'] as num).toDouble(),
       potenciaNominal_kWp: (json['potenciaNominal_kWp'] as num).toDouble(),
       idComunidadEnergetica: (json['idComunidadEnergetica'] as num).toInt(),
-      tipo_activo: $enumDecode(
-        _$TipoActivoGeneracionEnumMap,
-        json['tipo_activo'],
-      ),
-      inclinacionGrados: json['inclinacionGrados'] as String?,
-      azimutGrados: json['azimutGrados'] as String?,
+      tipo_activo: _tipoActivoFromJson(json['tipo_activo'] as String),
+      inclinacionGrados: _numberToString(json['inclinacionGrados']),
+      azimutGrados: _numberToString(json['azimutGrados']),
       tecnologiaPanel: json['tecnologiaPanel'] as String?,
-      perdidaSistema: json['perdidaSistema'] as String?,
+      perdidaSistema: _numberToString(json['perdidaSistema']),
       posicionMontaje: json['posicionMontaje'] as String?,
-      curvaPotencia: json['curvaPotencia'] as String?,
+      curvaPotencia: json['curvaPotencia'] as Map<String, dynamic>?,
     );
 
 Map<String, dynamic> _$ActivoGeneracionToJson(ActivoGeneracion instance) =>
     <String, dynamic>{
       'idActivoGeneracion': instance.idActivoGeneracion,
       'nombreDescriptivo': instance.nombreDescriptivo,
-      'fechaInstalacion': instance.fechaInstalacion.toIso8601String(),
+      'fechaInstalacion': _dateToJson(instance.fechaInstalacion),
       'costeInstalacion_eur': instance.costeInstalacion_eur,
       'vidaUtil_anios': instance.vidaUtil_anios,
       'latitud': instance.latitud,
       'longitud': instance.longitud,
       'potenciaNominal_kWp': instance.potenciaNominal_kWp,
       'idComunidadEnergetica': instance.idComunidadEnergetica,
-      'tipo_activo': _$TipoActivoGeneracionEnumMap[instance.tipo_activo]!,
-      'inclinacionGrados': instance.inclinacionGrados,
-      'azimutGrados': instance.azimutGrados,
+      'tipo_activo': _tipoActivoToJson(instance.tipo_activo),
+      'inclinacionGrados': _stringToNumber(instance.inclinacionGrados),
+      'azimutGrados': _stringToNumber(instance.azimutGrados),
       'tecnologiaPanel': instance.tecnologiaPanel,
-      'perdidaSistema': instance.perdidaSistema,
+      'perdidaSistema': _stringToNumber(instance.perdidaSistema),
       'posicionMontaje': instance.posicionMontaje,
       'curvaPotencia': instance.curvaPotencia,
     };
-
-const _$TipoActivoGeneracionEnumMap = {
-  TipoActivoGeneracion.INSTALACION_FOTOVOLTAICA: 'INSTALACION_FOTOVOLTAICA',
-  TipoActivoGeneracion.AEROGENERADOR: 'AEROGENERADOR',
-};

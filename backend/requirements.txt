@@ -10,3 +10,9 @@ pytest
 requests
 python-jose[cryptography]
 passlib[bcrypt]
+python-multipart
+joblib
+pandas
+numpy
+lightgbm
+scikit-learn

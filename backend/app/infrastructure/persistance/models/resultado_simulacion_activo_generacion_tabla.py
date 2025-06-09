@@ -11,7 +11,7 @@ class ResultadoSimulacionActivoGeneracion(Base):
     performanceRatio_pct = Column(Float)
     horasOperacionEquivalentes = Column(Float)
     idResultadoSimulacion = Column(Integer, ForeignKey("RESULTADO_SIMULACION.idResultado", ondelete="CASCADE"))
-    idActivoGeneracion = Column(Integer, ForeignKey("ACTIVO_GENERACION_UNICA.idActivoGeneracion", ondelete="CASCADE"))
+    idActivoGeneracion = Column(Integer, ForeignKey("ACTIVO_GENERACION_UNICA.idActivoGeneracion", ondelete="SET NULL"), nullable=True)
     
     # Relaciones
     resultado_simulacion = relationship("ResultadoSimulacion", back_populates="resultados_activo_generacion")

@@ -9,7 +9,7 @@ part of 'coeficiente_reparto.dart';
 CoeficienteReparto _$CoeficienteRepartoFromJson(Map<String, dynamic> json) =>
     CoeficienteReparto(
       idCoeficienteReparto: (json['idCoeficienteReparto'] as num).toInt(),
-      tipoReparto: $enumDecode(_$TipoRepartoEnumMap, json['tipoReparto']),
+      tipoReparto: _tipoRepartoFromJson(json['tipoReparto'] as String),
       parametros: json['parametros'] as Map<String, dynamic>,
       idParticipante: (json['idParticipante'] as num).toInt(),
       participante:
@@ -23,13 +23,8 @@ CoeficienteReparto _$CoeficienteRepartoFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$CoeficienteRepartoToJson(CoeficienteReparto instance) =>
     <String, dynamic>{
       'idCoeficienteReparto': instance.idCoeficienteReparto,
-      'tipoReparto': _$TipoRepartoEnumMap[instance.tipoReparto]!,
+      'tipoReparto': _tipoRepartoToJson(instance.tipoReparto),
       'parametros': instance.parametros,
       'idParticipante': instance.idParticipante,
       'participante': instance.participante?.toJson(),
     };
-
-const _$TipoRepartoEnumMap = {
-  TipoReparto.REPARTO_FIJO: 'REPARTO_FIJO',
-  TipoReparto.REPARTO_PROGRAMADO: 'REPARTO_PROGRAMADO',
-};

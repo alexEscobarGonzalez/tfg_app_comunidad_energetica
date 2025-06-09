@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/models/comunidad_energetica.dart';
 import 'package:frontend/models/enums/tipo_estrategia_excedentes.dart';
 import 'package:frontend/providers/comunidad_energetica_provider.dart';
+import 'package:frontend/core/widgets/loading_indicators.dart';
 
 class DetalleComunidadView extends ConsumerStatefulWidget {
   final int idComunidad;
@@ -83,7 +84,7 @@ class _DetalleComunidadViewState extends ConsumerState<DetalleComunidadView> {
         ],
       ),
       body: comunidadAsyncValue.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: LoadingSpinner()),
         error: (error, stackTrace) => Center(
           child: Text('Error al cargar la comunidad: $error'),
         ),
@@ -299,40 +300,60 @@ class _DetalleComunidadViewState extends ConsumerState<DetalleComunidadView> {
             ListTile(
               leading: const Icon(Icons.people),
               title: const Text('Ver participantes'),
+              subtitle: const Text('Gestionar miembros de la comunidad'),
+              trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
-                // Aquí iría la navegación a la vista de participantes
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Funcionalidad en desarrollo')),
+                Navigator.pushNamed(
+                  context,
+                  '/comunidad/${widget.idComunidad}/participantes',
                 );
               },
             ),
             ListTile(
-              leading: const Icon(Icons.flash_on),
-              title: const Text('Ver activos de generación'),
+              leading: const Icon(Icons.solar_power),
+              title: const Text('Activos Energéticos'),
+              subtitle: const Text('Gestionar sistemas de generación y almacenamiento'),
+              trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
-                // Aquí iría la navegación a la vista de activos de generación
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Funcionalidad en desarrollo')),
+                Navigator.pushNamed(
+                  context,
+                  '/comunidad/${widget.idComunidad}/activos-energeticos',
                 );
               },
             ),
             ListTile(
-              leading: const Icon(Icons.battery_charging_full),
-              title: const Text('Ver activos de almacenamiento'),
+              leading: const Icon(Icons.pie_chart, color: Colors.orange),
+              title: const Text('Coeficientes de Reparto'),
+              subtitle: const Text('Configurar distribución de energía por activos'),
+              trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
-                // Aquí iría la navegación a la vista de activos de almacenamiento
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Funcionalidad en desarrollo')),
+                Navigator.pushNamed(
+                  context,
+                  '/comunidad/${widget.idComunidad}/coeficientes',
                 );
               },
             ),
             ListTile(
-              leading: const Icon(Icons.assessment),
-              title: const Text('Ejecutar simulación'),
+              leading: const Icon(Icons.analytics, color: Colors.blue),
+              title: const Text('Datos Operativos'),
+              subtitle: const Text('Gestionar datos de consumo y producción'),
+              trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
-                // Aquí iría la navegación a la vista de simulación
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Funcionalidad en desarrollo')),
+                Navigator.pushNamed(
+                  context,
+                  '/gestion-datos-operativos',
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.science, color: Colors.purple),
+              title: const Text('Simulaciones'),
+              subtitle: const Text('Crear y ver simulaciones de la comunidad'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  '/comunidad/${widget.idComunidad}/simulaciones',
                 );
               },
             ),

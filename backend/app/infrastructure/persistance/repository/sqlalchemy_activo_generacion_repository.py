@@ -26,28 +26,37 @@ class SqlAlchemyActivoGeneracionRepository(ActivoGeneracionRepository):
             tecnologiaPanel=model.tecnologiaPanel,
             perdidaSistema=model.perdidaSistema,
             posicionMontaje=model.posicionMontaje,
-            curvaPotencia=model.curvaPotencia
+            curvaPotencia=model.curvaPotencia,
+            esta_activo=model.esta_activo,
+            fecha_eliminacion=model.fecha_eliminacion
         )
         
     def get_by_id(self, idActivoGeneracion: int) -> Optional[ActivoGeneracionEntity]:
-        model = self.db.query(ActivoGeneracion).filter_by(idActivoGeneracion=idActivoGeneracion).first()
+        model = self.db.query(ActivoGeneracion).filter_by(
+            idActivoGeneracion=idActivoGeneracion,
+            esta_activo=True
+        ).first()
         if model:
             return self._map_to_entity(model)
         return None
         
     def get_by_comunidad(self, idComunidadEnergetica: int) -> List[ActivoGeneracionEntity]:
-        models = self.db.query(ActivoGeneracion).filter_by(idComunidadEnergetica=idComunidadEnergetica).all()
+        models = self.db.query(ActivoGeneracion).filter_by(
+            idComunidadEnergetica=idComunidadEnergetica,
+            esta_activo=True
+        ).all()
         return [self._map_to_entity(model) for model in models]
     
     def get_by_comunidad_y_tipo(self, idComunidadEnergetica: int, tipo_activo: TipoActivoGeneracion) -> List[ActivoGeneracionEntity]:
         models = self.db.query(ActivoGeneracion).filter_by(
             idComunidadEnergetica=idComunidadEnergetica,
-            tipo_activo=tipo_activo
+            tipo_activo=tipo_activo,
+            esta_activo=True
         ).all()
         return [self._map_to_entity(model) for model in models]
     
     def list(self) -> List[ActivoGeneracionEntity]:
-        models = self.db.query(ActivoGeneracion).all()
+        models = self.db.query(ActivoGeneracion).filter_by(esta_activo=True).all()
         return [self._map_to_entity(model) for model in models]
         
     def create(self, activo: ActivoGeneracionEntity) -> ActivoGeneracionEntity:
@@ -101,7 +110,31 @@ class SqlAlchemyActivoGeneracionRepository(ActivoGeneracionRepository):
         return None
         
     def delete(self, idActivoGeneracion: int) -> None:
+        """
+        Realiza un soft delete del activo de generación.
+        Los resultados de simulación relacionados se preservan.
+        """
+        from datetime import datetime
+        
         model = self.db.query(ActivoGeneracion).filter_by(idActivoGeneracion=idActivoGeneracion).first()
         if model:
-            self.db.delete(model)
+            model.esta_activo = False
+            model.fecha_eliminacion = datetime.now()
             self.db.commit()
+    
+    def get_by_id_incluido_eliminados(self, idActivoGeneracion: int) -> Optional[ActivoGeneracionEntity]:
+        """
+        Obtiene un activo por ID, incluyendo los eliminados (soft delete).
+        Útil para consultar resultados históricos.
+        """
+        model = self.db.query(ActivoGeneracion).filter_by(idActivoGeneracion=idActivoGeneracion).first()
+        if model:
+            return self._map_to_entity(model)
+        return None
+    
+    def listar_eliminados(self) -> List[ActivoGeneracionEntity]:
+        """
+        Lista todos los activos que han sido eliminados (soft delete).
+        """
+        models = self.db.query(ActivoGeneracion).filter_by(esta_activo=False).all()
+        return [self._map_to_entity(model) for model in models]

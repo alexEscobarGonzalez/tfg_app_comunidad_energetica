@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/models/usuario.dart';
 import 'package:frontend/providers/user_provider.dart';
+import 'package:frontend/core/widgets/loading_indicators.dart';
 
 class CreateUserView extends ConsumerStatefulWidget {
   const CreateUserView({super.key});
@@ -172,7 +173,7 @@ class _CreateUserViewState extends ConsumerState<CreateUserView> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: _isLoading
-                    ? const CircularProgressIndicator()
+                    ? const ButtonLoadingSpinner()
                     : const Text('CREAR CUENTA'),
               ),
             ],

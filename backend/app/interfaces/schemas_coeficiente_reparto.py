@@ -10,6 +10,14 @@ class CoeficienteRepartoBase(BaseModel):
 class CoeficienteRepartoCreate(CoeficienteRepartoBase):
     pass
 
+class CoeficienteRepartoCreateByParticipante(BaseModel):
+    """
+    Esquema para crear/actualizar coeficiente por participante (relación 1:1)
+    El idParticipante se toma del parámetro de la URL
+    """
+    tipoReparto: TipoReparto = Field(description="Tipo de reparto (Reparto Fijo, Reparto Programado)")
+    parametros: Dict[str, Any] = Field(description="Parámetros específicos del tipo de reparto en formato JSON")
+
 class CoeficienteRepartoUpdate(BaseModel):
     tipoReparto: Optional[TipoReparto] = None
     parametros: Optional[Dict[str, Any]] = None

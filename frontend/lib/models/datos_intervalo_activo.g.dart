@@ -17,7 +17,7 @@ DatosIntervaloActivo _$DatosIntervaloActivoFromJson(
   energiaGenerada_kWh: (json['energiaGenerada_kWh'] as num?)?.toDouble(),
   energiaCargada_kWh: (json['energiaCargada_kWh'] as num?)?.toDouble(),
   energiaDescargada_kWh: (json['energiaDescargada_kWh'] as num?)?.toDouble(),
-  soC_kWh: (json['soC_kWh'] as num?)?.toDouble(),
+  SoC_kWh: (json['SoC_kWh'] as num?)?.toDouble(),
   idResultadoActivoGen: (json['idResultadoActivoGen'] as num?)?.toInt(),
   idResultadoActivoAlm: (json['idResultadoActivoAlm'] as num?)?.toInt(),
 );
@@ -30,7 +30,7 @@ Map<String, dynamic> _$DatosIntervaloActivoToJson(
   'energiaGenerada_kWh': instance.energiaGenerada_kWh,
   'energiaCargada_kWh': instance.energiaCargada_kWh,
   'energiaDescargada_kWh': instance.energiaDescargada_kWh,
-  'soC_kWh': instance.soC_kWh,
+  'SoC_kWh': instance.SoC_kWh,
   'idResultadoActivoGen': instance.idResultadoActivoGen,
   'idResultadoActivoAlm': instance.idResultadoActivoAlm,
 };

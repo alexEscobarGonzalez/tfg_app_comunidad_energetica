@@ -27,6 +27,31 @@ final comunidadDetalleProvider = FutureProvider.family<ComunidadEnergetica, int>
   return await comunidadService.getComunidadById(idComunidad);
 });
 
+// Provider para la comunidad seleccionada actualmente
+final comunidadSeleccionadaProvider = StateNotifierProvider<ComunidadSeleccionadaNotifier, ComunidadEnergetica?>((ref) {
+  return ComunidadSeleccionadaNotifier();
+});
+
+// Notifier para gestionar la comunidad seleccionada
+class ComunidadSeleccionadaNotifier extends StateNotifier<ComunidadEnergetica?> {
+  ComunidadSeleccionadaNotifier() : super(null);
+  
+  void seleccionarComunidad(ComunidadEnergetica comunidad) {
+    state = comunidad;
+  }
+  
+  void limpiarSeleccion() {
+    state = null;
+  }
+  
+  // Método para auto-seleccionar la primera comunidad del usuario
+  void autoSeleccionarPrimera(List<ComunidadEnergetica> comunidades) {
+    if (comunidades.isNotEmpty && state == null) {
+      state = comunidades.first;
+    }
+  }
+}
+
 // Notifier para gestionar las comunidades energéticas
 class ComunidadesNotifier extends StateNotifier<List<ComunidadEnergetica>> {
   final ComunidadEnergeticaApiService _comunidadService;

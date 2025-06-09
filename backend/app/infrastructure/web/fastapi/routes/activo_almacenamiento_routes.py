@@ -23,6 +23,7 @@ def crear_activo_almacenamiento(activo: ActivoAlmacenamientoCreate, db: Session 
     Crea un nuevo activo de almacenamiento en una comunidad energética
     """
     activo_entity = ActivoAlmacenamientoEntity(
+        nombreDescriptivo=activo.nombreDescriptivo,
         capacidadNominal_kWh=activo.capacidadNominal_kWh,
         potenciaMaximaCarga_kW=activo.potenciaMaximaCarga_kW,
         potenciaMaximaDescarga_kW=activo.potenciaMaximaDescarga_kW,
@@ -69,6 +70,7 @@ def actualizar_activo(id_activo: int, activo: ActivoAlmacenamientoUpdate, db: Se
     if not activo_existente:
         raise HTTPException(status_code=404, detail="Activo de almacenamiento no encontrado")
     activo_entity = ActivoAlmacenamientoEntity(
+        nombreDescriptivo=activo.nombreDescriptivo if activo.nombreDescriptivo is not None else activo_existente.nombreDescriptivo,
         capacidadNominal_kWh=activo.capacidadNominal_kWh if activo.capacidadNominal_kWh is not None else activo_existente.capacidadNominal_kWh,
         potenciaMaximaCarga_kW=activo.potenciaMaximaCarga_kW if activo.potenciaMaximaCarga_kW is not None else activo_existente.potenciaMaximaCarga_kW,
         potenciaMaximaDescarga_kW=activo.potenciaMaximaDescarga_kW if activo.potenciaMaximaDescarga_kW is not None else activo_existente.potenciaMaximaDescarga_kW,

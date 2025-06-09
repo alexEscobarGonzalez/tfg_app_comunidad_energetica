@@ -29,3 +29,6 @@ class RegistroConsumoRepository:
 
     def delete(self, idRegistroConsumo: int) -> None:
         raise NotImplementedError
+    
+    def delete_all_by_participante(self, idParticipante: int) -> int:
+        raise NotImplementedError

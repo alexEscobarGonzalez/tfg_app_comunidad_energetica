@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.domain.entities.resultado_simulacion_activo_generacion import ResultadoSimulacionActivoGeneracionEntity
 from app.domain.use_cases.resultado_simulacion_activo_generacion.resultado_simulacion_activo_generacion_use_cases import ResultadoSimulacionActivoGeneracionUseCases
 from app.infrastructure.persistance.database import get_db
-from app.infrastructure.persistance.repository.sqlalchemy_resultado_simulacion_activo_generacion_repository import ResultadoSimulacionActivoGeneracionRepository
+from app.infrastructure.persistance.repository.sqlalchemy_resultado_simulacion_activo_generacion_repository import SqlAlchemyResultadoSimulacionActivoGeneracionRepository
 from app.interfaces.schemas_resultado_simulacion_activo_generacion import (
     ResultadoSimulacionActivoGeneracionCreate,
     ResultadoSimulacionActivoGeneracionRead,
@@ -19,7 +19,7 @@ router = APIRouter(
 )
 
 def get_use_cases(db: Session = Depends(get_db)):
-    repository = ResultadoSimulacionActivoGeneracionRepository(db)
+    repository = SqlAlchemyResultadoSimulacionActivoGeneracionRepository(db)
     return ResultadoSimulacionActivoGeneracionUseCases(repository)
 
 @router.get("/{resultado_activo_id}", response_model=ResultadoSimulacionActivoGeneracionRead)

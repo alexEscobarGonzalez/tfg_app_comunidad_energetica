@@ -8,6 +8,7 @@ part 'coeficiente_reparto.g.dart';
 @JsonSerializable(explicitToJson: true)
 class CoeficienteReparto {
   final int idCoeficienteReparto;
+  @JsonKey(fromJson: _tipoRepartoFromJson, toJson: _tipoRepartoToJson)
   final TipoReparto tipoReparto;
   final Map<String, dynamic> parametros;
   final int idParticipante;
@@ -25,5 +26,20 @@ class CoeficienteReparto {
       _$CoeficienteRepartoFromJson(json);
 
   Map<String, dynamic> toJson() => _$CoeficienteRepartoToJson(this);
+}
 
+// Funciones de conversión para el enum TipoReparto
+TipoReparto _tipoRepartoFromJson(String value) {
+  switch (value) {
+    case 'Reparto Fijo':
+      return TipoReparto.REPARTO_FIJO;
+    case 'Reparto Programado':
+      return TipoReparto.REPARTO_PROGRAMADO;
+    default:
+      throw ArgumentError('Valor de TipoReparto no reconocido: $value');
+  }
+}
+
+String _tipoRepartoToJson(TipoReparto tipoReparto) {
+  return tipoReparto.value;
 }

@@ -9,7 +9,7 @@ class DatosIntervaloActivo {
   final double? energiaGenerada_kWh;
   final double? energiaCargada_kWh;
   final double? energiaDescargada_kWh;
-  final double? soC_kWh;
+  final double? SoC_kWh;
   final int? idResultadoActivoGen;
   final int? idResultadoActivoAlm;
 
@@ -19,7 +19,7 @@ class DatosIntervaloActivo {
     this.energiaGenerada_kWh,
     this.energiaCargada_kWh,
     this.energiaDescargada_kWh,
-    this.soC_kWh,
+    this.SoC_kWh,
     this.idResultadoActivoGen,
     this.idResultadoActivoAlm,
   });

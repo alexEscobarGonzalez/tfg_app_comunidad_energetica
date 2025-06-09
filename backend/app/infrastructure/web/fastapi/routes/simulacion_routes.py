@@ -121,7 +121,7 @@ def ejecutar_simulacion(id_simulacion: int, background_tasks: BackgroundTasks, d
             from app.infrastructure.persistance.repository.sqlalchemy_datos_intervalo_participante_repository import SqlAlchemyDatosIntervaloParticipanteRepository
             from app.infrastructure.persistance.repository.sqlalchemy_datos_intervalo_activo_repository import SqlAlchemyDatosIntervaloActivoRepository
             from app.infrastructure.pvgis.datos_ambientales_api_repository import DatosAmbientalesApiRepository
-            
+            from app.infrastructure.persistance.repository.sqlalchemy_pvpc_precios_repository import PvpcPreciosRepositoryImpl
             # Inicializar todos los repositorios necesarios
             simulacion_repo = SqlAlchemySimulacionRepository(db_session)
             comunidad_repo = SqlAlchemyComunidadEnergeticaRepository(db_session)
@@ -139,7 +139,7 @@ def ejecutar_simulacion(id_simulacion: int, background_tasks: BackgroundTasks, d
             datos_intervalo_participante_repo = SqlAlchemyDatosIntervaloParticipanteRepository(db_session)
             datos_intervalo_activo_repo = SqlAlchemyDatosIntervaloActivoRepository(db_session)
             datos_ambientales_api_repo = DatosAmbientalesApiRepository()
-            
+            pvpc_precios_repo = PvpcPreciosRepositoryImpl(db_session)
         
             
             # Inicializar el motor de simulación con todos los repositorios requeridos
@@ -159,6 +159,7 @@ def ejecutar_simulacion(id_simulacion: int, background_tasks: BackgroundTasks, d
                 resultado_activo_alm_repo=resultado_activo_alm_repo,
                 datos_intervalo_participante_repo=datos_intervalo_participante_repo,
                 datos_intervalo_activo_repo=datos_intervalo_activo_repo,
+                pvpc_precios_repo=pvpc_precios_repo,
                 datos_ambientales_api_repo=datos_ambientales_api_repo,
                 db_session=db_session
             )

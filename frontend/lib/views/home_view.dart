@@ -43,9 +43,32 @@ class HomeView extends StatelessWidget {
               ),
             const SizedBox(height: 40),
             
+            // Dashboard Principal
+            Card(
+              elevation: 4,
+              child: ListTile(
+                leading: const Icon(Icons.dashboard, color: Colors.green, size: 32),
+                title: const Text(
+                  'Dashboard Principal',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+                subtitle: const Text('Accede al panel completo de gestión'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  Navigator.pushNamed(context, '/dashboard');
+                },
+              ),
+            ),
+            
+            const SizedBox(height: 24),
+            
             // Sección de Comunidades Energéticas
             const Text(
-              'Gestión de Comunidades',
+              'Acciones Rápidas',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

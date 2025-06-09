@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, ConfigDict, field_validator
 from typing import Optional
 
 class ActivoAlmacenamientoBase(BaseModel):
+    nombreDescriptivo: Optional[str] = Field(None, max_length=255, description="Nombre descriptivo del activo de almacenamiento")
     capacidadNominal_kWh: float = Field(gt=0.0, description="Capacidad nominal de la batería en kWh")
     potenciaMaximaCarga_kW: float = Field(gt=0.0, description="Potencia máxima de carga en kW")
     potenciaMaximaDescarga_kW: float = Field(gt=0.0, description="Potencia máxima de descarga en kW")
@@ -19,6 +20,7 @@ class ActivoAlmacenamientoCreate(ActivoAlmacenamientoBase):
     pass
 
 class ActivoAlmacenamientoUpdate(BaseModel):
+    nombreDescriptivo: Optional[str] = Field(None, max_length=255, description="Nombre descriptivo del activo de almacenamiento")
     capacidadNominal_kWh: Optional[float] = Field(None, gt=0.0)
     potenciaMaximaCarga_kW: Optional[float] = Field(None, gt=0.0)
     potenciaMaximaDescarga_kW: Optional[float] = Field(None, gt=0.0)

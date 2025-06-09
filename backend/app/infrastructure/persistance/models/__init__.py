@@ -12,3 +12,4 @@ from .resultado_simulacion_tabla import ResultadoSimulacion
 from .resultado_simulacion_participante_tabla import ResultadoSimulacionParticipante
 from .resultado_simulacion_activo_almacenamiento_tabla import ResultadoSimulacionActivoAlmacenamiento
 from .resultado_simulacion_activo_generacion_tabla import ResultadoSimulacionActivoGeneracion
+from .pvpc_precios_tabla import PvpcPrecios

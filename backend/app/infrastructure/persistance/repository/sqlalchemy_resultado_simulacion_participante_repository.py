@@ -58,6 +58,7 @@ class SqlAlchemyResultadoSimulacionParticipanteRepository(ResultadoSimulacionPar
             energiaRecibidaRepartoConsumida_kWh=resultado.energiaRecibidaRepartoConsumida_kWh,
             tasaAutoconsumoSCR_pct=resultado.tasaAutoconsumoSCR_pct,
             tasaAutosuficienciaSSR_pct=resultado.tasaAutosuficienciaSSR_pct,
+            consumo_kWh=resultado.consumo_kWh,
             idResultadoSimulacion=resultado.idResultadoSimulacion,
             idParticipante=resultado.idParticipante
         )
@@ -82,6 +83,7 @@ class SqlAlchemyResultadoSimulacionParticipanteRepository(ResultadoSimulacionPar
         model.energiaRecibidaRepartoConsumida_kWh = resultado.energiaRecibidaRepartoConsumida_kWh if resultado.energiaRecibidaRepartoConsumida_kWh is not None else model.energiaRecibidaRepartoConsumida_kWh
         model.tasaAutoconsumoSCR_pct = resultado.tasaAutoconsumoSCR_pct if resultado.tasaAutoconsumoSCR_pct is not None else model.tasaAutoconsumoSCR_pct
         model.tasaAutosuficienciaSSR_pct = resultado.tasaAutosuficienciaSSR_pct if resultado.tasaAutosuficienciaSSR_pct is not None else model.tasaAutosuficienciaSSR_pct
+        model.consumo_kWh = resultado.consumo_kWh if resultado.consumo_kWh is not None else model.consumo_kWh
 
         try:
             self.db.commit()
@@ -121,6 +123,7 @@ class SqlAlchemyResultadoSimulacionParticipanteRepository(ResultadoSimulacionPar
                     energiaRecibidaRepartoConsumida_kWh=resultado.energiaRecibidaRepartoConsumida_kWh or 0,
                     tasaAutoconsumoSCR_pct=resultado.tasaAutoconsumoSCR_pct or 0,
                     tasaAutosuficienciaSSR_pct=resultado.tasaAutosuficienciaSSR_pct or 0,
+                    consumo_kWh=resultado.consumo_kWh or 0,
                     idResultadoSimulacion=resultado_global_id,
                     idParticipante=resultado.idParticipante
                 )

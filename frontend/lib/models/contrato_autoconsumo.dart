@@ -3,11 +3,31 @@ import 'package:frontend/models/enums/tipo_contrato.dart';
 
 part 'contrato_autoconsumo.g.dart';
 
+// Helper para serialización del enum
+TipoContrato _tipoContratoFromJson(String tipoStr) {
+  switch (tipoStr) {
+    case 'PVPC':
+      return TipoContrato.PVPC;
+    case 'Precio Fijo':
+      return TipoContrato.MERCADO_LIBRE;
+    default:
+      return TipoContrato.PVPC; // Valor por defecto
+  }
+}
 
+String _tipoContratoToJson(TipoContrato tipo) {
+  switch (tipo) {
+    case TipoContrato.PVPC:
+      return 'PVPC';
+    case TipoContrato.MERCADO_LIBRE:
+      return 'Precio Fijo';
+  }
+}
 
 @JsonSerializable()
 class ContratoAutoconsumo {
   final int idContrato;
+  @JsonKey(fromJson: _tipoContratoFromJson, toJson: _tipoContratoToJson)
   final TipoContrato tipoContrato;
   final double precioEnergiaImportacion_eur_kWh;
   final double precioCompensacionExcedentes_eur_kWh;

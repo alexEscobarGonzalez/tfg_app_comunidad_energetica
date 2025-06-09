@@ -19,6 +19,20 @@ extension TipoEstrategiaExcedentesExtension on TipoEstrategiaExcedentes {
         return 'Colectivo con excedentes y compensación en red externa';
     }
   }
+
+  // Nuevo método para obtener una representación corta
+  String toShortString() {
+    switch (this) {
+      case TipoEstrategiaExcedentes.INDIVIDUAL_SIN_EXCEDENTES:
+        return 'Individual s/Exc';
+      case TipoEstrategiaExcedentes.COLECTIVO_SIN_EXCEDENTES:
+        return 'Colectivo s/Exc';
+      case TipoEstrategiaExcedentes.INDIVIDUAL_EXCEDENTES_COMPENSACION:
+        return 'Individual c/Comp';
+      case TipoEstrategiaExcedentes.COLECTIVO_EXCEDENTES_COMPENSACION_RED_EXTERNA:
+        return 'Colectivo c/Comp Ext';
+    }
+  }
 }
 
 // Función para convertir desde la cadena del backend al enum

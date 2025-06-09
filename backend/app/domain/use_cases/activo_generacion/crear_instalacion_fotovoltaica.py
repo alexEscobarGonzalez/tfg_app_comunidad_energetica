@@ -9,29 +9,13 @@ def crear_instalacion_fotovoltaica_use_case(
     comunidad_repo: ComunidadEnergeticaRepository,
     activo_repo: ActivoGeneracionRepository
 ) -> ActivoGeneracionEntity:
-    """
-    Crea una nueva instalación fotovoltaica asociada a una comunidad energética
-    
-    Args:
-        activo: Entidad con los datos de la nueva instalación fotovoltaica
-        db: Sesión de base de datos
-        
-    Returns:
-        ActivoGeneracionEntity: La entidad de la instalación fotovoltaica creada con su ID asignado
-        
-    Raises:
-        HTTPException: Si la comunidad energética no existe o si faltan datos específicos de la instalación fotovoltaica
-    """
-    # Verificar que la comunidad energética existe
     comunidad = comunidad_repo.get_by_id(activo.idComunidadEnergetica)
     if not comunidad:
         raise HTTPException(status_code=404, detail="Comunidad energética no encontrada")
     
-    # Verificar que sea del tipo correcto
     if activo.tipo_activo != TipoActivoGeneracion.INSTALACION_FOTOVOLTAICA:
         raise HTTPException(status_code=400, detail="El tipo de activo debe ser una instalación fotovoltaica")
     
-    # Verificar que se han proporcionado los datos específicos de la instalación fotovoltaica
     if (activo.inclinacionGrados is None or
         activo.azimutGrados is None or
         activo.tecnologiaPanel is None or

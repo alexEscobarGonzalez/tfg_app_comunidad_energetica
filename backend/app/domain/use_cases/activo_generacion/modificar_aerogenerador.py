@@ -9,20 +9,7 @@ def modificar_aerogenerador_use_case(
     activo_datos: ActivoGeneracionEntity,
     repo: ActivoGeneracionRepository
 ) -> ActivoGeneracionEntity:
-    """
-    Modifica los datos de un aerogenerador existente
-    
-    Args:
-        id_activo: ID del aerogenerador a modificar
-        activo_datos: Nuevos datos para el aerogenerador
-        repo: Repositorio de aerogeneradores
-        
-    Returns:
-        ActivoGeneracionEntity: Datos actualizados del aerogenerador
-        
-    Raises:
-        HTTPException: Si el aerogenerador no existe o si no es del tipo correcto
-    """
+
     # Verificar que el activo existe
     activo_existente = repo.get_by_id(id_activo)
     if not activo_existente:

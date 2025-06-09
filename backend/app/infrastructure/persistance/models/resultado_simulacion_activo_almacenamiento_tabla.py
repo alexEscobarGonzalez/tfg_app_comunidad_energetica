@@ -16,7 +16,7 @@ class ResultadoSimulacionActivoAlmacenamiento(Base):
     degradacionEstimada_pct = Column(Float)
     throughputTotal_kWh = Column(Float)
     idResultadoSimulacion = Column(Integer, ForeignKey("RESULTADO_SIMULACION.idResultado", ondelete="CASCADE"))
-    idActivoAlmacenamiento = Column(Integer, ForeignKey("ACTIVO_ALMACENAMIENTO.idActivoAlmacenamiento", ondelete="CASCADE"))
+    idActivoAlmacenamiento = Column(Integer, ForeignKey("ACTIVO_ALMACENAMIENTO.idActivoAlmacenamiento", ondelete="SET NULL"), nullable=True)
     
     # Relaciones
     resultado_simulacion = relationship("ResultadoSimulacion", back_populates="resultados_activos_alm")

@@ -1,4 +1,3 @@
-
 CREATE DATABASE IF NOT EXISTS `comunidad_energetica_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 USE `comunidad_energetica_db`;
@@ -66,13 +65,15 @@ CREATE TABLE `CONTRATO_AUTOCONSUMO` (
     FOREIGN KEY (`idParticipante`) REFERENCES `PARTICIPANTE`(`idParticipante`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tabla COEFICIENTE_REPARTO (Relación 1:1 con PARTICIPANTE)
 CREATE TABLE `COEFICIENTE_REPARTO` (
     `idCoeficienteReparto` INT NOT NULL AUTO_INCREMENT,
     `tipoReparto` VARCHAR(100), 
     `parametros` JSON, 
-    `idParticipante` INT NOT NULL,
+    `idParticipante` INT NOT NULL UNIQUE,
     PRIMARY KEY (`idCoeficienteReparto`),
-    FOREIGN KEY (`idParticipante`) REFERENCES `PARTICIPANTE`(`idParticipante`) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (`idParticipante`) REFERENCES `PARTICIPANTE`(`idParticipante`) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE KEY `uq_coeficiente_participante` (`idParticipante`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla REGISTRO_CONSUMO

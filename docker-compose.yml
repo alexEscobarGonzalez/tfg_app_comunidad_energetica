@@ -33,7 +33,7 @@ services:
     volumes:
       # Volumen nombrado para persistir los datos de la BD
       - mariadb_data:/var/lib/mysql
-      - ./backend/db_init/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./backend/db_init:/docker-entrypoint-initdb.d
     ports:
       - "3307:3306" # Mapea 3306 del contenedor al 3307 del host (para evitar conflictos si tienes otra db en 3306)
 

@@ -1,12 +1,6 @@
 import 'package:frontend/models/enums/estado_simulacion.dart';
 import 'package:frontend/models/enums/tipo_estrategia_excedentes.dart';
-import 'package:json_annotation/json_annotation.dart';
 
-part 'simulacion.g.dart';
-
-
-
-@JsonSerializable()
 class Simulacion {
   final int idSimulacion;
   final String nombreSimulacion;
@@ -30,9 +24,31 @@ class Simulacion {
     required this.idComunidadEnergetica,
   });
 
-  factory Simulacion.fromJson(Map<String, dynamic> json) =>
-      _$SimulacionFromJson(json);
+  factory Simulacion.fromJson(Map<String, dynamic> json) {
+    return Simulacion(
+      idSimulacion: json['idSimulacion'] ?? 0,
+      nombreSimulacion: json['nombreSimulacion'] ?? '',
+      fechaInicio: DateTime.parse(json['fechaInicio']),
+      fechaFin: DateTime.parse(json['fechaFin']),
+      tiempo_medicion: json['tiempo_medicion'] ?? 60,
+      estado: estadoSimulacionFromString(json['estado'] ?? 'PENDIENTE'),
+      tipoEstrategiaExcedentes: tipoEstrategiaExcedentesFromString(json['tipoEstrategiaExcedentes']),
+      idUsuario_creador: json['idUsuario_creador'] ?? 0,
+      idComunidadEnergetica: json['idComunidadEnergetica'] ?? 0,
+    );
+  }
 
-  Map<String, dynamic> toJson() => _$SimulacionToJson(this);
-
+  Map<String, dynamic> toJson() {
+    return {
+      'idSimulacion': idSimulacion,
+      'nombreSimulacion': nombreSimulacion,
+      'fechaInicio': fechaInicio.toIso8601String(),
+      'fechaFin': fechaFin.toIso8601String(),
+      'tiempo_medicion': tiempo_medicion,
+      'estado': estado.name,
+      'tipoEstrategiaExcedentes': tipoEstrategiaExcedentes.toBackendString(),
+      'idUsuario_creador': idUsuario_creador,
+      'idComunidadEnergetica': idComunidadEnergetica,
+    };
+  }
 }

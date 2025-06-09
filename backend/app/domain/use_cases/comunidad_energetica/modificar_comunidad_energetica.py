@@ -30,5 +30,5 @@ def modificar_comunidad_energetica_use_case(id_comunidad: int, comunidad_datos: 
     comunidad_datos.idUsuario = comunidad_existente.idUsuario
     
     # Actualizar en la base de datos
-    comunidad_actualizada = repo.update(id_comunidad, comunidad_datos)
+    comunidad_actualizada = repo.update(comunidad_datos)
     return comunidad_actualizada

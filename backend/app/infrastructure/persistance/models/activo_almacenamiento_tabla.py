@@ -1,6 +1,7 @@
 from app.infrastructure.persistance.database import Base
-from sqlalchemy import Column, ForeignKey, Integer, Float, String
+from sqlalchemy import Column, ForeignKey, Integer, Float, String, Boolean, DateTime
 from sqlalchemy.orm import relationship
+from datetime import datetime
 
 class ActivoAlmacenamiento(Base):
     __tablename__ = 'ACTIVO_ALMACENAMIENTO'
@@ -13,6 +14,10 @@ class ActivoAlmacenamiento(Base):
     eficienciaCicloCompleto_pct = Column(Float, nullable=False)
     profundidadDescargaMax_pct = Column(Float, nullable=False)
     idComunidadEnergetica = Column(Integer, ForeignKey("COMUNIDAD_ENERGETICA.idComunidadEnergetica"), nullable=False)
+    
+    # Campos para soft delete
+    esta_activo = Column(Boolean, default=True, nullable=False)
+    fecha_eliminacion = Column(DateTime, nullable=True)
     
     # Relaciónes
     comunidad = relationship("ComunidadEnergetica", back_populates="activos_almacenamiento")

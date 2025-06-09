@@ -9,7 +9,7 @@ part of 'contrato_autoconsumo.dart';
 ContratoAutoconsumo _$ContratoAutoconsumoFromJson(Map<String, dynamic> json) =>
     ContratoAutoconsumo(
       idContrato: (json['idContrato'] as num).toInt(),
-      tipoContrato: $enumDecode(_$TipoContratoEnumMap, json['tipoContrato']),
+      tipoContrato: _tipoContratoFromJson(json['tipoContrato'] as String),
       precioEnergiaImportacion_eur_kWh:
           (json['precioEnergiaImportacion_eur_kWh'] as num).toDouble(),
       precioCompensacionExcedentes_eur_kWh:
@@ -24,16 +24,11 @@ Map<String, dynamic> _$ContratoAutoconsumoToJson(
   ContratoAutoconsumo instance,
 ) => <String, dynamic>{
   'idContrato': instance.idContrato,
-  'tipoContrato': _$TipoContratoEnumMap[instance.tipoContrato]!,
+  'tipoContrato': _tipoContratoToJson(instance.tipoContrato),
   'precioEnergiaImportacion_eur_kWh': instance.precioEnergiaImportacion_eur_kWh,
   'precioCompensacionExcedentes_eur_kWh':
       instance.precioCompensacionExcedentes_eur_kWh,
   'potenciaContratada_kW': instance.potenciaContratada_kW,
   'precioPotenciaContratado_eur_kWh': instance.precioPotenciaContratado_eur_kWh,
   'idParticipante': instance.idParticipante,
-};
-
-const _$TipoContratoEnumMap = {
-  TipoContrato.PVPC: 'PVPC',
-  TipoContrato.MERCADO_LIBRE: 'MERCADO_LIBRE',
 };

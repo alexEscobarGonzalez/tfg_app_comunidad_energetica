@@ -21,6 +21,19 @@ class SqlAlchemyComunidadEnergeticaRepository:
             )
         return None
 
+    def get_by_usuario(self, id_usuario: int) -> List[ComunidadEnergeticaEntity]:
+        models = self.db.query(ComunidadEnergeticaModel).filter_by(idUsuario=id_usuario).all()
+        return [
+            ComunidadEnergeticaEntity(
+                idComunidadEnergetica=model.idComunidadEnergetica,
+                nombre=model.nombre,
+                latitud=model.latitud,
+                longitud=model.longitud,
+                tipoEstrategiaExcedentes=model.tipoEstrategiaExcedentes,
+                idUsuario=model.idUsuario
+            ) for model in models
+        ]
+
     def list(self) -> List[ComunidadEnergeticaEntity]:
         return [
             ComunidadEnergeticaEntity(
