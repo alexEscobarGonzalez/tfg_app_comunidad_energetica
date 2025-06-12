@@ -28,7 +28,6 @@ class GestionContratosView extends ConsumerStatefulWidget {
 class _GestionContratosViewState extends ConsumerState<GestionContratosView> {
   ContratoAutoconsumo? _contratoActual;
   bool _isLoading = true;
-  String? _error;
 
   @override
   void initState() {
@@ -39,7 +38,6 @@ class _GestionContratosViewState extends ConsumerState<GestionContratosView> {
   Future<void> _cargarContrato() async {
     setState(() {
       _isLoading = true;
-      _error = null;
     });
 
     try {
@@ -52,7 +50,6 @@ class _GestionContratosViewState extends ConsumerState<GestionContratosView> {
       });
     } catch (e) {
       setState(() {
-        _error = e.toString();
         _isLoading = false;
       });
     }

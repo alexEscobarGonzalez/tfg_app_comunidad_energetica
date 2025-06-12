@@ -8,7 +8,6 @@ import '../../models/simulacion.dart';
 import '../../models/resultado_simulacion.dart';
 import '../../models/resultado_simulacion_participante.dart';
 import '../../providers/participante_provider.dart';
-import '../../services/simulacion_api_service.dart';
 import '../../providers/simulacion_provider.dart';
 
 class TabEconomiaResultados extends ConsumerStatefulWidget {
@@ -34,7 +33,7 @@ class _TabEconomiaResultadosState extends ConsumerState<TabEconomiaResultados> {
 
   @override
   Widget build(BuildContext context) {
-    final resultadoAsync = ref.watch(resultadoSimulacionProvider(widget.simulacionSeleccionada.idSimulacion!));
+    final resultadoAsync = ref.watch(resultadoSimulacionProvider(widget.simulacionSeleccionada.idSimulacion));
 
     return resultadoAsync.when(
       data: (resultado) => _buildContent(resultado),
@@ -48,7 +47,7 @@ class _TabEconomiaResultadosState extends ConsumerState<TabEconomiaResultados> {
       return _buildNoDataState();
     }
 
-    final participantesAsync = ref.watch(resultadosParticipantesProvider(widget.simulacionSeleccionada.idSimulacion!));
+    final participantesAsync = ref.watch(resultadosParticipantesProvider(widget.simulacionSeleccionada.idSimulacion));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -439,7 +438,7 @@ class _TabEconomiaResultadosState extends ConsumerState<TabEconomiaResultados> {
                 SizedBox(height: 24.h),
                 ElevatedButton.icon(
                   onPressed: () {
-                    ref.refresh(resultadoSimulacionProvider(widget.simulacionSeleccionada.idSimulacion!));
+                    ref.refresh(resultadoSimulacionProvider(widget.simulacionSeleccionada.idSimulacion));
                   },
                   icon: const Icon(Icons.refresh),
                   label: const Text('Reintentar'),
@@ -719,7 +718,7 @@ class _TabEconomiaResultadosState extends ConsumerState<TabEconomiaResultados> {
                         ),
                         if (description != null)
                           GestureDetector(
-                            onTap: () => _showInfoDialog(title, description!),
+                            onTap: () => _showInfoDialog(title, description),
                             child: Container(
                               padding: EdgeInsets.all(2.w),
                               child: Icon(
@@ -888,7 +887,7 @@ class _TabEconomiaResultadosState extends ConsumerState<TabEconomiaResultados> {
               SizedBox(height: 16.h),
               ElevatedButton.icon(
                 onPressed: () {
-                  ref.refresh(resultadosParticipantesProvider(widget.simulacionSeleccionada.idSimulacion!));
+                  ref.refresh(resultadosParticipantesProvider(widget.simulacionSeleccionada.idSimulacion));
                 },
                 icon: const Icon(Icons.refresh),
                 label: const Text('Reintentar'),

@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../core/widgets/loading_indicators.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
-import '../models/participante.dart';
 import '../providers/participante_provider.dart';
 
 class CrearParticipanteDialog extends ConsumerStatefulWidget {

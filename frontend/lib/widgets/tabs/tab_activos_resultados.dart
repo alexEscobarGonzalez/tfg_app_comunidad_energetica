@@ -7,7 +7,6 @@ import '../../core/theme/app_text_styles.dart';
 import '../../models/simulacion.dart';
 import '../../models/resultado_simulacion_activo_generacion.dart';
 import '../../models/resultado_simulacion_activo_almacenamiento.dart';
-import '../../services/simulacion_api_service.dart';
 import '../../providers/simulacion_provider.dart';
 
 class TabActivosResultados extends ConsumerStatefulWidget {
@@ -35,8 +34,8 @@ class _TabActivosResultadosState extends ConsumerState<TabActivosResultados> {
 
   @override
   Widget build(BuildContext context) {
-    final generacionAsync = ref.watch(resultadosActivosGeneracionProvider(widget.simulacionSeleccionada.idSimulacion!));
-    final almacenamientoAsync = ref.watch(resultadosActivosAlmacenamientoProvider(widget.simulacionSeleccionada.idSimulacion!));
+    final generacionAsync = ref.watch(resultadosActivosGeneracionProvider(widget.simulacionSeleccionada.idSimulacion));
+    final almacenamientoAsync = ref.watch(resultadosActivosAlmacenamientoProvider(widget.simulacionSeleccionada.idSimulacion));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

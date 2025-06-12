@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../core/theme/app_colors.dart';
-import '../core/theme/app_text_styles.dart';
 import '../models/participante.dart';
 import '../models/activo_generacion.dart';
 import '../models/enums/tipo_reparto.dart';
@@ -33,7 +31,6 @@ class _RepartirCoeficientesDialogState extends ConsumerState<RepartirCoeficiente
   // Controladores para coeficientes programados (participante_id -> hora -> controller)
   final Map<int, Map<String, TextEditingController>> _controladoresProgramados = {};
   
-  TipoReparto _tipoRepartoSeleccionado = TipoReparto.REPARTO_FIJO;
   bool _isLoading = false;
   bool _isLoadingInitial = true;
   
@@ -369,7 +366,6 @@ class _RepartirCoeficientesDialogState extends ConsumerState<RepartirCoeficiente
       );
     }
 
-    final suma = _calcularSumaActual();
     
     return AlertDialog(
       title: const Row(

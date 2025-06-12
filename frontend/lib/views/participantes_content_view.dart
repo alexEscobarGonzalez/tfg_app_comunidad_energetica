@@ -5,7 +5,6 @@ import '../core/widgets/loading_indicators.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
 import '../providers/participante_provider.dart';
-import '../providers/comunidad_energetica_provider.dart';
 import '../models/participante.dart';
 import '../models/contrato_autoconsumo.dart';
 import '../widgets/crear_participante_dialog.dart';

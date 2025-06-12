@@ -110,7 +110,6 @@ class _CargaDatosWidgetState extends ConsumerState<CargaDatosWidget>
   String? _error;
   DateTime? _fechaSeleccionada;
   TimeOfDay? _horaSeleccionada;
-  bool _isInitialized = false;
   
   // Variables para carga por lotes
   final List<Map<String, dynamic>> _datosTemporales = [];
@@ -118,9 +117,6 @@ class _CargaDatosWidgetState extends ConsumerState<CargaDatosWidget>
   final _rangoFechaFinController = TextEditingController();
   final _consumoBaseController = TextEditingController();
   final _variacionController = TextEditingController();
-  
-  DateTime? _rangoFechaInicio;
-  DateTime? _rangoFechaFin;
 
   // Variables para carga CSV
   String? _nombreArchivoCSV;
@@ -128,15 +124,11 @@ class _CargaDatosWidgetState extends ConsumerState<CargaDatosWidget>
   FilePickerResult? _archivoSeleccionado;
 
   // Variables para eliminación de datos
-  bool _eliminandoDatos = false;
 
   // Variables para predicción IA
   final _prediccionFechaInicioController = TextEditingController();
   final _prediccionFechaFinController = TextEditingController();
-  final _prediccionIntervalosController = TextEditingController();
-  final _tipoViviendaController = TextEditingController();
   final _numPersonasController = TextEditingController();
-  final _temperaturaController = TextEditingController();
   final _lagMes1Controller = TextEditingController();
   final _lagMes2Controller = TextEditingController();
   final _lagMes3Controller = TextEditingController();
@@ -209,21 +201,6 @@ class _CargaDatosWidgetState extends ConsumerState<CargaDatosWidget>
     }
   }
 
-  Future<void> _seleccionarFecha() async {
-    final fecha = await showDatePicker(
-      context: context,
-      initialDate: _fechaSeleccionada ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-
-    if (fecha != null) {
-      setState(() {
-        _fechaSeleccionada = fecha;
-        _actualizarControladores();
-      });
-    }
-  }
 
   Future<void> _seleccionarHora() async {
     final hora = await showTimePicker(
@@ -364,28 +341,6 @@ class _CargaDatosWidgetState extends ConsumerState<CargaDatosWidget>
     }
   }
 
-  Future<void> _seleccionarRangoFecha(bool esInicio) async {
-    final fecha = await showDatePicker(
-      context: context,
-      initialDate: esInicio 
-          ? (_rangoFechaInicio ?? DateTime.now().subtract(const Duration(days: 30)))
-          : (_rangoFechaFin ?? DateTime.now()),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-
-    if (fecha != null) {
-      setState(() {
-        if (esInicio) {
-          _rangoFechaInicio = fecha;
-          _rangoFechaInicioController.text = DateFormat('dd/MM/yyyy').format(fecha);
-        } else {
-          _rangoFechaFin = fecha;
-          _rangoFechaFinController.text = DateFormat('dd/MM/yyyy').format(fecha);
-        }
-      });
-    }
-  }
 
   void _generarDatosTemporales() {
     // Validar fechas
@@ -595,124 +550,6 @@ class _CargaDatosWidgetState extends ConsumerState<CargaDatosWidget>
     });
   }
 
-  // Método para eliminar todos los datos de consumo del participante
-  Future<void> _eliminarTodosLosDatos() async {
-    // Mostrar diálogo de confirmación
-    final confirmacion = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.warning, color: Colors.red, size: 24.sp),
-            SizedBox(width: 8.w),
-            Text('Confirmar eliminación'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '¿Está seguro de que desea eliminar TODOS los datos de consumo de este participante?',
-              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: 12.h),
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.info, color: Colors.red, size: 16.sp),
-                      SizedBox(width: 6.w),
-                      Text(
-                        'Esta acción es irreversible',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    '• Se eliminarán todos los registros de consumo\n'
-                    '• No se podrán recuperar los datos\n'
-                    '• Afectará a todas las estadísticas y análisis',
-                    style: AppTextStyles.caption.copyWith(color: Colors.red),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: Text('Eliminar Todo'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmacion != true) return;
-
-    setState(() {
-      _eliminandoDatos = true;
-      _error = null;
-    });
-
-    try {
-      final exitoso = await ref.read(datosConsumoProvider.notifier)
-          .eliminarTodosRegistrosParticipante(widget.idParticipante);
-
-      if (exitoso && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8.w),
-                Text('Todos los datos de consumo han sido eliminados'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-        
-        // Limpiar también los datos temporales locales
-        setState(() {
-          _datosTemporales.clear();
-          _resultadoCargaCSV = null;
-        });
-        
-        widget.onDatosCargados?.call();
-      }
-    } catch (e) {
-      setState(() {
-        _error = 'Error al eliminar datos: $e';
-      });
-    } finally {
-      setState(() {
-        _eliminandoDatos = false;
-      });
-    }
-  }
 
   // Helper para mostrar diálogo de carga
   Future<void> _mostrarDialogoCarga({

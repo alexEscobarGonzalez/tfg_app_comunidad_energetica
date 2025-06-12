@@ -16,9 +16,7 @@ extension EstadoSimulacionExtension on EstadoSimulacion {
         return 'Completada';
       case EstadoSimulacion.FALLIDA:
         return 'Fallida';
-      default:
-        return 'Desconocido';
-    }
+      }
   }
 
   String toBackendString() {

@@ -314,6 +314,3 @@ final estadisticasRapidasProvider = Provider<Map<String, dynamic>>((ref) {
 });
 
 // Función auxiliar para detectar anomalías (mantenida para compatibilidad)
-bool _esAnomalo(RegistroConsumo registro) {
-  return registro.consumoEnergia < 0 || registro.consumoEnergia > 50;
-} 

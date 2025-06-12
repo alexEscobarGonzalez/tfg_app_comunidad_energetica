@@ -1,21 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
-import '../core/widgets/custom_card.dart';
 import '../core/widgets/loading_indicators.dart';
-import '../core/widgets/metric_card.dart';
-import '../core/widgets/step_progress_indicator.dart';
 import '../providers/comunidad_energetica_provider.dart';
 import '../providers/participante_provider.dart';
 import '../providers/activo_generacion_provider.dart';
 import '../providers/simulacion_provider.dart';
 import '../providers/user_provider.dart';
-import '../models/simulacion.dart';
-import '../models/enums/estado_simulacion.dart';
-import '../models/comunidad_energetica.dart';
 
 class DashboardContent extends ConsumerStatefulWidget {
   const DashboardContent({super.key});
@@ -163,134 +156,7 @@ class _DashboardContentState extends ConsumerState<DashboardContent> {
     );
   }
 
-  Widget _buildCommunityOverview(
-    ComunidadEnergetica comunidad,
-    ParticipantesState participantesState,
-    dynamic activosState,
-    AsyncValue simulacionesAsync,
-  ) {
-    final totalParticipantes = participantesState.participantes.length;
-    final totalActivos = activosState.activos?.length ?? 0;
-    final simulaciones = simulacionesAsync.asData?.value ?? [];
-    final totalSimulaciones = simulaciones.length;
 
-    final potenciaTotalKW = (activosState.activos as List?)?.fold<double>(0.0, (double sum, dynamic activo) => sum + (activo.potenciaNominal_kWp ?? 0.0)) ?? 0.0;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Resumen General',
-          style: AppTextStyles.headline4.copyWith(fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 16.h),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-          childAspectRatio: 1.8,
-          crossAxisSpacing: 12.w,
-          mainAxisSpacing: 12.h,
-          children: [
-            _buildStatCard(
-              title: 'Participantes',
-              value: totalParticipantes.toString(),
-              icon: Icons.people,
-              color: AppColors.info,
-              subtitle: 'miembros activos',
-            ),
-            _buildStatCard(
-              title: 'Activos Energéticos',
-              value: totalActivos.toString(),
-              icon: Icons.solar_power,
-              color: AppColors.warning,
-              subtitle: 'instalaciones',
-            ),
-            _buildStatCard(
-              title: 'Potencia Instalada',
-              value: potenciaTotalKW >= 1000 
-                  ? '${(potenciaTotalKW / 1000).toStringAsFixed(1)} MWp'
-                  : '${potenciaTotalKW.toStringAsFixed(1)} kWp',
-              icon: Icons.flash_on,
-              color: AppColors.success,
-              subtitle: 'capacidad total',
-            ),
-            _buildStatCard(
-              title: 'Simulaciones',
-              value: totalSimulaciones.toString(),
-              icon: Icons.science,
-              color: AppColors.primary,
-              subtitle: 'análisis realizados',
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-    required String subtitle,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Icon(icon, color: color, size: 20.sp),
-              ),
-              const Spacer(),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            value,
-            style: AppTextStyles.headline3.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            title,
-            style: AppTextStyles.subtitle.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          Text(
-            subtitle,
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildDetailedStats(
     ParticipantesState participantesState,

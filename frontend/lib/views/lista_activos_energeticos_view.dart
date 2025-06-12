@@ -6,7 +6,6 @@ import '../core/theme/app_text_styles.dart';
 import '../core/widgets/loading_indicators.dart';
 import '../providers/activo_generacion_provider.dart';
 import '../providers/activo_almacenamiento_provider.dart';
-import '../providers/comunidad_energetica_provider.dart';
 import '../models/activo_generacion.dart';
 import '../models/activo_almacenamiento.dart';
 import '../models/enums/tipo_activo_generacion.dart';

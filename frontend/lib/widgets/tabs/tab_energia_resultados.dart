@@ -8,7 +8,6 @@ import '../../models/simulacion.dart';
 import '../../models/resultado_simulacion.dart';
 import '../../models/resultado_simulacion_participante.dart';
 import '../../providers/participante_provider.dart';
-import '../../services/simulacion_api_service.dart';
 import '../../providers/simulacion_provider.dart';
 
 class TabEnergiaResultados extends ConsumerStatefulWidget {

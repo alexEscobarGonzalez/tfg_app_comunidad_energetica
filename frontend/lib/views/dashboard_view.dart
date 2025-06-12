@@ -451,34 +451,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     );
   }
 
-  Widget _buildComingSoon(String feature) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.construction,
-            size: 64,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            feature,
-            style: AppTextStyles.headline1.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Esta función estará disponible próximamente',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _loadInitialData(WidgetRef ref) {
     final authState = ref.read(authProvider);
@@ -516,42 +488,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     );
   }
 
-  void _showEditCommunityDialog(BuildContext context, WidgetRef ref, ComunidadEnergetica comunidad) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.edit, color: AppColors.warning),
-            SizedBox(width: 8),
-            Text('Editar Comunidad'),
-          ],
-        ),
-        content: Text(
-          'Editar la comunidad "${comunidad.nombre}".\nSerás redirigido a la página de edición.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // Cambiar a la vista de comunidades y mostrar formulario de edición
-              ref.read(selectedIndexProvider.notifier).state = 1;
-              // TODO: Aquí podrías pasar el ID de la comunidad para editar
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.warning,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Editar'),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showDeleteCommunityDialog(BuildContext context, WidgetRef ref, ComunidadEnergetica comunidad) {
     showDialog(
