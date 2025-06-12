@@ -1,7 +1,3 @@
--- Migración completa para implementar Soft Delete en todos los activos
--- Fecha: 2024
--- Descripción: Agregar campos para soft delete y modificar foreign keys para preservar resultados históricos
-
 -- ========================================
 -- PARTE 1: ACTIVO_ALMACENAMIENTO
 -- ========================================
