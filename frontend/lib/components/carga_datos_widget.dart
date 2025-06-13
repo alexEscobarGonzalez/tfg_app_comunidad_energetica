@@ -161,10 +161,10 @@ class _CargaDatosWidgetState extends ConsumerState<CargaDatosWidget>
     _lagMes2Controller.text = '0.48';
     _lagMes3Controller.text = '0.52';
     
-    // Fechas por defecto: próximas 24 horas
-    final ahora = DateTime.now();
-    _prediccionFechaInicio = DateTime(ahora.year, ahora.month, ahora.day, ahora.hour);
-    _prediccionFechaFin = _prediccionFechaInicio!.add(const Duration(hours: 23));
+    // Fechas por defecto: dentro del rango máximo permitido (PVGIS SARAH3)
+    // Usar último año disponible (2023) para estar dentro del rango de datos
+    _prediccionFechaInicio = DateTime(2023, 12, 1, 0); // 1 diciembre 2023
+    _prediccionFechaFin = DateTime(2023, 12, 1, 23); // Mismo día, 23 horas después
     
     _prediccionFechaInicioController.text = DateFormat('dd/MM/yyyy HH:mm').format(_prediccionFechaInicio!);
     _prediccionFechaFinController.text = DateFormat('dd/MM/yyyy HH:mm').format(_prediccionFechaFin!);
@@ -213,6 +213,55 @@ class _CargaDatosWidgetState extends ConsumerState<CargaDatosWidget>
         _horaSeleccionada = hora;
         _actualizarControladores();
       });
+    }
+  }
+
+  Future<void> _seleccionarFechaPrediccion(bool esInicio) async {
+    // Usar el rango máximo permitido en la aplicación (PVGIS SARAH3)
+    final fechaMinima = DateTime(2005, 1, 1);
+    final fechaMaxima = DateTime(2023, 12, 31);
+    
+    final fechaInicialDateTime = esInicio 
+        ? (_prediccionFechaInicio ?? fechaMaxima)
+        : (_prediccionFechaFin ?? fechaMaxima);
+    
+    final fechaSeleccionada = await showDatePicker(
+      context: context,
+      initialDate: fechaInicialDateTime.isBefore(fechaMinima) || fechaInicialDateTime.isAfter(fechaMaxima)
+          ? fechaMaxima
+          : fechaInicialDateTime,
+      firstDate: fechaMinima,
+      lastDate: fechaMaxima,
+    );
+
+    if (fechaSeleccionada != null && mounted) {
+      final horaSeleccionada = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay(
+          hour: fechaInicialDateTime.hour,
+          minute: fechaInicialDateTime.minute,
+        ),
+      );
+
+      if (horaSeleccionada != null && mounted) {
+        final fechaCompleta = DateTime(
+          fechaSeleccionada.year,
+          fechaSeleccionada.month,
+          fechaSeleccionada.day,
+          horaSeleccionada.hour,
+          horaSeleccionada.minute,
+        );
+
+        setState(() {
+          if (esInicio) {
+            _prediccionFechaInicio = fechaCompleta;
+            _prediccionFechaInicioController.text = DateFormat('dd/MM/yyyy HH:mm').format(fechaCompleta);
+          } else {
+            _prediccionFechaFin = fechaCompleta;
+            _prediccionFechaFinController.text = DateFormat('dd/MM/yyyy HH:mm').format(fechaCompleta);
+          }
+        });
+      }
     }
   }
 
@@ -665,40 +714,7 @@ class _CargaDatosWidgetState extends ConsumerState<CargaDatosWidget>
     );
   }
 
-  Future<void> _seleccionarFechaPrediccion(bool esInicio) async {
-    final fechaInicial = esInicio 
-        ? (_prediccionFechaInicio ?? DateTime.now())
-        : (_prediccionFechaFin ?? DateTime.now().add(const Duration(hours: 24)));
-        
-    final fecha = await showDatePicker(
-      context: context,
-      initialDate: fechaInicial,
-      firstDate: DateTime.now().subtract(const Duration(days: 7)),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
 
-    if (fecha != null) {
-      // Mostrar selector de hora
-      final hora = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(fechaInicial),
-      );
-
-      if (hora != null) {
-        final fechaCompleta = DateTime(fecha.year, fecha.month, fecha.day, hora.hour, hora.minute);
-        
-        setState(() {
-          if (esInicio) {
-            _prediccionFechaInicio = fechaCompleta;
-            _prediccionFechaInicioController.text = DateFormat('dd/MM/yyyy HH:mm').format(fechaCompleta);
-          } else {
-            _prediccionFechaFin = fechaCompleta;
-            _prediccionFechaFinController.text = DateFormat('dd/MM/yyyy HH:mm').format(fechaCompleta);
-          }
-        });
-      }
-    }
-  }
 
   Future<void> _generarDatosConIA() async {
     if (_prediccionFechaInicio == null || _prediccionFechaFin == null) {

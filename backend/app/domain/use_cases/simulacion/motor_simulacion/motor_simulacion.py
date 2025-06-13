@@ -314,10 +314,9 @@ class MotorSimulacion:
                             energia_generada = potencia_kw * (ghi/1000) * factor_rendimiento
                 
                 elif activo.tipo_activo == TipoActivoGeneracion.AEROGENERADOR:
-                    # Cálculo simplificado para aerogenerador usando la curva de potencia proporcionada
+                    # Cálculo para aerogenerador usando la curva de potencia proporcionada
                     if 'velocidadViento_m_s' in datos_ambientales:
                         velocidad = datos_ambientales['velocidadViento_m_s']
-                        potencia_nominal = activo.potenciaNominal_kWp or 0.0
                         
                         # Usar la curva de potencia del JSON si está disponible
                         if activo.curvaPotencia and isinstance(activo.curvaPotencia, dict):
@@ -326,8 +325,8 @@ class MotorSimulacion:
                             
                             # Si la velocidad está en el JSON, usar ese valor; si no, devolver 0
                             if velocidad_str in activo.curvaPotencia:
-                                factor_potencia = float(activo.curvaPotencia[velocidad_str])
-                                energia_generada = potencia_nominal * factor_potencia
+                                potencia_w = float(activo.curvaPotencia[velocidad_str])
+                                energia_generada = potencia_w / 1000.0  # Convertir W a kW 
                             else:
                                 energia_generada = 0.0
                         else:

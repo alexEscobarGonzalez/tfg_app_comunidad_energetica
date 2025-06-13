@@ -78,14 +78,12 @@ class _CoeficientesContentViewState extends ConsumerState<CoeficientesContentVie
       // Cargar coeficientes de reparto
       final coeficientes = await _cargarCoeficientes();
       
-      // Calcular energía total disponible
+      // Calcular energía total disponible (solo activos de generación)
       double energiaTotal = 0.0;
       for (final activo in activosGenState.activos) {
         energiaTotal += activo.potenciaNominal_kWp;
       }
-      for (final activo in activosAlm) {
-        energiaTotal += activo.capacidadNominal_kWh;
-      }
+      // Los activos de almacenamiento no se incluyen en el reparto de coeficientes
 
       if (!mounted) return;
       
