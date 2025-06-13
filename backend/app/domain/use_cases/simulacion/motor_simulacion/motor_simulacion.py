@@ -99,8 +99,6 @@ class MotorSimulacion:
             
             contratos_pvpc = [c for c in contratos.values() if c and c.tipoContrato.value == "PVPC"]
             print(f"[2/7] Configuración cargada ({time.time() - tiempo_fase:.2f}s)")
-            print(f"      • {len(participantes)} participantes, {len(activos_gen)} gen., {len(activos_alm)} alm.")
-            print(f"      • {len(contratos_pvpc)} contratos PVPC, {len(contratos) - len(contratos_pvpc)} fijos")
 
             tiempo_fase = time.time()
             
@@ -126,7 +124,6 @@ class MotorSimulacion:
             self._verificar_consistencia_timestamps(consumo_por_intervalo, ambiental_por_intervalo, self._cache_generacion_pv)
             
             print(f"[3/7] Datos obtenidos ({time.time() - tiempo_fase:.2f}s)")
-            print(f"      • {len(datos_consumo)} reg. consumo, {len(datos_ambientales)} amb., {len(consumo_por_intervalo)} intervalos")
 
             tiempo_fase = time.time()
             timestamps = sorted(consumo_por_intervalo.keys())
@@ -143,8 +140,8 @@ class MotorSimulacion:
             ultimo_porcentaje = -1
             for idx, current_time in enumerate(timestamps):
                 porcentaje_actual = int(((idx + 1) / total_intervalos) * 100)
-                if porcentaje_actual % 10 == 0 and porcentaje_actual != ultimo_porcentaje:
-                    print(f"      • Progreso: {porcentaje_actual}% ({idx + 1}/{total_intervalos})")
+                if porcentaje_actual % 25 == 0 and porcentaje_actual != ultimo_porcentaje:
+                    print(f"      • Progreso: {porcentaje_actual}%")
                     ultimo_porcentaje = porcentaje_actual
 
                 datos_amb = ambiental_por_intervalo.get(current_time, {})
@@ -172,7 +169,6 @@ class MotorSimulacion:
                 resultados_intervalo_activos_almacenamiento.extend(resultados_intervalo_activos_almacenamiento_aux)
 
             print(f"[4/7] Simulación ejecutada ({time.time() - tiempo_fase:.2f}s)")
-            print(f"      • {total_intervalos} intervalos procesados")
 
             tiempo_fase = time.time()
             resultados_globales, resultados_part, resultados_activos_gen, resultados_activos_alm = calcular_todos_resultados(
@@ -279,8 +275,6 @@ class MotorSimulacion:
                     
                     # Almacenar en caché
                     self._cache_generacion_pv[activo.idActivoGeneracion] = generacion
-                    logging.info(f"Precalculada generación PV para activo {activo.idActivoGeneracion} - "
-                                f"{activo.nombreDescriptivo}: {len(generacion)} intervalos")
                 except Exception as e:
                     logging.error(f"Error al precalcular generación PV para activo {activo.idActivoGeneracion}: {e}")
                     self._cache_generacion_pv[activo.idActivoGeneracion] = {}
@@ -388,10 +382,6 @@ class MotorSimulacion:
         common_timestamps = ts_consumo & ts_ambiental & ts_generacion
         total_unique = len(ts_consumo | ts_ambiental | ts_generacion)
         
-        if len(common_timestamps) == len(ts_consumo) == len(ts_ambiental) == len(ts_generacion):
-            print(f"      • Timestamps: {len(common_timestamps)} coincidencias perfectas")
-        else:
-            coincidencia = (len(common_timestamps) / total_unique) * 100 if total_unique > 0 else 0
-            print(f"      • Timestamps: {len(common_timestamps)} comunes ({coincidencia:.1f}% coincidencia)")
+        # Verificación silenciosa de consistencia de timestamps
             
         return len(common_timestamps) > 0

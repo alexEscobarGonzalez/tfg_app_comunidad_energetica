@@ -81,7 +81,6 @@ def calcular_resultados_participantes(resultados_intervalo_participantes, contra
         )
         resultados.append(resultado)
     
-    print(f"  ✓ Resultados por participante calculados: {len(resultados)} participantes (cálculo económico mensual)")
     return resultados
 
 
@@ -317,39 +316,7 @@ def _calcular_metricas_energeticas_globales(datos_agregados):
     energia_renovable_utilizada = autoconsumo_directo + energia_almacenamiento_cargada
     scr_pct = (energia_renovable_utilizada / energia_reparto * 100) if energia_reparto > 0 else 0.0
     
-    print(f"    📊 MÉTRICAS ENERGÉTICAS - DATOS BASE:")
-    print(f"    • Consumo total: {consumo_total:.2f} kWh")
-    print(f"    • Autoconsumo directo: {autoconsumo_directo:.2f} kWh")  
-    print(f"    • Energía de reparto: {energia_reparto:.2f} kWh")
-    print(f"    • Energía almacenamiento cargada: {energia_almacenamiento_cargada:.2f} kWh")
-    print(f"    • Energía almacenamiento descargada: {energia_almacenamiento_descargada:.2f} kWh")
-    
-    print(f"    🏠 CÁLCULO SSR (Self Sufficiency Ratio):")
-    print(f"    • Propósito: % del consumo cubierto por energía renovable local")
-    print(f"    • Fórmula: (Energía que satisface demanda / Consumo total) × 100")
-    print(f"    • Energía satisface demanda: {autoconsumo_directo:.2f} + {energia_almacenamiento_descargada:.2f} = {energia_para_consumo_real:.2f} kWh")
-    print(f"    • SSR = ({energia_para_consumo_real:.2f} / {consumo_total:.2f}) × 100 = {ssr_pct:.2f}%")
-    
-    print(f"    📊 CÁLCULO SCR (Self Consumption Ratio):")
-    print(f"    • Propósito: % de generación renovable utilizada localmente (no exportada)")
-    print(f"    • Fórmula: (Energía utilizada localmente / Energía total generada) × 100")
-    
-    if energia_renovable_utilizada > energia_reparto + 0.01:  # Tolerancia de 0.01 kWh
-        print(f"    ⚠️  ADVERTENCIA: Energía utilizada ({energia_renovable_utilizada:.2f}) > Energía reparto ({energia_reparto:.2f})")
-        print(f"    ⚠️  Diferencia: {energia_renovable_utilizada - energia_reparto:.2f} kWh")
-        print(f"    ⚠️  Verificar que no se incluyan pérdidas de almacenamiento en energia_gestionada")
-    
-    print(f"    • Energía utilizada localmente: {autoconsumo_directo:.2f} + {energia_almacenamiento_cargada:.2f} = {energia_renovable_utilizada:.2f} kWh")
-    
-    
-    if energia_para_consumo_real > consumo_total:
-        print(f"    ⚠️  ADVERTENCIA: Energía para consumo ({energia_para_consumo_real:.2f}) > Consumo total ({consumo_total:.2f})")
-    
     balance_almacenamiento = energia_almacenamiento_cargada + energia_almacenamiento_descargada  # descargada es negativa
-    if abs(balance_almacenamiento) > 0.01:  # Tolerancia de 0.01 kWh
-        print(f"    ℹ️  Balance almacenamiento neto: {balance_almacenamiento:.2f} kWh (energía restante en baterías)")
-    
-    print(f"    ✅ MÉTRICAS CALCULADAS: SSR={ssr_pct:.1f}%, SCR={scr_pct:.1f}%")
     
     return {
         'ssr_pct': ssr_pct,
@@ -358,20 +325,7 @@ def _calcular_metricas_energeticas_globales(datos_agregados):
 
 
 def _mostrar_desglose_calculo(participante_id, costes_economicos, datos_agregados):
-    
-    print(f"  📊 Desglose cálculo participante {participante_id}:")
-    
-    if costes_economicos.get('calculo_mensual', False):
-        print(f"    • Método: Facturación mensual ({costes_economicos['facturas_procesadas']} meses)")
-        print(f"    • Meses procesados: {list(datos_agregados['datos_mensuales'].keys())}")
-    else:
-        print(f"    • Método: Cálculo agregado (fallback)")
-    
-    print(f"    • Coste total: {costes_economicos['coste_total_eur']:.2f} €")
-    print(f"    • Ahorro total: {costes_economicos['ahorro_total_eur']:.2f} € ({costes_economicos['ahorro_porcentual_pct']:.1f}%)")
-    print(f"    • Consumo total: {datos_agregados['consumoTotal_kWh']:.2f} kWh")
-    print(f"    • Autoconsumo directo: {datos_agregados['energiaAutoconsumidaDirecta_kWh']:.2f} kWh")
-    print(f"    • Energía de reparto: {datos_agregados['energiaRecibidaRepartoConsumida_kWh']:.2f} kWh")
+    pass
 
 
 def calcular_resultados_activos_gen(resultados_intervalo_activos, activos_gen):
@@ -456,7 +410,6 @@ def calcular_resultados_activos_gen(resultados_intervalo_activos, activos_gen):
         print(f"  • Activo Gen ID {activo_id}: Generación={energia_total:.2f} kWh, "
               f"Factor Cap.={factor_capacidad:.2f}%, Horas Eq.={horas_equivalentes:.2f}")
     
-    print(f"  ✓ Resultados por activo de generación calculados: {len(resultados)} activos (agrupados)")
     return resultados
 
 
@@ -571,7 +524,6 @@ def calcular_resultados_activos_alm(resultados_intervalo_activos, activos_alm):
               f"Descargado={energia_descargada:.2f} kWh, Ciclos={ciclos_equivalentes:.2f}, "
               f"SoC Medio={soc_medio_pct:.1f}%")
     
-    print(f"  ✓ Resultados por activo de almacenamiento calculados: {len(resultados)} activos (agrupados)")
     return resultados
 
 
@@ -604,9 +556,7 @@ def calcular_resultados_globales(simulacion, resultados_participantes,
             elif energia_almacenamiento > 0:
                 total_energia_almacenamiento_cargada += energia_almacenamiento
         
-        print(f"    • [DEBUG] Almacenamiento calculado desde {len(resultados_intervalo_participantes)} intervalos:")
-        print(f"      - Cargado: {total_energia_almacenamiento_cargada:.2f} kWh")
-        print(f"      - Descargado: {total_energia_almacenamiento_descargada:.2f} kWh")
+
     
     total_generacion = 0.0
     total_importacion = 0.0
@@ -672,12 +622,7 @@ def calcular_resultados_globales(simulacion, resultados_participantes,
     
     reduccion_co2 = energia_total_evita_red * factor_emision_co2
     
-    print(f"    • [CO2] Energía renovable consumida localmente: {energia_renovable_consumida_localmente:.2f} kWh")
-    print(f"    • [CO2] Energía renovable desde almacenamiento: {energia_renovable_desde_almacenamiento:.2f} kWh")
-    print(f"    • [CO2] Energía renovable exportada: {energia_renovable_exportada:.2f} kWh")
-    print(f"    • [CO2] Total energía que evita red eléctrica: {energia_total_evita_red:.2f} kWh")
-    print(f"    • [CO2] Factor emisión (mix eléctrico): {factor_emision_co2} kgCO2eq/kWh")
-    print(f"    • [CO2] Reducción emisiones calculada: {reduccion_co2:.2f} kgCO2eq")
+
     
     resultado_global = ResultadoSimulacionEntity(
         costeTotalEnergia_eur=coste_total_energia,
@@ -693,23 +638,7 @@ def calcular_resultados_globales(simulacion, resultados_participantes,
         idSimulacion=simulacion.idSimulacion 
     )
     
-    print(f"  ✓ Resultados globales calculados (agregando {len(resultados_participantes)} participantes)")
-    print(f"    • Consumo total: {total_consumo:.2f} kWh")
-    print(f"    • Generación total: {total_generacion:.2f} kWh")
-    print(f"    • Autoconsumo directo: {total_autoconsumo:.2f} kWh")
-    print(f"    • Energía de reparto: {total_energia_reparto:.2f} kWh")
-    print(f"    • Almacenamiento cargado: {total_energia_almacenamiento_cargada:.2f} kWh")
-    print(f"    • Almacenamiento descargado: {total_energia_almacenamiento_descargada:.2f} kWh")
-    print(f"    • Tasa autoconsumo (SCR): {tasa_autoconsumo:.1f}%")
-    print(f"    • Tasa autosuficiencia (SSR): {tasa_autosuficiencia:.1f}%")
-    print(f"    • Coste total energía: {coste_total_energia:.2f} €")
-    print(f"    • Ahorro total: {ahorro_total:.2f} €")
-    print(f"    • Ingreso total exportación: {total_ingreso_exportacion:.2f} €")
-    print(f"    • Inversión inicial: {inversion_inicial_total:.2f} €")
-    if payback_period:
-        print(f"    • Periodo de retorno: {payback_period:.1f} años")
-    if roi:
-        print(f"    • ROI anual: {roi:.1f}%")
+
     
     return resultado_global
 

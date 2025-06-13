@@ -15,7 +15,7 @@ import logging
 def persistir_resultado_global(resultado_simulacion_repo, resultados_globales):
     try:
         resultado_global = resultado_simulacion_repo.create(resultados_globales)
-        print(f"  ✓ Resultados globales guardados")
+        print(f"  Resultados globales guardados")
         return resultado_global
     except Exception as e:
         logging.error(f"Error al persistir resultados globales: {str(e)}")
@@ -25,7 +25,7 @@ def persistir_resultado_global(resultado_simulacion_repo, resultados_globales):
 def persistir_resultados_participantes(resultado_participante_repo, resultados_part, id_resultado_global):
     try:
         resultado_participantes = resultado_participante_repo.create_bulk(resultados_part, id_resultado_global)
-        print(f"  ✓ Resultados de participantes guardados: {len(resultados_part)} participantes")
+        print(f"  Resultados de participantes guardados: {len(resultados_part)} participantes")
         return resultado_participantes
     except Exception as e:
         logging.error(f"Error al persistir resultados por participante: {str(e)}")
@@ -35,7 +35,7 @@ def persistir_resultados_participantes(resultado_participante_repo, resultados_p
 def persistir_resultados_activos_generacion(resultado_activo_gen_repo, resultados_activos_gen, id_resultado_global):
     try:
         resultado_activos_gen = resultado_activo_gen_repo.create_bulk(resultados_activos_gen, id_resultado_global)
-        print(f"  ✓ Resultados de activos de generación guardados: {len(resultados_activos_gen)} activos")
+        print(f"  Resultados de activos de generación guardados: {len(resultados_activos_gen)} activos")
         return resultado_activos_gen
     except Exception as e:
         logging.error(f"Error al persistir resultados por activo de generación: {str(e)}")
@@ -45,7 +45,7 @@ def persistir_resultados_activos_generacion(resultado_activo_gen_repo, resultado
 def persistir_resultados_activos_almacenamiento(resultado_activo_alm_repo, resultados_activos_alm, id_resultado_global):
     try:
         resultado_activos_alm = resultado_activo_alm_repo.create_bulk(resultados_activos_alm, id_resultado_global)
-        print(f"  ✓ Resultados de activos de almacenamiento guardados: {len(resultados_activos_alm)} activos")
+        print(f"  Resultados de activos de almacenamiento guardados: {len(resultados_activos_alm)} activos")
         return resultado_activos_alm
     except Exception as e:
         logging.error(f"Error al persistir resultados por activo de almacenamiento: {str(e)}")
@@ -55,7 +55,7 @@ def persistir_resultados_activos_almacenamiento(resultado_activo_alm_repo, resul
 def persistir_datos_ambientales(datos_ambientales_repo, datos_ambientales):
     try:
         datos_ambientales_persistidos = datos_ambientales_repo.create_bulk(datos_ambientales)
-        print(f"  ✓ Datos ambientales guardados: {len(datos_ambientales)} registros")
+        print(f"  Datos ambientales guardados: {len(datos_ambientales)} registros")
         return datos_ambientales_persistidos
     except Exception as e:
         logging.error(f"Error al persistir datos ambientales: {str(e)}")
@@ -90,7 +90,7 @@ def convertir_y_persistir_intervalos_participantes(datos_intervalo_participante_
         
         # Persistir entidades
         datos_persistidos = datos_intervalo_participante_repo.create_bulk(entidades_intervalo)
-        print(f"  ✓ Intervalos de participantes guardados: {len(entidades_intervalo)} registros")
+        print(f"  Intervalos de participantes guardados: {len(entidades_intervalo)} registros")
         return datos_persistidos
     except Exception as e:
         logging.error(f"Error al convertir y persistir intervalos de participantes: {str(e)}")
@@ -122,7 +122,7 @@ def convertir_y_persistir_intervalos_activos_generacion(datos_intervalo_activo_r
         
         # Persistir entidades
         datos_persistidos = datos_intervalo_activo_repo.create_bulk(entidades_intervalo)
-        print(f"  ✓ Intervalos de activos de generación guardados: {len(entidades_intervalo)} registros")
+        print(f"  Intervalos de activos de generación guardados: {len(entidades_intervalo)} registros")
         return datos_persistidos
     except Exception as e:
         logging.error(f"Error al convertir y persistir intervalos de activos de generación: {str(e)}")
@@ -154,7 +154,7 @@ def convertir_y_persistir_intervalos_activos_almacenamiento(datos_intervalo_acti
         
         # Persistir entidades
         datos_persistidos = datos_intervalo_activo_repo.create_bulk(entidades_intervalo)
-        print(f"  ✓ Intervalos de activos de almacenamiento guardados: {len(entidades_intervalo)} registros")
+        print(f"  Intervalos de activos de almacenamiento guardados: {len(entidades_intervalo)} registros")
         return datos_persistidos
     except Exception as e:
         logging.error(f"Error al convertir y persistir intervalos de activos de almacenamiento: {str(e)}")

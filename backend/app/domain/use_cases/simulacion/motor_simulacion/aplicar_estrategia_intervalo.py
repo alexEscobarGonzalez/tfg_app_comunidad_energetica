@@ -6,24 +6,12 @@ def aplicar_estrategia_intervalo(simulacion, comunidad, participantes, gen_activ
                                       consumo_int, contratos, coefs, intervalo, estado_alm, activos_alm, pvpc_repo=None):
         
         try:
-            print(f"\n[DEBUG] Intervalo: {intervalo}")
-            print(f"[DEBUG] Comunidad: {comunidad.nombre}")
-            print(f"[DEBUG] Participantes: {len(participantes)}")
-            print(f"[DEBUG] Activos generación: {len(gen_activos)} - Generación total: {sum(gen_activos.values()):.4f} kWh")
-            print(f"[DEBUG] Consumos: {consumo_int}")
-            
-            
             # Valores por defecto para prevenir errores
             intervalo_participantes = []
             intervalo_activos_almacenamiento = []
-
             
             # Calcular valores agregados
             generacion_total = sum(gen_activos.values())
-            consumo_total = sum(consumo_int.get(p.idParticipante, 0) for p in participantes)
-            
-            print(f"[DEBUG] Generación total: {generacion_total:.4f} kWh, Consumo total: {consumo_total:.4f} kWh")
-            print(f"[DEBUG] Balance energético: {generacion_total - consumo_total:.4f} kWh")
             
             # 1. Determinar tipo de estrategia de excedentes de la simulación
             estrategia = simulacion.tipoEstrategiaExcedentes
@@ -38,20 +26,13 @@ def aplicar_estrategia_intervalo(simulacion, comunidad, participantes, gen_activ
                     id_p = p.idParticipante
                     consumo = consumo_int.get(id_p, 0)
                     coeficiente = _obtener_coeficiente_reparto(coefs.get(id_p, []), intervalo)
-                    print(f"[DEBUG] Participante {id_p}: Coeficiente de reparto: {coeficiente}")
-                    
                     
                     # Asignar energía según coeficiente (nunca más que su consumo en caso de sin excedentes)
                     energia_asignada[id_p] = generacion_total * (coeficiente / 100)
-                    print(f"[DEBUG] Participante {id_p}: Consumo={consumo:.4f} kWh, Coef={coeficiente:.4f}%, Asignado={energia_asignada[id_p]:.4f} kWh")
                     
-            
-            print(f"[DEBUG] Aplicando estrategia: {estrategia.value}")
-            
             
             # Procesar según tipo de estrategia
             if estrategia == TipoEstrategiaExcedentes.INDIVIDUAL_SIN_EXCEDENTES or estrategia == TipoEstrategiaExcedentes.COLECTIVO_SIN_EXCEDENTES:
-                print("[DEBUG] Procesando estrategia: INDIVIDUAL_SIN_EXCEDENTES")
                 # Código 31: Individual sin excedentes
                 # Código 32: Colectivo sin excedentes
                 for p in participantes:
@@ -95,7 +76,6 @@ def aplicar_estrategia_intervalo(simulacion, comunidad, participantes, gen_activ
                     )
                     
             elif estrategia == TipoEstrategiaExcedentes.INDIVIDUAL_EXCEDENTES_COMPENSACION or estrategia == TipoEstrategiaExcedentes.COLECTIVO_EXCEDENTES_COMPENSACION_RED_EXTERNA:
-                print("[DEBUG] Procesando estrategia: INDIVIDUAL_EXCEDENTES_COMPENSACION o COLECTIVO_EXCEDENTES_COMPENSACION_RED_EXTERNA")
                 # Código 41: Individual con excedentes y compensación
                 # Código 43: Colectivo con excedentes y compensación en red externa
                 for p in participantes:
@@ -130,7 +110,6 @@ def aplicar_estrategia_intervalo(simulacion, comunidad, participantes, gen_activ
                     if energia_diferencia > 0 and energia_gestionada < energia_diferencia:
                         # El excedente es lo que queda después de usar almacenamiento
                         excedente_compensacion = energia_diferencia - energia_gestionada
-                        print(f"[DEBUG] Participante {id_p}: Excedente para compensación: {excedente_compensacion:.4f} kWh")
                     
                     contrato_p = contratos.get(id_p)
                     
@@ -195,7 +174,6 @@ def _obtener_coeficiente_reparto(coeficientes, timestamp):
             
             return coef.parametros.get('valor_default', 0.0)
     
-    print(f"[DEBUG] No se encontró coeficiente de reparto para timestamp {timestamp}")      
     return None
 
 
@@ -227,63 +205,19 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
     energia_gestionada = 0.0
     intervalo_activos_alm = []
 
-    print(f"\n🔋 ========== GESTIÓN DE ALMACENAMIENTO - {intervalo} ==========")
-    print(f"🔋 Energía disponible/requerida: {excedentes_o_deficit:.4f} kWh")
-    print(f"🔋 Número de activos de almacenamiento: {len(activos_alm)}")
-
     # Si no hay activos de almacenamiento, retornar inmediatamente
     if not activos_alm:
-        print(f"🔋 ❌ No hay activos de almacenamiento disponibles")
         return 0.0, estado_alm, []
 
-    # MOSTRAR ESTADO INICIAL DE TODAS LAS BATERÍAS (CON DEGRADACIÓN)
-    print(f"\n🔋 📊 ESTADO INICIAL DE BATERÍAS (CON DEGRADACIÓN):")
-    for activo in activos_alm:
-        id_alm = activo.idActivoAlmacenamiento
-        soc_actual = estado_alm[id_alm]['soc_kwh']
-        capacidad_nominal = activo.capacidadNominal_kWh
-        
-        # Calcular degradación actual
-        ciclos = ciclos_acumulados.get(id_alm, 0) if ciclos_acumulados else 0
-        degradacion = _calcular_degradacion_bateria(activo, ciclos)
-        
-        # Capacidad real (degradada)
-        capacidad_real = capacidad_nominal * degradacion['factor_capacidad']
-        
-        soc_pct = (soc_actual / capacidad_real) * 100
-        print(f"🔋   • Batería {id_alm}: SoC={soc_actual:.2f}/{capacidad_real:.2f} kWh ({soc_pct:.1f}%)")
-        print(f"🔋     - Capacidad: {capacidad_nominal:.2f} → {capacidad_real:.2f} kWh (degradación: {degradacion['degradacion_pct']:.1f}%)")
-        print(f"🔋     - Ciclos acumulados: {ciclos:.2f}")
-        print(f"🔋     - Potencia Carga: {activo.potenciaMaximaCarga_kW:.2f} kW")
-        print(f"🔋     - Potencia Descarga: {activo.potenciaMaximaDescarga_kW:.2f} kW")
-        eficiencia_original = activo.eficienciaCicloCompleto_pct
-        if eficiencia_original <= 1.0:
-            eficiencia_nominal = eficiencia_original * 100
-        else:
-            eficiencia_nominal = eficiencia_original
-        eficiencia_real = eficiencia_nominal * degradacion['factor_eficiencia']
-        print(f"🔋     - Eficiencia: {eficiencia_nominal:.1f}% → {eficiencia_real:.1f}%")
-        print(f"🔋     - Profundidad Descarga Máx: {activo.profundidadDescargaMax_pct:.1f}%")
-
-    
-
-    # 3. Modo CARGA (excedentes > 0)
+    # Modo CARGA (excedentes > 0)
     if excedentes_o_deficit > 0:
         energia_restante = excedentes_o_deficit
-        print(f"\n🔋 ⚡ MODO CARGA - Excedentes: {excedentes_o_deficit:.4f} kWh")
 
         # Priorizar baterías con menor SoC relativo
         activos_ordenados = sorted(
             activos_alm,
             key=lambda a: estado_alm[a.idActivoAlmacenamiento]['soc_kwh'] / a.capacidadNominal_kWh
         )
-        
-        print(f"🔋 📋 Orden de prioridad (menor SoC relativo primero):")
-        for i, activo in enumerate(activos_ordenados):
-            id_alm = activo.idActivoAlmacenamiento
-            soc_actual = estado_alm[id_alm]['soc_kwh']
-            soc_relativo = soc_actual / activo.capacidadNominal_kWh
-            print(f"🔋   {i+1}. Batería {id_alm}: SoC relativo = {soc_relativo:.3f}")
 
         for activo in activos_ordenados:
             id_alm = activo.idActivoAlmacenamiento
@@ -295,21 +229,15 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
             degradacion = _calcular_degradacion_bateria(activo, ciclos)
             capacidad = capacidad_nominal * degradacion['factor_capacidad']  # Capacidad degradada
             
-            print(f"\n🔋 🔌 Procesando Batería {id_alm} para CARGA:")
-            print(f"🔋   📍 SoC actual: {soc_actual:.4f} kWh ({(soc_actual/capacidad)*100:.1f}%)")
-            print(f"🔋   🔧 Capacidad degradada: {capacidad_nominal:.2f} → {capacidad:.2f} kWh ({degradacion['degradacion_pct']:.1f}% degradación)")
-            print(f"🔋   ⚡ Energía restante para distribuir: {energia_restante:.4f} kWh")
-            
             # 2. Calcular eficiencia de ciclo completo y derivar eficiencias de carga/descarga (CON DEGRADACIÓN)
             if activo.eficienciaCicloCompleto_pct <= 1.0:
                 eta_total_nominal = activo.eficienciaCicloCompleto_pct  # Ya es decimal
             else:
                 eta_total_nominal = activo.eficienciaCicloCompleto_pct / 100  # Convertir de porcentaje
             
-            # Aplicar degradación a la eficiencia
+                        # Aplicar degradación a la eficiencia
             eta_total = eta_total_nominal * degradacion['factor_eficiencia']
             eta_carga = eta_descarga = eta_total ** 0.5
-            print(f"🔋   🔄 Eficiencias degradadas: Nominal={eta_total_nominal:.3f} → Real={eta_total:.3f}, Carga={eta_carga:.3f}, Descarga={eta_descarga:.3f}")
 
             # 3.1. Calcular suelo (soc_min) y techo (soc_max) de SoC (CON CAPACIDAD DEGRADADA)
             if activo.profundidadDescargaMax_pct <= 1.0:
@@ -318,14 +246,11 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
                 profundidad_descarga = activo.profundidadDescargaMax_pct / 100  # Convertir de porcentaje
             soc_min = (1 - profundidad_descarga) * capacidad  # Usa capacidad degradada
             soc_max = capacidad  # Usa capacidad degradada
-            print(f"🔋   📏 Límites SoC (degradados): Mín={soc_min:.2f} kWh, Máx={soc_max:.2f} kWh")
 
             # 3.2. Cuánto puedo meter hasta el techo
             capacidad_disponible = soc_max - soc_actual
-            print(f"🔋   📦 Capacidad disponible para carga: {capacidad_disponible:.4f} kWh")
             
             if capacidad_disponible <= 0 or energia_restante <= 0:
-                print(f"🔋   ❌ No se puede cargar: Capacidad={capacidad_disponible:.4f}, Energía={energia_restante:.4f}")
                 # Añadir registro aunque no haya carga
                 intervalo_activos_alm.append(
                     {
@@ -340,30 +265,21 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
 
             # 3.3. Límite por potencia en 1 h
             energia_max_interval = activo.potenciaMaximaCarga_kW * 1  # kWh
-            print(f"🔋   🚀 Límite por potencia (1h): {energia_max_interval:.4f} kWh")
 
             # 3.4. Energía a cargar (antes de pérdidas)
             energia_a_cargar = min(energia_restante, capacidad_disponible, energia_max_interval)
-            print(f"🔋   🎯 Energía neta a cargar: min({energia_restante:.4f}, {capacidad_disponible:.4f}, {energia_max_interval:.4f}) = {energia_a_cargar:.4f} kWh")
-
+            
             # 3.5. Ajustar input según eficiencia de carga
             energia_input = energia_a_cargar / eta_carga
-            print(f"🔋   ⚡ Energía bruta requerida: {energia_a_cargar:.4f} / {eta_carga:.3f} = {energia_input:.4f} kWh")
-
+            
             # Calcular pérdidas por eficiencia
             perdidas_carga = energia_input - energia_a_cargar
-            print(f"🔋   💔 Pérdidas por eficiencia de carga: {perdidas_carga:.4f} kWh")
-
+            
             # 3.6. Actualizar SoC y contadores
             soc_anterior = estado_alm[id_alm]['soc_kwh']
             estado_alm[id_alm]['soc_kwh'] += energia_a_cargar
             energia_restante -= energia_input
-            # CORRECCIÓN: Para el cálculo de SCR, solo debe contar la energía neta, no las pérdidas
             energia_gestionada += energia_a_cargar  # Solo energía neta almacenada
-            
-            print(f"🔋   📈 SoC actualizado: {soc_anterior:.4f} → {estado_alm[id_alm]['soc_kwh']:.4f} kWh (+{energia_a_cargar:.4f})")
-            print(f"🔋   🔄 Energía restante: {energia_restante + energia_input:.4f} → {energia_restante:.4f} kWh")
-            print(f"🔋   📊 Energía gestionada total (neta): {energia_gestionada:.4f} kWh")
 
             intervalo_activos_alm.append(
                 {
@@ -379,7 +295,6 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
     elif excedentes_o_deficit < 0:
         deficit = -excedentes_o_deficit
         energia_descargada_total = 0.0
-        print(f"\n🔋 🔻 MODO DESCARGA - Déficit: {deficit:.4f} kWh")
 
         # Priorizar baterías con mayor SoC relativo
         activos_ordenados = sorted(
@@ -387,13 +302,6 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
             key=lambda a: estado_alm[a.idActivoAlmacenamiento]['soc_kwh'] / a.capacidadNominal_kWh,
             reverse=True
         )
-        
-        print(f"🔋 📋 Orden de prioridad (mayor SoC relativo primero):")
-        for i, activo in enumerate(activos_ordenados):
-            id_alm = activo.idActivoAlmacenamiento
-            soc_actual = estado_alm[id_alm]['soc_kwh']
-            soc_relativo = soc_actual / activo.capacidadNominal_kWh
-            print(f"🔋   {i+1}. Batería {id_alm}: SoC relativo = {soc_relativo:.3f}")
 
         for activo in activos_ordenados:
             id_alm = activo.idActivoAlmacenamiento
@@ -405,21 +313,15 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
             degradacion = _calcular_degradacion_bateria(activo, ciclos)
             capacidad = capacidad_nominal * degradacion['factor_capacidad']  # Capacidad degradada
             
-            print(f"\n🔋 🔋 Procesando Batería {id_alm} para DESCARGA:")
-            print(f"🔋   📍 SoC actual: {soc_actual:.4f} kWh ({(soc_actual/capacidad)*100:.1f}%)")
-            print(f"🔋   🔧 Capacidad degradada: {capacidad_nominal:.2f} → {capacidad:.2f} kWh ({degradacion['degradacion_pct']:.1f}% degradación)")
-            print(f"🔋   ⚡ Déficit restante a cubrir: {deficit:.4f} kWh")
-            
             # Calcular eficiencia de ciclo completo y derivar eficiencias de carga/descarga (CON DEGRADACIÓN)
             if activo.eficienciaCicloCompleto_pct <= 1.0:
                 eta_total_nominal = activo.eficienciaCicloCompleto_pct  # Ya es decimal
             else:
                 eta_total_nominal = activo.eficienciaCicloCompleto_pct / 100  # Convertir de porcentaje
             
-            # Aplicar degradación a la eficiencia
+                        # Aplicar degradación a la eficiencia
             eta_total = eta_total_nominal * degradacion['factor_eficiencia']
             eta_carga = eta_descarga = eta_total ** 0.5
-            print(f"🔋   🔄 Eficiencias degradadas: Nominal={eta_total_nominal:.3f} → Real={eta_total:.3f}, Carga={eta_carga:.3f}, Descarga={eta_descarga:.3f}")
 
             # 4.1. Calcular suelo de SoC (CON CAPACIDAD DEGRADADA)
             if activo.profundidadDescargaMax_pct <= 1.0:
@@ -427,10 +329,8 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
             else:
                 profundidad_descarga = activo.profundidadDescargaMax_pct / 100  # Convertir de porcentaje
             soc_min = (1 - profundidad_descarga) * capacidad  # Usa capacidad degradada
-            print(f"🔋   📏 SoC mínimo permitido (degradado): {soc_min:.4f} kWh ({((soc_min/capacidad)*100):.1f}%)")
             
             if soc_actual <= soc_min or deficit <= 0:
-                print(f"🔋   ❌ No se puede descargar: SoC actual={soc_actual:.4f} ≤ SoC mín={soc_min:.4f} o déficit={deficit:.4f} ≤ 0")
                 # Añadir registro aunque no haya descarga
                 intervalo_activos_alm.append(
                     {
@@ -445,34 +345,25 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
 
             # 4.2. Cuánta energía neta puedo extraer sin bajar de soc_min
             energia_disponible = soc_actual - soc_min
-            print(f"🔋   📦 Energía disponible para descarga: {energia_disponible:.4f} kWh")
-
+            
             # 4.3. Límite por potencia en 1 h
             energia_max_descarga = activo.potenciaMaximaDescarga_kW * 1  # kWh
-            print(f"🔋   🚀 Límite por potencia (1h): {energia_max_descarga:.4f} kWh")
-
+            
             # 4.4. Energía bruta a descargar (antes de pérdidas)
             deficit_ajustado = deficit / eta_descarga
             energia_a_descargar = min(deficit_ajustado, energia_disponible, energia_max_descarga)
-            print(f"🔋   🎯 Energía bruta a descargar: min({deficit_ajustado:.4f}, {energia_disponible:.4f}, {energia_max_descarga:.4f}) = {energia_a_descargar:.4f} kWh")
-
+            
             # 4.5. Energía neta que sale tras eficiencia
             energia_output = energia_a_descargar * eta_descarga
-            print(f"🔋   ⚡ Energía neta útil: {energia_a_descargar:.4f} * {eta_descarga:.3f} = {energia_output:.4f} kWh")
-
+            
             # Calcular pérdidas por eficiencia
             perdidas_descarga = energia_a_descargar - energia_output
-            print(f"🔋   💔 Pérdidas por eficiencia de descarga: {perdidas_descarga:.4f} kWh")
-
+            
             # 4.6. Actualizar SoC y contadores
             soc_anterior = estado_alm[id_alm]['soc_kwh']
             estado_alm[id_alm]['soc_kwh'] -= energia_a_descargar
             deficit -= energia_output
             energia_descargada_total += energia_output
-            
-            print(f"🔋   📉 SoC actualizado: {soc_anterior:.4f} → {estado_alm[id_alm]['soc_kwh']:.4f} kWh (-{energia_a_descargar:.4f})")
-            print(f"🔋   🔄 Déficit restante: {deficit + energia_output:.4f} → {deficit:.4f} kWh")
-            print(f"🔋   📊 Energía descargada total: {energia_descargada_total:.4f} kWh")
 
             intervalo_activos_alm.append(
                 {
@@ -486,20 +377,14 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
 
         # La energía gestionada será negativa (salida a la comunidad)
         energia_gestionada = -energia_descargada_total
-        print(f"\n🔋 📊 RESUMEN DESCARGA:")
-        print(f"🔋   • Energía descargada total: {energia_descargada_total:.4f} kWh")
-        print(f"🔋   • Energía gestionada (negativa): {energia_gestionada:.4f} kWh")
 
     # 5. Sin carga ni descarga (excedentes_o_deficit = 0) o no se procesaron todos los activos
     else:
-        print(f"\n🔋 ⚖️ MODO NEUTRO - Balance energético: {excedentes_o_deficit:.4f} kWh")
-        print(f"🔋 Sin carga ni descarga, manteniendo SoC actual")
         # Crear registros para todos los activos cuando no hay excedentes ni déficit
         for activo in activos_alm:
             id_alm = activo.idActivoAlmacenamiento
             soc_actual = estado_alm[id_alm]['soc_kwh']
             capacidad = activo.capacidadNominal_kWh
-            print(f"🔋   • Batería {id_alm}: Sin actividad, SoC={soc_actual:.4f} kWh ({(soc_actual/capacidad)*100:.1f}%)")
             intervalo_activos_alm.append(
                 {
                     'timestamp': intervalo,
@@ -509,20 +394,5 @@ def _gestionar_almacenamiento(comunidad, excedentes_o_deficit, estado_alm, inter
                     'idActivoAlmacenamiento': id_alm,
                 }
             )
-
-    # RESUMEN FINAL
-    print(f"\n🔋 📋 RESUMEN FINAL DE GESTIÓN:")
-    print(f"🔋   • Energía total gestionada: {energia_gestionada:.4f} kWh")
-    print(f"🔋   • Registros creados: {len(intervalo_activos_alm)} activos")
-    
-    print(f"\n🔋 📊 ESTADO FINAL DE BATERÍAS:")
-    for activo in activos_alm:
-        id_alm = activo.idActivoAlmacenamiento
-        soc_final = estado_alm[id_alm]['soc_kwh']
-        capacidad = activo.capacidadNominal_kWh
-        soc_pct = (soc_final / capacidad) * 100
-        print(f"🔋   • Batería {id_alm}: SoC final = {soc_final:.4f} kWh ({soc_pct:.1f}%)")
-    
-    print(f"🔋 =========== FIN GESTIÓN ALMACENAMIENTO ===========\n")
 
     return energia_gestionada, estado_alm, intervalo_activos_alm

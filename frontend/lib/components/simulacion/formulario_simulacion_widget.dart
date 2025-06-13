@@ -225,11 +225,15 @@ class _FormularioSimulacionWidgetState extends ConsumerState<FormularioSimulacio
   Widget _buildSelectorFecha(String label, DateTime? fecha, Function(DateTime) onSelected) {
     return InkWell(
       onTap: () async {
+        // Usar el rango máximo permitido en la aplicación (PVGIS SARAH3)
+        final fechaMinima = DateTime(2005, 1, 1);
+        final fechaMaxima = DateTime(2023, 12, 31);
+        
         final fechaSeleccionada = await showDatePicker(
           context: context,
-          initialDate: fecha ?? DateTime.now(),
-          firstDate: DateTime.now().subtract(Duration(days: 365 * 2)),
-          lastDate: DateTime.now().add(Duration(days: 365)),
+          initialDate: fecha ?? fechaMaxima, // Usar fecha máxima como inicial si no hay fecha
+          firstDate: fechaMinima,
+          lastDate: fechaMaxima,
         );
         if (fechaSeleccionada != null) {
           onSelected(fechaSeleccionada);
